@@ -34,32 +34,36 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
 
   // Calculate visible years based on zoom level
   const visibleYears = useMemo(() => {
-    // Determine which years to show based on zoom
-    const yearDepth = Math.min(3, Math.ceil(config.zoom));
     const currentSystemYear = new Date().getFullYear();
     
     // Ensure startYear is within 10 years of current system year
-    const minStartYear = currentSystemYear - 10;
-    const validStartYear = Math.max(config.startYear, minStartYear);
+    const minStartYear = Math.max(config.startYear, currentSystemYear - 10);
     
-    // Calculate the current view year based on zoom
-    const viewYearOffset = Math.floor(config.zoom) - 1;
-    const viewYear = config.currentYear - viewYearOffset;
-    
-    // Years to display
+    // Calculate the years to display based on zoom
     const years: number[] = [];
     
-    // Always include startYear
-    years.push(validStartYear);
+    // Always include startYear (center)
+    years.push(minStartYear);
     
-    // Add recent years based on zoom
-    for (let i = 0; i < yearDepth; i++) {
-      const year = viewYear - i;
-      if (year > validStartYear && !years.includes(year)) {
+    // Current year (outermost) is always visible
+    if (!years.includes(config.currentYear)) {
+      years.push(config.currentYear);
+    }
+    
+    // Calculate which years to show based on zoom
+    const zoomLevel = Math.max(0, Math.min(3, config.zoom));
+    const zoomIndex = Math.floor(zoomLevel);
+    
+    // Add previous years based on zoom level
+    for (let i = 1; i <= 2; i++) {
+      const year = config.currentYear - (i + zoomIndex);
+      // Only add years that are at or after the startYear
+      if (year >= minStartYear && !years.includes(year)) {
         years.push(year);
       }
     }
     
+    // Sort years from earliest to latest
     return years.sort((a, b) => a - b);
   }, [config.zoom, config.startYear, config.currentYear]);
 
@@ -122,9 +126,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         // Draw events on spiral
         drawEvents(
           ctx,
-          pastPresentEvents.filter(event => 
-            visibleYears.includes(event.startDate.getFullYear())
-          ),
+          pastPresentEvents,
           centerX,
           centerY,
           initialRadius,
@@ -157,7 +159,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     height: number
   ) => {
     const now = Date.now() / 1000;
-    const particleCount = 200; // Increased particle count
+    const particleCount = 300; // Increased particle count for better ambient effect
     
     for (let i = 0; i < particleCount; i++) {
       // Random position across the canvas
@@ -232,8 +234,14 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     
     // Draw each visible year as a separate spiral ring
     visibleYears.forEach((year, index) => {
-      // Calculate the year distance from the center (startYear)
-      const yearOffset = year - visibleYears[0];
+      // Calculate year distance from startYear (first in visibleYears)
+      const yearOffset = visibleYears.indexOf(year);
+      
+      // Calculate radius for this year's spiral ring
+      // Map year position to a radius value between initialRadius and maxRadius
+      const yearRange = visibleYears.length - 1;
+      const radiusStep = yearRange > 0 ? (maxRadius - initialRadius) / yearRange : 0;
+      const radius = initialRadius + yearOffset * radiusStep;
       
       // Adjust opacity based on distance from current year
       const yearDistance = Math.abs(currentYear - year);
@@ -242,8 +250,6 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.15})`;
       
       // Draw year ring
-      const radius = initialRadius + yearOffset * spiralSpacing;
-      
       if (radius <= maxRadius) {
         ctx.beginPath();
         for (let angle = 0; angle <= 2 * Math.PI; angle += 0.05) {
@@ -304,12 +310,16 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     events.forEach((event) => {
       const eventYear = event.startDate.getFullYear();
       
-      // Skip if the event year is not visible
+      // Only process events for visible years
       if (!visibleYears.includes(eventYear)) return;
       
-      // Calculate the spiral ring position based on year
-      const yearOffset = eventYear - visibleYears[0];
-      const baseRadius = initialRadius + yearOffset * spiralSpacing;
+      // Find the index of the year in the visibleYears array
+      const yearIndex = visibleYears.indexOf(eventYear);
+      
+      // Calculate the radius based on the year's position in the visible years
+      const yearRange = visibleYears.length - 1;
+      const radiusStep = yearRange > 0 ? (maxRadius - initialRadius) / yearRange : 0;
+      const baseRadius = initialRadius + yearIndex * radiusStep;
       
       // Calculate clock-like angle for the month (January at 12 o'clock)
       const month = event.startDate.getMonth();
@@ -358,7 +368,9 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           for (const year of visibleYears) {
             if (year < eventYear || year > endYear) continue;
             
-            const yearRadius = initialRadius + (year - visibleYears[0]) * spiralSpacing;
+            // Find the index of this year in the visibleYears array
+            const yearIdx = visibleYears.indexOf(year);
+            const yearRadius = initialRadius + yearIdx * radiusStep;
             
             if (yearRadius > maxRadius) continue;
             
@@ -573,21 +585,23 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     // Calculate month based on clock-like position (0-11)
     const month = Math.floor((angle / (Math.PI * 2)) * 12);
 
-    // Calculate which spiral loop we're on (year)
-    const spiralSpacing = 30 * config.zoom;
-    const initialRadius = 50 * config.zoom;
-    
+    // Determine which year ring was clicked based on radius
     if (visibleYears.length > 0) {
-      // Determine which year ring was clicked based on radius
-      const yearIndex = Math.round((radius - initialRadius) / spiralSpacing);
-      const year = yearIndex >= 0 && yearIndex < visibleYears.length 
-        ? visibleYears[yearIndex] 
-        : new Date().getFullYear();
-        
+      // Calculate which year based on radius relative to visible years
+      const yearRange = visibleYears.length - 1;
+      const maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
+      const initialRadius = 50 * config.zoom;
+      const radiusStep = yearRange > 0 ? (maxRadius - initialRadius) / yearRange : 0;
+      
+      // Find the closest year based on radius
+      let closestYearIndex = Math.round((radius - initialRadius) / radiusStep);
+      closestYearIndex = Math.max(0, Math.min(closestYearIndex, visibleYears.length - 1));
+      
+      const year = visibleYears[closestYearIndex];
       onSpiralClick(year, month, x, y);
     } else {
-      // If clicked in the future debris field, use current year + 1
-      onSpiralClick(new Date().getFullYear() + 1, month, x, y);
+      // Default to current year if no visible years
+      onSpiralClick(new Date().getFullYear(), month, x, y);
     }
   };
 
