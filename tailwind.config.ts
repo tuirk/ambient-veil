@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				cosmic: {
+					'deep-blue': '#0B0E2D',
+					'navy': '#0D1333',
+					'nebula-pink': '#FF4C8E',
+					'nebula-purple': '#7A3EF8',
+					'nebula-teal': '#12EAEA'
 				}
 			},
 			borderRadius: {
@@ -84,11 +92,32 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'pulse-fade': {
+					'0%, 100%': { opacity: '0.4' },
+					'50%': { opacity: '0.8' }
+				},
+				'twinkle': {
+					'0%, 100%': { opacity: '0.3', transform: 'scale(0.8)' },
+					'50%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'drift': {
+					'0%': { transform: 'translate(0, 0)' },
+					'50%': { transform: 'translate(5px, 5px)' },
+					'100%': { transform: 'translate(0, 0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'pulse-fade': 'pulse-fade 4s ease-in-out infinite',
+				'twinkle': 'twinkle 5s ease-in-out infinite',
+				'drift': 'drift 15s ease-in-out infinite'
 			}
 		}
 	},
