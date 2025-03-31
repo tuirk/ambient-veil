@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -118,6 +117,9 @@ export default {
 				'pulse-fade': 'pulse-fade 4s ease-in-out infinite',
 				'twinkle': 'twinkle 5s ease-in-out infinite',
 				'drift': 'drift 15s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 			}
 		}
 	},
