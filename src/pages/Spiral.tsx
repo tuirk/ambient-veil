@@ -12,12 +12,15 @@ import { Info } from "lucide-react";
 
 const Spiral: React.FC = () => {
   const [events, setEvents] = useState<TimeEvent[]>([]);
+  const currentSystemYear = new Date().getFullYear();
+  
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: new Date().getFullYear() - 5,
-    currentYear: new Date().getFullYear(),
+    startYear: currentSystemYear - 5,
+    currentYear: currentSystemYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
     centerY: window.innerHeight / 2,
+    yearDepth: 3,
   });
   
   const [showEventForm, setShowEventForm] = useState(false);
@@ -30,11 +33,14 @@ const Spiral: React.FC = () => {
     setEvents(savedEvents);
     
     const savedConfig = getConfig();
+    // Ensure startYear is within 10 years of current year
+    const validStartYear = Math.max(savedConfig.startYear, currentSystemYear - 10);
+    
     setConfig(prev => ({
       ...prev,
-      startYear: savedConfig.startYear,
+      startYear: validStartYear,
     }));
-  }, []);
+  }, [currentSystemYear]);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     setSelectedYear(year);
@@ -43,6 +49,11 @@ const Spiral: React.FC = () => {
   };
   
   const handleSaveEvent = (newEvent: TimeEvent) => {
+    // Check if it's a future event
+    if (newEvent.startDate.getFullYear() > currentSystemYear) {
+      newEvent.isFutureEvent = true;
+    }
+    
     const updatedEvents = [...events, newEvent];
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
@@ -52,15 +63,19 @@ const Spiral: React.FC = () => {
     setConfig(prev => ({
       ...prev,
       zoom: value[0],
+      yearDepth: Math.min(3, Math.ceil(value[0])),
     }));
   };
   
   const handleStartYearChange = (newStartYear: number) => {
+    // Enforce limit: startYear must be within 10 years of current year
+    const validStartYear = Math.max(newStartYear, currentSystemYear - 10);
+    
     setConfig(prev => ({
       ...prev,
-      startYear: newStartYear,
+      startYear: validStartYear,
     }));
-    saveConfig(newStartYear);
+    saveConfig(validStartYear);
   };
   
   return (
@@ -83,7 +98,7 @@ const Spiral: React.FC = () => {
             <Slider
               value={[config.zoom]}
               min={0.5}
-              max={2}
+              max={3}
               step={0.1}
               onValueChange={handleZoomChange}
               className="w-32"
@@ -97,7 +112,12 @@ const Spiral: React.FC = () => {
               value={config.startYear}
               onChange={(e) => handleStartYearChange(Number(e.target.value))}
               className="w-20 bg-background/50 border border-white/20 rounded px-2 py-1 text-white"
+              min={currentSystemYear - 10}
+              max={currentSystemYear}
             />
+            <span className="text-white/50 text-xs">
+              (min: {currentSystemYear - 10})
+            </span>
           </div>
           
           <Button onClick={() => setShowEventForm(true)}>
@@ -121,12 +141,13 @@ const Spiral: React.FC = () => {
               <h3 className="font-medium text-lg">About "You Are Here"</h3>
               <p className="text-sm text-gray-300">
                 This spiral represents your personal timeline. Each loop is a year,
-                divided into 12 months.
+                arranged like a clock (January at 12 o'clock).
               </p>
               <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
                 <li>Click anywhere on the spiral to add a memory at that time.</li>
                 <li>Colored trails represent events in your life.</li>
-                <li>Adjust the start year and zoom to navigate your timeline.</li>
+                <li>Zoom to move deeper into your timeline's past.</li>
+                <li>Future events appear as floating debris in space.</li>
               </ul>
             </div>
           </PopoverContent>
