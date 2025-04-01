@@ -1,5 +1,5 @@
 
-import { TimeEvent } from "@/types/event";
+import { TimeEvent, SpiralConfig } from "@/types/event";
 
 const EVENTS_STORAGE_KEY = "youAreHere_events";
 const CONFIG_STORAGE_KEY = "youAreHere_config";
@@ -26,18 +26,33 @@ export const getEvents = (): TimeEvent[] => {
   }
 };
 
-export const saveConfig = (startYear: number): void => {
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({ startYear }));
+export const saveConfig = (config: Partial<SpiralConfig>): void => {
+  // Get existing config first
+  const existingConfig = getConfig();
+  // Merge with new values
+  const updatedConfig = { ...existingConfig, ...config };
+  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(updatedConfig));
 };
 
-export const getConfig = (): { startYear: number } => {
+export const getConfig = (): SpiralConfig => {
+  const currentYear = new Date().getFullYear();
+  const defaultConfig: SpiralConfig = { 
+    startYear: currentYear - 5,
+    currentYear: currentYear,
+    zoom: 1,
+    centerX: window.innerWidth / 2,
+    centerY: window.innerHeight / 2,
+    yearDepth: 3
+  };
+  
   const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
-  if (!storedConfig) return { startYear: new Date().getFullYear() - 5 }; // Default to 5 years ago
+  if (!storedConfig) return defaultConfig;
   
   try {
-    return JSON.parse(storedConfig);
+    const parsedConfig = JSON.parse(storedConfig);
+    return { ...defaultConfig, ...parsedConfig };
   } catch (e) {
     console.error("Failed to parse stored config:", e);
-    return { startYear: new Date().getFullYear() - 5 };
+    return defaultConfig;
   }
 };
