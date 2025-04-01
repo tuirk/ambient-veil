@@ -44,10 +44,12 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
 
   // Add subtle animation to the tube
   useFrame(({ clock }) => {
-    if (meshRef.current) {
+    if (meshRef.current && meshRef.current.material) {
+      // TypeScript fix: check if material is MeshBasicMaterial
+      const material = meshRef.current.material as THREE.MeshBasicMaterial;
       // Subtle pulsing effect
       const pulse = Math.sin(clock.getElapsedTime() * 0.5) * 0.03;
-      meshRef.current.material.opacity = 0.3 + pulse;
+      material.opacity = 0.3 + pulse;
     }
   });
   

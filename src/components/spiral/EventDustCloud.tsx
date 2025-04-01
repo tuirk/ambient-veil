@@ -105,7 +105,11 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
     if (pointsRef.current) {
       // Subtle pulsing of the whole cloud
       const time = clock.getElapsedTime();
-      pointsRef.current.material.opacity = 0.7 + Math.sin(time * 0.5) * 0.15;
+      
+      // TypeScript fix: Check if material is PointsMaterial
+      if (pointsRef.current.material instanceof THREE.PointsMaterial) {
+        pointsRef.current.material.opacity = 0.7 + Math.sin(time * 0.5) * 0.15;
+      }
       
       // Random motion of individual particles
       const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;

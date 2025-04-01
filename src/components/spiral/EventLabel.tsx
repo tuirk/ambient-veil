@@ -61,7 +61,7 @@ export const EventLabel: React.FC<EventLabelProps> = ({
         anchorY="middle"
         outlineWidth={0.01}
         outlineColor="#000000"
-        opacity={opacity}
+        fillOpacity={opacity}  // Use fillOpacity instead of opacity
         depthTest={false}
       >
         {event.title}
