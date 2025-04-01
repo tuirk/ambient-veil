@@ -37,8 +37,9 @@ export const generateSpiralPoints = (
       const month = Math.floor(progress * 12);
       const day = Math.floor((progress * 12 - month) * 30) + 1;
       
-      // Start at 12 o'clock (PI/2) and go clockwise
-      const angleRad = step * (Math.PI * 2 / stepsPerLoop) - Math.PI/2;
+      // Correct angle calculation for clockwise rotation starting from 12 o'clock
+      // By using negative angle rotation and starting from PI/2 (12 o'clock)
+      const angleRad = -step * (Math.PI * 2 / stepsPerLoop) + Math.PI/2;
       
       // Calculate position in 3D space
       // Increase radius slightly for each year to create spiral effect
@@ -71,9 +72,9 @@ export const getEventPosition = (
   const month = event.startDate.getMonth();
   const day = event.startDate.getDate();
   
-  // Calculate angle - January starts at 12 o'clock (PI/2)
+  // Calculate angle correctly for clockwise rotation from 12 o'clock
   const yearFraction = month / 12 + day / 365;
-  const angleRad = yearFraction * Math.PI * 2 - Math.PI/2;
+  const angleRad = -yearFraction * Math.PI * 2 + Math.PI/2;
   
   // Calculate position in 3D space
   const yearIndex = year - startYear;
@@ -110,9 +111,9 @@ export const calculateSpiralSegment = (
     const month = currentDate.getMonth();
     const day = currentDate.getDate();
     
-    // Calculate angle
+    // Calculate angle correctly for clockwise rotation from 12 o'clock
     const yearFraction = month / 12 + day / 365;
-    const angleRad = yearFraction * Math.PI * 2 - Math.PI/2;
+    const angleRad = -yearFraction * Math.PI * 2 + Math.PI/2;
     
     // Calculate position in 3D space
     const yearIndex = year - startYear;
