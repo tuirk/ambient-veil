@@ -21,6 +21,10 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
   
+  // Calculate max distance based on the number of years in the spiral
+  const yearSpan = config.currentYear - config.startYear + 1;
+  const calculatedMaxDistance = Math.max(30, yearSpan * 2.5);
+  
   // Update camera position based on zoom
   useEffect(() => {
     if (camera) {
@@ -38,7 +42,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         enablePan={true}
         enableZoom={true}
         minDistance={5}
-        maxDistance={30}
+        maxDistance={calculatedMaxDistance} // Dynamic max distance
       />
       
       <ambientLight intensity={0.3} />

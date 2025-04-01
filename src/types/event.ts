@@ -20,3 +20,11 @@ export interface SpiralConfig {
   centerY: number;
 }
 
+// New interface for dust particles
+export interface DustParticle {
+  position: [number, number, number]; // x, y, z coordinates
+  color: string;
+  size: number;
+  velocity: [number, number, number]; // For animation
+  lifespan: number; // For fade effects
+}

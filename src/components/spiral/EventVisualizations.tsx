@@ -4,6 +4,8 @@ import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
+import { EventLabel } from "./EventLabel";
+import { EventDustCloud } from "./EventDustCloud";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
@@ -19,6 +21,17 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
 }) => {
   return (
     <>
+      {/* Render dust clouds first */}
+      {events.map((event) => (
+        <EventDustCloud
+          key={`dust-${event.id}`}
+          event={event}
+          startYear={config.startYear}
+          zoom={config.zoom}
+        />
+      ))}
+      
+      {/* Then render the actual events */}
       {events.map((event) => {
         // Future events render as scattered objects
         if (event.startDate.getFullYear() > config.currentYear) {
@@ -70,17 +83,26 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         } else {
           // Regular events (single point in time)
           return (
-            <EventPoint
-              key={event.id}
-              event={event}
-              startYear={config.startYear}
-              zoom={config.zoom}
-              onClick={() => {
-                const year = event.startDate.getFullYear();
-                const month = event.startDate.getMonth();
-                onEventClick(year, month, 0, 0);
-              }}
-            />
+            <>
+              <EventPoint
+                key={event.id}
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+                onClick={() => {
+                  const year = event.startDate.getFullYear();
+                  const month = event.startDate.getMonth();
+                  onEventClick(year, month, 0, 0);
+                }}
+              />
+              {/* Add label for one-time events */}
+              <EventLabel
+                key={`label-${event.id}`}
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+              />
+            </>
           );
         }
       })}
