@@ -30,12 +30,11 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   // Extract positions for the spiral line
   const positions = spiralPoints.map(point => point.position);
   
-  // Generate color data for the spiral with opacity fading for older rings
-  const colors = new Float32Array(positions.length * 3);
-  const colorsArray = Array.from({ length: positions.length });
+  // Instead of using Float32Array, create an array of THREE.Color objects
+  // that the Line component can handle properly
+  const colors = [];
   
-  spiralPoints.forEach((point, i) => {
-    const i3 = i * 3;
+  spiralPoints.forEach((point) => {
     const baseColor = new THREE.Color(0xffffff);
     
     // Apply fading to years older than minAllowedYear
@@ -49,28 +48,10 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       const silverGray = new THREE.Color(0x9F9EA1);
       // Blend with white based on how old the year is
       baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
-      
-      colors[i3] = baseColor.r;
-      colors[i3 + 1] = baseColor.g;
-      colors[i3 + 2] = baseColor.b;
-      
-      colorsArray[i] = {
-        r: baseColor.r,
-        g: baseColor.g,
-        b: baseColor.b
-      };
-    } else {
-      // Normal color for years within range
-      colors[i3] = 1;     // R
-      colors[i3 + 1] = 1; // G
-      colors[i3 + 2] = 1; // B
-      
-      colorsArray[i] = {
-        r: 1,
-        g: 1,
-        b: 1
-      };
     }
+    
+    // Push the color to our array
+    colors.push(baseColor);
   });
   
   return (
