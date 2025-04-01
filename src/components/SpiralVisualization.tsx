@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Line, Text, Stars } from "@react-three/drei";
@@ -34,7 +33,7 @@ const SpiralLine: React.FC<{
       points={positions}
       color="white"
       lineWidth={1}
-      alphaWrite={false}
+      transparent
       opacity={0.3}
     />
   );
@@ -70,7 +69,6 @@ const MonthMarkers: React.FC<{
             fontSize={0.3}
             anchorX="center"
             anchorY="middle"
-            opacity={0.5}
           >
             {monthsToShow[month/3]}
           </Text>
@@ -145,7 +143,6 @@ const EventDuration: React.FC<{
       points={points}
       color={colorObj}
       lineWidth={2 + startEvent.intensity * 0.5}
-      alphaWrite={true}
       transparent
       opacity={0.6 + startEvent.intensity * 0.04}
     />
