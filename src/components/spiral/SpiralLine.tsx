@@ -4,21 +4,25 @@ import { Line } from "@react-three/drei";
 import { generateSpiralPoints } from "@/utils/spiralUtils";
 
 interface SpiralLineProps {
-  startYear: number;
-  currentYear: number;
-  zoom: number;
+  startYear: number;     // First year to display in the spiral
+  currentYear: number;   // Latest year to display in the spiral
+  zoom: number;          // Zoom level (affects visual scale)
 }
 
+/**
+ * Renders the main spiral timeline structure
+ * Uses high point count (720) for a smooth curve
+ */
 export const SpiralLine: React.FC<SpiralLineProps> = ({ 
   startYear, 
   currentYear, 
   zoom 
 }) => {
-  // Use more points for a smoother spiral
+  // Generate the spiral with high resolution for smoothness
   const spiralPoints = generateSpiralPoints(
     startYear, 
     currentYear, 
-    720, // Double the resolution for smoother spiral
+    720, // High resolution for a very smooth spiral
     5 * zoom, 
     1.5 * zoom
   );
@@ -33,7 +37,6 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       lineWidth={1}
       transparent
       opacity={0.4}
-      // Removed the unsupported lineJoin and lineCap properties
     />
   );
 };
