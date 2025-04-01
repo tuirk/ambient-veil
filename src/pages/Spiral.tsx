@@ -65,11 +65,11 @@ const Spiral: React.FC = () => {
   
   return (
     <div className="min-h-screen w-full overflow-hidden relative">
-      <DeepSpaceBackground />
+      {/* Remove DeepSpaceBackground as we'll use Three.js Stars instead */}
       
       {/* Main content */}
       <div className="relative z-10 w-full h-screen">
-        {/* Spiral visualization */}
+        {/* Spiral visualization - now in 3D! */}
         <SpiralVisualization 
           events={events} 
           config={config} 
@@ -120,13 +120,14 @@ const Spiral: React.FC = () => {
             <div className="space-y-4">
               <h3 className="font-medium text-lg">About "You Are Here"</h3>
               <p className="text-sm text-gray-300">
-                This spiral represents your personal timeline. Each loop is a year,
+                This 3D spiral represents your personal timeline. Each loop is a year,
                 divided into 12 months.
               </p>
               <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
                 <li>Click anywhere on the spiral to add a memory at that time.</li>
                 <li>Colored trails represent events in your life.</li>
                 <li>Adjust the start year and zoom to navigate your timeline.</li>
+                <li>Drag to rotate the view and scroll to zoom in/out.</li>
               </ul>
             </div>
           </PopoverContent>
