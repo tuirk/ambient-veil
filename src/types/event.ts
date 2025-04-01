@@ -6,6 +6,7 @@ export interface TimeEvent {
   intensity: number; // 1-10
   startDate: Date;
   endDate?: Date; // Optional end date
+  isFutureEvent?: boolean; // Flag for future events
 }
 
 export interface SpiralConfig {
@@ -14,4 +15,5 @@ export interface SpiralConfig {
   zoom: number;
   centerX: number;
   centerY: number;
+  yearDepth: number; // How many years to show based on zoom
 }
