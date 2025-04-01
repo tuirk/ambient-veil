@@ -31,6 +31,34 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
+  // Helper function to get position on spiral
+  const getSpiralPosition = (
+    year: number,
+    month: number,
+    day: number = 15,
+    startYear: number,
+    startRadius: number,
+    spiralSpacing: number
+  ) => {
+    // Calculate years since start
+    const yearsSinceStart = year - startYear;
+    
+    // Calculate progress in the year (0-1)
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthProgress = day / daysInMonth;
+    const yearProgress = (month + monthProgress) / 12;
+    
+    // Calculate total angle - Start at 12 o'clock (Math.PI/2) and go clockwise
+    // In the canvas coordinate system, 0 angle is at 3 o'clock and positive rotation is clockwise
+    // So to start at 12 o'clock, we offset by -Math.PI/2
+    const totalAngle = yearsSinceStart * 2 * Math.PI + yearProgress * 2 * Math.PI - Math.PI/2;
+    
+    // Calculate radius
+    const radius = startRadius + spiralSpacing * yearsSinceStart + (spiralSpacing * yearProgress);
+    
+    return { angle: totalAngle, radius };
+  };
+
   // Draw the spiral
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -55,7 +83,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
 
     // Spiral parameters
     const spiralSpacing = 30 * config.zoom; // Space between spiral loops
-    const initialRadius = 50 * config.zoom; // Initial radius - renamed to avoid conflict
+    const startRadius = 50 * config.zoom; // Initial radius
     const maxRadius = Math.min(canvas.width, canvas.height) * 0.45; // Max radius
 
     // Draw base spiral (faint gray background)
@@ -63,10 +91,11 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       ctx,
       centerX,
       centerY,
-      initialRadius,
+      startRadius,
       spiralSpacing,
       totalYears,
-      maxRadius
+      maxRadius,
+      config.startYear
     );
 
     // Draw events on spiral
@@ -75,11 +104,26 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       events,
       centerX,
       centerY,
-      initialRadius, // Pass initialRadius instead of startRadius
+      startRadius,
       spiralSpacing,
       config.startYear,
       maxRadius
     );
+
+    // Add month markers (clock-like)
+    drawMonthMarkers(
+      ctx, 
+      centerX, 
+      centerY, 
+      startRadius, 
+      spiralSpacing, 
+      totalYears,
+      config.startYear,
+      maxRadius
+    );
+
+    // Add ambient particles
+    drawAmbientParticles(ctx, canvas.width, canvas.height);
   }, [dimensions, events, config]);
 
   // Helper functions for drawing
@@ -90,67 +134,111 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     startRadius: number,
     spiralSpacing: number,
     totalYears: number,
-    maxRadius: number
+    maxRadius: number,
+    startYear: number
   ) => {
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.lineWidth = 1;
 
     // Draw spiral outline
     ctx.beginPath();
-    const totalAngles = totalYears * 2 * Math.PI;
-    const angleStep = 0.05; // Small steps for smooth curve
-
-    for (let angle = 0; angle <= totalAngles; angle += angleStep) {
-      const radius = startRadius + (spiralSpacing * angle) / (2 * Math.PI);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
+    
+    // Steps for smooth curve
+    const stepsPerYear = 100;
+    
+    // Draw from start year to current date
+    for (let yearStep = 0; yearStep <= totalYears * stepsPerYear; yearStep++) {
+      const progress = yearStep / stepsPerYear;
+      const year = startYear + Math.floor(progress);
+      const yearFraction = progress % 1;
+      const month = Math.floor(yearFraction * 12);
+      const monthFraction = (yearFraction * 12) % 1;
+      const day = Math.floor(monthFraction * 30) + 1; // approximate
+      
+      // If beyond current date, stop drawing
+      if (year > currentYear || (year === currentYear && month > currentMonth) || 
+          (year === currentYear && month === currentMonth && day > currentDay)) {
+        break;
+      }
+      
+      const { angle, radius } = getSpiralPosition(
+        year, month, day, startYear, startRadius, spiralSpacing
+      );
+      
       if (radius > maxRadius) break;
 
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
 
-      if (angle === 0) {
+      if (yearStep === 0) {
         ctx.moveTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
     }
     ctx.stroke();
+  };
 
-    // Draw month dividers
-    for (let year = 0; year < totalYears; year++) {
+  const drawMonthMarkers = (
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    startRadius: number,
+    spiralSpacing: number,
+    totalYears: number,
+    startYear: number,
+    maxRadius: number
+  ) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
+    // Draw month markers for all years
+    for (let yearOffset = 0; yearOffset < totalYears; yearOffset++) {
+      const year = startYear + yearOffset;
+      if (year > currentYear) break;
+      
+      // Draw month markers
       for (let month = 0; month < 12; month++) {
-        const angle = year * 2 * Math.PI + (month / 12) * 2 * Math.PI;
-        const nextAngle = year * 2 * Math.PI + ((month + 1) / 12) * 2 * Math.PI;
-        const innerRadius = startRadius + (spiralSpacing * angle) / (2 * Math.PI);
-        const outerRadius = startRadius + (spiralSpacing * nextAngle) / (2 * Math.PI);
-
-        if (outerRadius > maxRadius) break;
-
-        // Draw faint radial lines for months
-        if (month % 3 === 0) { // Draw only quarterly for less clutter
-          const x1 = centerX + innerRadius * Math.cos(angle);
-          const y1 = centerY + innerRadius * Math.sin(angle);
-          const x2 = centerX + outerRadius * Math.cos(angle);
-          const y2 = centerY + outerRadius * Math.sin(angle);
-
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-          ctx.stroke();
-        }
-
-        // Draw month particles - subtle dust in the background
-        drawDustForSegment(
-          ctx, 
-          centerX, 
-          centerY, 
-          innerRadius, 
-          outerRadius, 
-          angle, 
-          nextAngle, 
-          "rgba(255, 255, 255, 0.1)",
-          3 // fewer particles for empty sections
+        // Skip months beyond current month in current year
+        if (year === currentYear && month > now.getMonth()) break;
+        
+        const { angle, radius } = getSpiralPosition(
+          year, month, 15, startYear, startRadius, spiralSpacing
         );
+        
+        if (radius > maxRadius) continue;
+        
+        const innerX = centerX + (radius - 5) * Math.cos(angle);
+        const innerY = centerY + (radius - 5) * Math.sin(angle);
+        const outerX = centerX + (radius + 5) * Math.cos(angle);
+        const outerY = centerY + (radius + 5) * Math.sin(angle);
+        
+        // Draw month marker line
+        ctx.beginPath();
+        ctx.moveTo(innerX, innerY);
+        ctx.lineTo(outerX, outerY);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw month label for quarter months
+        if (month % 3 === 0) {
+          const labelX = centerX + (radius + 15) * Math.cos(angle);
+          const labelY = centerY + (radius + 15) * Math.sin(angle);
+          
+          const monthNames = ["Jan", "Apr", "Jul", "Oct"];
+          const monthIndex = month / 3;
+          
+          ctx.font = "10px Arial";
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(monthNames[monthIndex], labelX, labelY);
+        }
       }
     }
   };
@@ -160,56 +248,107 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     events: TimeEvent[],
     centerX: number,
     centerY: number,
-    initialRadius: number, // Renamed parameter to avoid conflict
+    startRadius: number,
     spiralSpacing: number,
     startYear: number,
     maxRadius: number
   ) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
     events.forEach((event) => {
-      const startYearDiff = event.startDate.getFullYear() - startYear;
-      const startMonth = event.startDate.getMonth();
+      const eventYear = event.startDate.getFullYear();
+      const eventMonth = event.startDate.getMonth();
+      const eventDay = event.startDate.getDate();
       
-      const startAngle = startYearDiff * 2 * Math.PI + (startMonth / 12) * 2 * Math.PI;
+      // Handle future events differently
+      if (eventYear > currentYear) {
+        // Draw as floating debris
+        drawFutureEvent(ctx, centerX, centerY, event);
+        return;
+      }
+      
+      // Get position on spiral
+      const { angle, radius } = getSpiralPosition(
+        eventYear, 
+        eventMonth, 
+        eventDay, 
+        startYear, 
+        startRadius, 
+        spiralSpacing
+      );
+      
+      if (radius > maxRadius) return; // Skip if outside visible range
       
       if (!event.endDate) {
         // Single point event
-        const radius = initialRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
-        if (radius <= maxRadius) {
-          drawEventPoint(
-            ctx,
-            centerX,
-            centerY,
-            radius,
-            startAngle,
-            event.color,
-            event.intensity
-          );
-        }
+        drawEventPoint(
+          ctx,
+          centerX,
+          centerY,
+          radius,
+          angle,
+          event.color,
+          event.intensity
+        );
       } else {
         // Duration event
-        const endYearDiff = event.endDate.getFullYear() - startYear;
+        const endYear = event.endDate.getFullYear();
         const endMonth = event.endDate.getMonth();
-        const endAngle = endYearDiff * 2 * Math.PI + (endMonth / 12) * 2 * Math.PI;
+        const endDay = event.endDate.getDate();
         
-        const startRadius = initialRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
-        const endRadius = initialRadius + (spiralSpacing * endAngle) / (2 * Math.PI);
+        const endPos = getSpiralPosition(
+          endYear,
+          endMonth,
+          endDay,
+          startYear,
+          startRadius,
+          spiralSpacing
+        );
         
-        if (startRadius <= maxRadius || endRadius <= maxRadius) {
-          drawEventArc(
-            ctx,
-            centerX,
-            centerY,
-            startRadius,
-            endRadius,
-            startAngle,
-            endAngle,
-            spiralSpacing,
-            event.color,
-            event.intensity
-          );
-        }
+        drawEventArc(
+          ctx,
+          centerX,
+          centerY,
+          radius,
+          endPos.radius,
+          angle,
+          endPos.angle,
+          spiralSpacing,
+          event.color,
+          event.intensity
+        );
       }
     });
+  };
+
+  const drawFutureEvent = (
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    event: TimeEvent
+  ) => {
+    // Calculate random position around the edge of the spiral
+    const angle = Math.random() * Math.PI * 2;
+    const distanceFromCenter = 100 + Math.random() * 200; // Random distance
+    
+    const x = centerX + distanceFromCenter * Math.cos(angle);
+    const y = centerY + distanceFromCenter * Math.sin(angle);
+    
+    // Create a glow effect based on intensity
+    const glowSize = 3 + event.intensity * 1.5;
+    const glowOpacity = 0.3 + event.intensity * 0.07;
+    
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+    gradient.addColorStop(0, event.color);
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    
+    ctx.beginPath();
+    ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = glowOpacity;
+    ctx.fill();
+    ctx.globalAlpha = 1;
   };
 
   const drawEventPoint = (
@@ -284,8 +423,17 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     alpha = 0.5
   ) => {
     for (let i = 0; i < particleCount; i++) {
+      // Calculate angles correctly to handle wrap-around
+      let effectiveStartAngle = startAngle;
+      let effectiveEndAngle = endAngle;
+      
+      // Make sure end angle is greater than start angle for interpolation
+      if (effectiveEndAngle < effectiveStartAngle) {
+        effectiveEndAngle += 2 * Math.PI;
+      }
+      
       // Random position within the segment
-      const randomAngle = startAngle + Math.random() * (endAngle - startAngle);
+      const randomAngle = effectiveStartAngle + Math.random() * (effectiveEndAngle - effectiveStartAngle);
       const randomRadius = innerRadius + Math.random() * (outerRadius - innerRadius);
       
       const x = centerX + randomRadius * Math.cos(randomAngle);
@@ -305,6 +453,26 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     ctx.globalAlpha = 1; // Reset opacity
   };
 
+  const drawAmbientParticles = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number
+  ) => {
+    const particleCount = 200; // Increase for higher particle density
+    
+    for (let i = 0; i < particleCount; i++) {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      const size = 0.5 + Math.random() * 1.5;
+      const opacity = 0.1 + Math.random() * 0.3;
+      
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 255, 255, " + opacity + ")";
+      ctx.fill();
+    }
+  };
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
 
@@ -321,9 +489,16 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     const dx = x - centerX;
     const dy = y - centerY;
     const radius = Math.sqrt(dx * dx + dy * dy);
+    
+    // Get angle in proper clock-like direction
+    // In canvas, 0 is at 3 o'clock and positive angles go clockwise
+    // Convert to have 0 at 12 o'clock
     let angle = Math.atan2(dy, dx);
-    if (angle < 0) angle += 2 * Math.PI; // Convert to 0-2π range
-
+    if (angle < 0) angle += 2 * Math.PI;
+    
+    // Adjust to have January at 12 o'clock
+    angle = (angle + Math.PI/2) % (2 * Math.PI);
+    
     // Calculate year and month based on angle and radius
     const spiralSpacing = 30 * config.zoom;
     const startRadius = 50 * config.zoom;
@@ -333,6 +508,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     const year = config.startYear + yearOffset;
 
     // Calculate position within the loop (month)
+    // Since our spiral has January at 12 o'clock, we need to calculate month appropriately
     const yearAngle = angle % (2 * Math.PI);
     const month = Math.floor((yearAngle / (2 * Math.PI)) * 12);
 

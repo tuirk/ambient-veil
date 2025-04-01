@@ -6,6 +6,7 @@ export interface TimeEvent {
   intensity: number; // 1-10
   startDate: Date;
   endDate?: Date; // Optional end date
+  dayOfYear?: number; // Optional day of year for more precise positioning
 }
 
 export interface SpiralConfig {

@@ -18,7 +18,8 @@ export const getEvents = (): TimeEvent[] => {
     return parsed.map((event: any) => ({
       ...event,
       startDate: new Date(event.startDate),
-      endDate: event.endDate ? new Date(event.endDate) : undefined
+      endDate: event.endDate ? new Date(event.endDate) : undefined,
+      dayOfYear: event.dayOfYear || undefined
     }));
   } catch (e) {
     console.error("Failed to parse stored events:", e);
