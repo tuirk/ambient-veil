@@ -104,10 +104,13 @@ export const calculateSpiralSegment = (
   startEvent: TimeEvent,
   endEvent: TimeEvent,
   startYear: number,
-  segmentPoints: number = 100, // Increase points for smoother curves
+  segmentPoints: number = 100, // Default is already 100 points
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
+  // Increase this to ensure ALL event duration lines are smooth regardless of color
+  const actualSegmentPoints = 200; // Doubled from default to ensure smoothness
+  
   const points: Vector3[] = [];
   
   const startDate = new Date(startEvent.startDate);
@@ -117,8 +120,8 @@ export const calculateSpiralSegment = (
   const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
   // Create significantly more points for smoother curves
-  for (let i = 0; i <= segmentPoints; i++) {
-    const progress = i / segmentPoints;
+  for (let i = 0; i <= actualSegmentPoints; i++) {
+    const progress = i / actualSegmentPoints;
     const currentDate = new Date(startDate.getTime() + progress * totalDays * 24 * 60 * 60 * 1000);
     
     const year = currentDate.getFullYear();

@@ -18,12 +18,12 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   startYear, 
   zoom 
 }) => {
-  // Use 100 points for much smoother curves
+  // Use 200 points for much smoother curves
   const points = calculateSpiralSegment(
     startEvent, 
     endEvent, 
     startYear, 
-    100,  // More points for smoother curves
+    200,  // More points for smoother curves
     5 * zoom, 
     1.5 * zoom
   );
