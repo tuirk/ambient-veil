@@ -136,8 +136,8 @@ export const calculateSpiralSegment = (
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
-  // Always use 200 points regardless of passed parameter to ensure smoothness for all colors
-  const actualSegmentPoints = 200;
+  // Always use 300 points regardless of passed parameter to ensure smoothness for all colors
+  const actualSegmentPoints = 300;
   
   const points: Vector3[] = [];
   
