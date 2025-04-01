@@ -37,8 +37,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       lineWidth={2 + startEvent.intensity * 0.5}
       transparent
       opacity={0.6 + startEvent.intensity * 0.04}
-      // Add curve parameter to make lines smoother
-      curve
+      // Using proper curve parameters available in drei Line
+      curveType="catmullrom" // Creates a smooth curve through the points
+      curveTension={0.5} // Controls how tight the curve is (0-1)
     />
   );
 };
