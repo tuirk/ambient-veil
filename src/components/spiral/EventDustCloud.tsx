@@ -16,10 +16,10 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
   startYear,
   zoom
 }) => {
-  // Use fewer particles for a more sparse, lightweight look
+  // Increase particle count for duration events to create more splatter effects
   const particlesCount = event.endDate 
-    ? Math.min(20, Math.max(5, event.intensity * 2)) // Fewer for duration events
-    : Math.min(30, Math.max(5, event.intensity * 3)); // More for point events
+    ? Math.min(60, Math.max(15, event.intensity * 3)) // More for duration events
+    : Math.min(20, Math.max(5, event.intensity * 2)); // Fewer for point events
     
   const pointsRef = useRef<THREE.Points>(null);
   
@@ -31,8 +31,8 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
     const sizes = new Float32Array(particlesCount);
     
     const color = new THREE.Color(event.color);
-    // Base size normalized to be smaller overall
-    const baseSize = 0.04 + (event.intensity * 0.01); 
+    // Base size determined by intensity but kept small for visual lightness
+    const baseSize = 0.03 + (event.intensity * 0.008); 
     
     // If it's a duration event, scatter particles along the path
     if (event.endDate) {
@@ -40,7 +40,7 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         event,
         {...event, startDate: event.endDate},
         startYear,
-        30,
+        60, // More points for smoother distribution
         5 * zoom,
         1.5 * zoom
       );
@@ -49,12 +49,12 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
       for (let i = 0; i < particlesCount; i++) {
         const i3 = i * 3;
         
-        // Pick a random point along the path
+        // Pick a random point along the path with preference for even distribution
         const pathIndex = Math.floor(Math.random() * points.length);
         const point = points[pathIndex];
         
-        // Add more random scatter to spread particles out
-        const scatter = 0.2 * (0.5 + (event.intensity / 20));
+        // Add significant random scatter for splatter effect
+        const scatter = 0.4 * (0.5 + (event.intensity / 15));
         const randomOffset = new THREE.Vector3(
           (Math.random() - 0.5) * scatter,
           (Math.random() - 0.5) * scatter,
@@ -66,41 +66,41 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         positions[i3 + 2] = point.z + randomOffset.z;
         
         // More color variation for interesting visual effect
-        const colorVariation = 0.15;
+        const colorVariation = 0.25;
         colors[i3] = color.r * (1 - colorVariation + Math.random() * colorVariation);
         colors[i3 + 1] = color.g * (1 - colorVariation + Math.random() * colorVariation);
         colors[i3 + 2] = color.b * (1 - colorVariation + Math.random() * colorVariation);
         
-        // More size variation for natural look
-        sizes[i] = baseSize * (0.5 + Math.random() * 1.5);
+        // More significant size variation for natural look
+        sizes[i] = baseSize * (0.5 + Math.random() * 2.0);
       }
     } else {
       // For point events, create a more scattered cluster around the point
       const centerPosition = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
       // Wider spread factor for more scattered appearance
-      const spreadFactor = 0.25 + (event.intensity * 0.03); 
+      const spreadFactor = 0.35 + (event.intensity * 0.04); 
       
       for (let i = 0; i < particlesCount; i++) {
         const i3 = i * 3;
         
         // Create more randomized distribution around the event
-        // Use box distribution for squarish particles like in reference
-        const offsetX = (Math.random() - 0.5) * spreadFactor * 2;
-        const offsetY = (Math.random() - 0.5) * spreadFactor;
-        const offsetZ = (Math.random() - 0.5) * spreadFactor * 2;
+        // Use spherical distribution for better 3D feel
+        const phi = Math.random() * Math.PI * 2;
+        const theta = Math.random() * Math.PI;
+        const r = Math.random() * spreadFactor;
         
-        positions[i3] = centerPosition.x + offsetX;
-        positions[i3 + 1] = centerPosition.y + offsetY;
-        positions[i3 + 2] = centerPosition.z + offsetZ;
+        positions[i3] = centerPosition.x + r * Math.sin(theta) * Math.cos(phi);
+        positions[i3 + 1] = centerPosition.y + r * Math.cos(theta) * 0.5; // Flatten vertically
+        positions[i3 + 2] = centerPosition.z + r * Math.sin(theta) * Math.sin(phi);
         
-        // Slight color variation
-        const colorVariation = 0.15;
+        // Stronger color variation
+        const colorVariation = 0.25;
         colors[i3] = color.r * (1 - colorVariation + Math.random() * colorVariation);
         colors[i3 + 1] = color.g * (1 - colorVariation + Math.random() * colorVariation);
         colors[i3 + 2] = color.b * (1 - colorVariation + Math.random() * colorVariation);
         
-        // More size variation for point events to match reference image
-        sizes[i] = baseSize * (0.8 + Math.random() * 1.7) * (event.intensity / 5);
+        // More size variation for particles
+        sizes[i] = baseSize * (0.8 + Math.random() * 2.2) * (event.intensity / 5);
       }
     }
     
@@ -113,8 +113,8 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
       // Very subtle pulsing opacity for the whole cloud
       if (pointsRef.current.material instanceof THREE.PointsMaterial) {
         const time = clock.getElapsedTime();
-        const pulse = Math.sin(time * 0.5) * 0.1;
-        pointsRef.current.material.opacity = 0.6 + pulse;
+        const pulse = Math.sin(time * 0.5) * 0.05;
+        pointsRef.current.material.opacity = 0.7 + pulse;
       }
       
       // Very subtle jitter for individual particles
@@ -123,8 +123,8 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
       for (let i = 0; i < particlesCount; i++) {
         const i3 = i * 3;
         
-        // Apply extremely subtle movement (almost imperceptible)
-        const jitter = 0.0005;
+        // Apply extremely subtle movement
+        const jitter = 0.001;
         positions[i3] += (Math.random() - 0.5) * jitter;
         positions[i3 + 1] += (Math.random() - 0.5) * jitter;
         positions[i3 + 2] += (Math.random() - 0.5) * jitter;
@@ -157,13 +157,13 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.12}
+        size={0.1}
         vertexColors
         transparent
-        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/0f532d7b-5ec9-4542-9ddb-337f9dc1ee3f.png')}
+        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/843771e5-4f79-4e35-9568-76cc508ac834.png')}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
-        opacity={0.6}
+        opacity={0.7}
       />
     </points>
   );

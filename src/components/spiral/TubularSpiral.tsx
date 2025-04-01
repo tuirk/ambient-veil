@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { generateSpiralPoints } from "@/utils/spiralUtils";
@@ -32,24 +32,27 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
     return new THREE.CatmullRomCurve3(positions, false, "centripetal", 0.5);
   }, [spiralPoints]);
   
-  // Create parameters for the tube geometry - making it slimmer
+  // Create parameters for the tube geometry - even slimmer
   const tubeParams = useMemo(() => ({
     tubularSegments: 500,
-    radius: 0.07, // Reduced thickness for a more delicate appearance
+    radius: 0.05, // Very slim thickness
     radialSegments: 8,
     closed: false
   }), []);
   
-  const meshRef = React.useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
 
   // Add subtle animation to the tube
   useFrame(({ clock }) => {
-    if (meshRef.current && meshRef.current.material) {
-      // TypeScript fix: check if material is MeshBasicMaterial
+    if (meshRef.current) {
+      // TypeScript fix
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
-      // Very subtle pulsing effect
-      const pulse = Math.sin(clock.getElapsedTime() * 0.3) * 0.02;
-      material.opacity = 0.2 + pulse;
+      if (material) {
+        // Very subtle pulsing opacity for ethereal effect
+        const time = clock.getElapsedTime();
+        const pulse = Math.sin(time * 0.3) * 0.04;
+        material.opacity = 0.15 + pulse; // Very translucent
+      }
     }
   });
   
@@ -59,7 +62,7 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
       <meshBasicMaterial 
         color={new THREE.Color(0xffffff)} 
         transparent={true} 
-        opacity={0.2}
+        opacity={0.15} // Much more transparent
         side={THREE.DoubleSide}
         depthWrite={false} // Important for proper transparency
       />

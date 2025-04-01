@@ -24,10 +24,15 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   // Update camera position based on zoom
   useEffect(() => {
     if (camera) {
-      // Adjust camera position based on zoom
-      const distance = 15 / config.zoom;
+      // Revert to fixed distance multiplied by zoom
+      // This gives more intuitive zoom behavior
+      const distance = 15; 
       camera.position.set(distance, distance, distance);
       camera.lookAt(0, -3, 0);
+      
+      // Apply zoom directly to the camera instead
+      camera.zoom = config.zoom;
+      camera.updateProjectionMatrix();
     }
   }, [config.zoom, camera]);
   

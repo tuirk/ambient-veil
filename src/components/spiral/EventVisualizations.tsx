@@ -21,15 +21,22 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
 }) => {
   return (
     <>
-      {/* Render dust clouds first */}
-      {events.map((event) => (
-        <EventDustCloud
-          key={`dust-${event.id}`}
-          event={event}
-          startYear={config.startYear}
-          zoom={config.zoom}
-        />
-      ))}
+      {/* Render dust clouds first for all events for consistent visual effect */}
+      {events.map((event) => {
+        // Skip future events for dust clouds - they'll be handled differently
+        if (event.startDate.getFullYear() > config.currentYear) {
+          return null;
+        }
+        
+        return (
+          <EventDustCloud
+            key={`dust-${event.id}`}
+            event={event}
+            startYear={config.startYear}
+            zoom={config.zoom}
+          />
+        );
+      })}
       
       {/* Then render the actual events */}
       {events.map((event) => {
@@ -69,19 +76,8 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Rough dates (seasonal) or events with end dates should render as durations
-        if (isSeasonalEvent(event) || event.endDate) {
-          return (
-            <EventDuration
-              key={event.id}
-              startEvent={event}
-              endEvent={{...event, startDate: event.endDate || event.startDate}}
-              startYear={config.startYear}
-              zoom={config.zoom}
-            />
-          );
-        } else {
-          // Regular events (single point in time)
+        // For point events (without duration), add a visible anchor point
+        if (!event.endDate && !isSeasonalEvent(event)) {
           return (
             <>
               <EventPoint
@@ -95,16 +91,30 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                   onEventClick(year, month, 0, 0);
                 }}
               />
-              {/* Add label for one-time events */}
-              <EventLabel
-                key={`label-${event.id}`}
-                event={event}
-                startYear={config.startYear}
-                zoom={config.zoom}
-              />
+              {/* Add label for significant one-time events */}
+              {event.intensity > 6 && (
+                <EventLabel
+                  key={`label-${event.id}`}
+                  event={event}
+                  startYear={config.startYear}
+                  zoom={config.zoom}
+                />
+              )}
             </>
           );
-        }
+        } 
+        
+        // For duration events, we'll render a subtle path indicator
+        // The dust cloud will do most of the visual work
+        return (
+          <EventDuration
+            key={event.id}
+            startEvent={event}
+            endEvent={{...event, startDate: event.endDate || event.startDate}}
+            startYear={config.startYear}
+            zoom={config.zoom}
+          />
+        );
       })}
     </>
   );
