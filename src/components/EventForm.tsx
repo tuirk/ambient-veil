@@ -65,8 +65,8 @@ const EventForm: React.FC<EventFormProps> = ({
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
   
-  // Exact date states
-  const [startYear, setStartYear] = useState(
+  // Exact date states - renamed startYear to selectedStartYear to avoid conflicts
+  const [selectedStartYear, setSelectedStartYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
@@ -75,7 +75,7 @@ const EventForm: React.FC<EventFormProps> = ({
   const [startDay, setStartDay] = useState(1);
   const [includeDay, setIncludeDay] = useState(false);
   const [hasEndDate, setHasEndDate] = useState(false);
-  const [endYear, setEndYear] = useState(startYear);
+  const [endYear, setEndYear] = useState(selectedStartYear);
   const [endMonth, setEndMonth] = useState(startMonth);
   const [endDay, setEndDay] = useState(1);
   
@@ -96,7 +96,7 @@ const EventForm: React.FC<EventFormProps> = ({
   useEffect(() => {
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
-      setStartYear(constrainedYear);
+      setSelectedStartYear(constrainedYear);
       setEndYear(constrainedYear);
       setRoughYear(constrainedYear);
     }
@@ -109,14 +109,14 @@ const EventForm: React.FC<EventFormProps> = ({
 
   // Update available days when month/year changes
   useEffect(() => {
-    const days = daysInMonth(startMonth, startYear);
+    const days = daysInMonth(startMonth, selectedStartYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
     // Reset day if it's higher than days in month
     if (startDay > days) {
       setStartDay(1);
     }
-  }, [startMonth, startYear]);
+  }, [startMonth, selectedStartYear]);
 
   // Update available end days when end month/year changes
   useEffect(() => {
@@ -143,7 +143,7 @@ const EventForm: React.FC<EventFormProps> = ({
         return;
       }
     } else {
-      const startDate = new Date(startYear, startMonth, includeDay ? startDay : 1);
+      const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
       const minDate = new Date(minYear, 0, 1); // Jan 1 of minYear
       const maxDate = new Date(maxYear, 11, 31); // Dec 31 of maxYear
       
@@ -197,7 +197,7 @@ const EventForm: React.FC<EventFormProps> = ({
       };
     } else {
       // Create event with exact date
-      const startDate = new Date(startYear, startMonth, includeDay ? startDay : 1);
+      const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
       const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
 
       newEvent = {
@@ -348,8 +348,8 @@ const EventForm: React.FC<EventFormProps> = ({
                     ))}
                   </select>
                   <select
-                    value={startYear}
-                    onChange={(e) => setStartYear(Number(e.target.value))}
+                    value={selectedStartYear}
+                    onChange={(e) => setSelectedStartYear(Number(e.target.value))}
                     className="rounded-md border border-input bg-background/50 px-3 py-2"
                   >
                     {years.map((year) => (
@@ -472,4 +472,3 @@ const EventForm: React.FC<EventFormProps> = ({
 };
 
 export default EventForm;
-
