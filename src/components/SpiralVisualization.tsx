@@ -8,35 +8,6 @@ interface SpiralVisualizationProps {
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
 }
 
-const getSpiralPosition = ({
-  year,
-  month,
-  startYear,
-  startRadius,
-  spiralSpacing,
-}: {
-  year: number;
-  month: number;
-  startYear: number;
-  startRadius: number;
-  spiralSpacing: number;
-}) => {
-  // Calculate position based on year and month
-  // With month position based on clock layout: January at 12 o'clock, December at 11 o'clock
-  const yearDiff = year - startYear;
-  
-  // Convert month to clock position (0-11, with 0 at 12 o'clock position)
-  // We subtract from 3 and take modulo 12 to start January at top (12 o'clock)
-  const clockPosition = (month + 12 - 3) % 12;
-  const monthAngle = (clockPosition / 12) * 2 * Math.PI;
-  
-  // Calculate final angle and radius
-  const angle = yearDiff * 2 * Math.PI + monthAngle;
-  const radius = startRadius + spiralSpacing * yearDiff;
-  
-  return { angle, radius };
-};
-
 const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   events,
   config,
@@ -45,15 +16,22 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
+  // Handle window resize
   useEffect(() => {
     const updateDimensions = () => {
-      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     };
+
     window.addEventListener("resize", updateDimensions);
     updateDimensions();
+
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
+  // Draw the spiral
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -61,354 +39,177 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Set canvas dimensions
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
+
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Center point
     const centerX = config.centerX || canvas.width / 2;
     const centerY = config.centerY || canvas.height / 2;
-    const spiralSpacing = 30 * config.zoom;
-    const startRadius = 50 * config.zoom;
-    const maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
 
-    // Calculate visible years based on zoom level
-    // We always show: currentYear, two previous years, and startYear
-    const visibleYears = getVisibleYears(config);
-    
-    // Draw background particles
-    drawBackgroundParticles(ctx, canvas.width, canvas.height, 200);
-    
-    // Draw the base spiral for visible years
-    drawBaseSpiral(ctx, centerX, centerY, startRadius, spiralSpacing, visibleYears, maxRadius);
-    
-    // Draw month markers (radial clock-like divisions)
-    drawMonthMarkers(ctx, centerX, centerY, startRadius, spiralSpacing, visibleYears, maxRadius);
-    
-    // Draw events
-    drawEvents(ctx, events, centerX, centerY, startRadius, spiralSpacing, config.startYear, maxRadius, visibleYears);
-    
-    // Draw future events as floating debris
-    drawFutureEvents(ctx, events, centerX, centerY, config.currentYear, canvas.width, canvas.height);
-    
+    // Calculate total years to display
+    const totalYears = config.currentYear - config.startYear + 1;
+
+    // Spiral parameters
+    const spiralSpacing = 30 * config.zoom; // Space between spiral loops
+    const startRadius = 50 * config.zoom; // Initial radius
+    const maxRadius = Math.min(canvas.width, canvas.height) * 0.45; // Max radius
+
+    // Draw base spiral (faint gray background)
+    drawBaseSpiral(
+      ctx,
+      centerX,
+      centerY,
+      startRadius,
+      spiralSpacing,
+      totalYears,
+      maxRadius
+    );
+
+    // Draw events on spiral
+    drawEvents(
+      ctx,
+      events,
+      centerX,
+      centerY,
+      startRadius,
+      spiralSpacing,
+      config.startYear,
+      maxRadius
+    );
   }, [dimensions, events, config]);
 
-  // Get array of years that should be visible based on zoom level
-  const getVisibleYears = (config: SpiralConfig): number[] => {
-    const { startYear, currentYear, zoom } = config;
-    
-    // Calculate how many years to show based on zoom
-    // At higher zoom levels, we show fewer years (camera moving inward)
-    const zoomFactor = Math.max(0, Math.min(1, zoom)); // Normalize zoom between 0-1
-    const yearsFromCurrent = Math.max(0, currentYear - startYear);
-    
-    // Determine which years are visible based on zoom level
-    // We always show currentYear, two previous years, and startYear
-    const visibleYears: number[] = [];
-    
-    // Current year is always visible
-    visibleYears.push(currentYear);
-    
-    // Add two previous years (if they exist)
-    if (currentYear - 1 >= startYear) visibleYears.push(currentYear - 1);
-    if (currentYear - 2 >= startYear) visibleYears.push(currentYear - 2);
-    
-    // Add earlier years based on zoom level
-    const zoomedYear = Math.floor(startYear + (currentYear - startYear) * (1 - zoomFactor));
-    for (let y = currentYear - 3; y >= zoomedYear; y--) {
-      if (y >= startYear) visibleYears.push(y);
-    }
-    
-    // Always include the startYear
-    if (!visibleYears.includes(startYear)) {
-      visibleYears.push(startYear);
-    }
-    
-    return visibleYears;
-  };
-
-  const drawBackgroundParticles = (
-    ctx: CanvasRenderingContext2D,
-    width: number,
-    height: number,
-    count: number
-  ) => {
-    ctx.save();
-    
-    for (let i = 0; i < count; i++) {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      const size = Math.random() * 1.5;
-      const opacity = 0.1 + Math.random() * 0.2;
-      
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-      ctx.fill();
-    }
-    
-    ctx.restore();
-  };
-
+  // Helper functions for drawing
   const drawBaseSpiral = (
-    ctx: CanvasRenderingContext2D, 
-    centerX: number, 
-    centerY: number, 
-    startRadius: number, 
-    spiralSpacing: number, 
-    visibleYears: number[], 
-    maxRadius: number
-  ) => {
-    ctx.save();
-    
-    // Sort years to draw from oldest to newest
-    const sortedYears = [...visibleYears].sort((a, b) => a - b);
-    
-    for (const year of sortedYears) {
-      // For each visible year, draw a full spiral loop
-      ctx.strokeStyle = `rgba(255, 255, 255, ${year === config.currentYear ? 0.2 : 0.1})`;
-      ctx.lineWidth = year === config.currentYear ? 1.5 : 1;
-      ctx.beginPath();
-      
-      // Draw a full 360° loop for the year
-      for (let month = 0; month <= 12; month++) {
-        const { angle, radius } = getSpiralPosition({
-          year,
-          month,
-          startYear: config.startYear,
-          startRadius,
-          spiralSpacing,
-        });
-        
-        if (radius > maxRadius) continue;
-        
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        
-        if (month === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      
-      ctx.stroke();
-      
-      // Add year label
-      const { angle, radius } = getSpiralPosition({
-        year, 
-        month: 6, // Middle of the year for label
-        startYear: config.startYear,
-        startRadius,
-        spiralSpacing,
-      });
-      
-      const labelX = centerX + radius * Math.cos(angle);
-      const labelY = centerY + radius * Math.sin(angle);
-      
-      ctx.font = '12px sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(year.toString(), labelX, labelY);
-    }
-    
-    ctx.restore();
-  };
-
-  const drawMonthMarkers = (
     ctx: CanvasRenderingContext2D,
-    centerX: number, 
-    centerY: number, 
-    startRadius: number, 
-    spiralSpacing: number, 
-    visibleYears: number[],
+    centerX: number,
+    centerY: number,
+    startRadius: number,
+    spiralSpacing: number,
+    totalYears: number,
     maxRadius: number
   ) => {
-    ctx.save();
-    
-    const sortedYears = [...visibleYears].sort((a, b) => a - b);
-    
-    for (const year of sortedYears) {
-      // Draw month dividers for the year
-      for (let month = 0; month < 12; month++) {
-        const { angle, radius } = getSpiralPosition({
-          year,
-          month,
-          startYear: config.startYear,
-          startRadius,
-          spiralSpacing,
-        });
-        
-        if (radius > maxRadius) continue;
-        
-        // Calculate inner and outer points for the radial line
-        const innerX = centerX + radius * 0.97 * Math.cos(angle);
-        const innerY = centerY + radius * 0.97 * Math.sin(angle);
-        const outerX = centerX + radius * 1.03 * Math.cos(angle);
-        const outerY = centerY + radius * 1.03 * Math.sin(angle);
-        
-        // Draw month marker line
-        ctx.beginPath();
-        ctx.moveTo(innerX, innerY);
-        ctx.lineTo(outerX, outerY);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${month % 3 === 0 ? 0.15 : 0.07})`;
-        ctx.lineWidth = month % 3 === 0 ? 1 : 0.5;
-        ctx.stroke();
-        
-        // For quarter months, add small labels
-        if (month % 3 === 0) {
-          const monthNames = ['Jan', 'Apr', 'Jul', 'Oct'];
-          const labelX = centerX + radius * 1.07 * Math.cos(angle);
-          const labelY = centerY + radius * 1.07 * Math.sin(angle);
-          
-          ctx.font = '10px sans-serif';
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(monthNames[month/3], labelX, labelY);
-        }
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 1;
+
+    // Draw spiral outline
+    ctx.beginPath();
+    const totalAngles = totalYears * 2 * Math.PI;
+    const angleStep = 0.05; // Small steps for smooth curve
+
+    for (let angle = 0; angle <= totalAngles; angle += angleStep) {
+      const radius = startRadius + (spiralSpacing * angle) / (2 * Math.PI);
+      if (radius > maxRadius) break;
+
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+
+      if (angle === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
       }
     }
-    
-    ctx.restore();
+    ctx.stroke();
+
+    // Draw month dividers
+    for (let year = 0; year < totalYears; year++) {
+      for (let month = 0; month < 12; month++) {
+        const angle = year * 2 * Math.PI + (month / 12) * 2 * Math.PI;
+        const nextAngle = year * 2 * Math.PI + ((month + 1) / 12) * 2 * Math.PI;
+        const innerRadius = startRadius + (spiralSpacing * angle) / (2 * Math.PI);
+        const outerRadius = startRadius + (spiralSpacing * nextAngle) / (2 * Math.PI);
+
+        if (outerRadius > maxRadius) break;
+
+        // Draw faint radial lines for months
+        if (month % 3 === 0) { // Draw only quarterly for less clutter
+          const x1 = centerX + innerRadius * Math.cos(angle);
+          const y1 = centerY + innerRadius * Math.sin(angle);
+          const x2 = centerX + outerRadius * Math.cos(angle);
+          const y2 = centerY + outerRadius * Math.sin(angle);
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+          ctx.stroke();
+        }
+
+        // Draw month particles - subtle dust in the background
+        drawDustForSegment(
+          ctx, 
+          centerX, 
+          centerY, 
+          innerRadius, 
+          outerRadius, 
+          angle, 
+          nextAngle, 
+          "rgba(255, 255, 255, 0.1)",
+          3 // fewer particles for empty sections
+        );
+      }
+    }
   };
 
   const drawEvents = (
-    ctx: CanvasRenderingContext2D, 
-    events: TimeEvent[], 
-    centerX: number, 
-    centerY: number, 
-    startRadius: number, 
-    spiralSpacing: number, 
-    startYear: number, 
-    maxRadius: number,
-    visibleYears: number[]
+    ctx: CanvasRenderingContext2D,
+    events: TimeEvent[],
+    centerX: number,
+    centerY: number,
+    startRadius: number,
+    spiralSpacing: number,
+    startYear: number,
+    maxRadius: number
   ) => {
     events.forEach((event) => {
-      const eventYear = event.startDate.getFullYear();
+      const startYearDiff = event.startDate.getFullYear() - startYear;
+      const startMonth = event.startDate.getMonth();
       
-      // Skip future events (they're handled separately)
-      if (eventYear > config.currentYear) return;
+      const startAngle = startYearDiff * 2 * Math.PI + (startMonth / 12) * 2 * Math.PI;
       
-      // Skip events not in visible years
-      if (!visibleYears.includes(eventYear)) return;
-      
-      const start = getSpiralPosition({
-        year: eventYear,
-        month: event.startDate.getMonth(),
-        startYear,
-        startRadius,
-        spiralSpacing,
-      });
-
       if (!event.endDate) {
         // Single point event
-        if (start.radius <= maxRadius) {
+        const radius = startRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
+        if (radius <= maxRadius) {
           drawEventPoint(
-            ctx, 
-            centerX, 
-            centerY, 
-            start.radius, 
-            start.angle, 
-            event.color, 
+            ctx,
+            centerX,
+            centerY,
+            radius,
+            startAngle,
+            event.color,
             event.intensity
           );
         }
       } else {
         // Duration event
-        const end = getSpiralPosition({
-          year: event.endDate.getFullYear(),
-          month: event.endDate.getMonth(),
-          startYear,
-          startRadius,
-          spiralSpacing,
-        });
-
-        if (start.radius <= maxRadius || end.radius <= maxRadius) {
+        const endYearDiff = event.endDate.getFullYear() - startYear;
+        const endMonth = event.endDate.getMonth();
+        const endAngle = endYearDiff * 2 * Math.PI + (endMonth / 12) * 2 * Math.PI;
+        
+        const startRadius = startRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
+        const endRadius = startRadius + (spiralSpacing * endAngle) / (2 * Math.PI);
+        
+        if (startRadius <= maxRadius || endRadius <= maxRadius) {
           drawEventArc(
-            ctx, 
-            centerX, 
-            centerY, 
-            start.radius, 
-            end.radius, 
-            start.angle, 
-            end.angle, 
-            event.color, 
+            ctx,
+            centerX,
+            centerY,
+            startRadius,
+            endRadius,
+            startAngle,
+            endAngle,
+            spiralSpacing,
+            event.color,
             event.intensity
           );
         }
       }
     });
-  };
-
-  const drawFutureEvents = (
-    ctx: CanvasRenderingContext2D,
-    events: TimeEvent[],
-    centerX: number,
-    centerY: number,
-    currentYear: number,
-    canvasWidth: number,
-    canvasHeight: number
-  ) => {
-    // Filter only future events
-    const futureEvents = events.filter(
-      (event) => event.startDate.getFullYear() > currentYear
-    );
-    
-    if (futureEvents.length === 0) return;
-    
-    // For each future event, create floating debris
-    futureEvents.forEach((event) => {
-      // Generate a random position in the future area (to the right of the spiral)
-      const randomX = centerX + Math.random() * (canvasWidth/2 - 100) + 100;
-      const randomY = centerY + (Math.random() - 0.5) * (canvasHeight/2);
-      
-      // Draw a soft glowing particle
-      const glowSize = 4 + event.intensity * 1.5;
-      const glowOpacity = 0.2 + event.intensity * 0.07;
-      
-      const gradient = ctx.createRadialGradient(
-        randomX, randomY, 0, 
-        randomX, randomY, glowSize
-      );
-      gradient.addColorStop(0, event.color);
-      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-      
-      ctx.beginPath();
-      ctx.arc(randomX, randomY, glowSize, 0, 2 * Math.PI);
-      ctx.fillStyle = gradient;
-      ctx.globalAlpha = glowOpacity;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      
-      // Add a small dust trail
-      drawDustTrail(ctx, randomX, randomY, event.color, event.intensity);
-    });
-  };
-
-  const drawDustTrail = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    color: string,
-    intensity: number
-  ) => {
-    const particles = 5 + Math.floor(intensity * 1.5);
-    const trailLength = 20 + intensity * 5;
-    
-    for (let i = 0; i < particles; i++) {
-      const distance = Math.random() * trailLength;
-      const angle = Math.random() * Math.PI * 2;
-      
-      const particleX = x + Math.cos(angle) * distance;
-      const particleY = y + Math.sin(angle) * distance;
-      const particleSize = 0.5 + Math.random() * (intensity / 5);
-      
-      ctx.beginPath();
-      ctx.arc(particleX, particleY, particleSize, 0, 2 * Math.PI);
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 0.1 + Math.random() * 0.2;
-      ctx.fill();
-    }
-    
-    ctx.globalAlpha = 1;
   };
 
   const drawEventPoint = (
@@ -422,13 +223,15 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   ) => {
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
+    
+    // Create a glow effect based on intensity
     const glowSize = 2 + intensity * 1.5;
     const glowOpacity = 0.3 + intensity * 0.07;
-
+    
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
     gradient.addColorStop(0, color);
     gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-
+    
     ctx.beginPath();
     ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
     ctx.fillStyle = gradient;
@@ -445,20 +248,24 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     endRadius: number,
     startAngle: number,
     endAngle: number,
+    spiralSpacing: number,
     color: string,
     intensity: number
   ) => {
+    // Calculate alpha based on intensity (1-10)
     const alpha = 0.2 + (intensity / 10) * 0.8;
-    const particleCount = 20 + intensity * 10;
+    
+    // Draw dust particles along the arc
+    const particleCount = 20 + intensity * 10; // More particles for higher intensity
     drawDustForSegment(
       ctx,
-      centerX,
-      centerY,
-      startRadius,
-      endRadius,
-      startAngle,
-      endAngle,
-      color,
+      centerX, 
+      centerY, 
+      startRadius, 
+      endRadius, 
+      startAngle, 
+      endAngle, 
+      color, 
       particleCount,
       alpha
     );
@@ -477,19 +284,25 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     alpha = 0.5
   ) => {
     for (let i = 0; i < particleCount; i++) {
+      // Random position within the segment
       const randomAngle = startAngle + Math.random() * (endAngle - startAngle);
       const randomRadius = innerRadius + Math.random() * (outerRadius - innerRadius);
+      
       const x = centerX + randomRadius * Math.cos(randomAngle);
       const y = centerY + randomRadius * Math.sin(randomAngle);
+      
+      // Random particle size based on position (smaller as we go outward)
       const sizeVariance = 1 - (randomRadius - innerRadius) / (outerRadius - innerRadius);
       const particleSize = 0.5 + Math.random() * 2 * sizeVariance;
+      
+      // Draw the particle
       ctx.beginPath();
       ctx.arc(x, y, particleSize, 0, 2 * Math.PI);
       ctx.fillStyle = color;
-      ctx.globalAlpha = alpha * Math.random();
+      ctx.globalAlpha = alpha * Math.random(); // Vary opacity for dust effect
       ctx.fill();
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = 1; // Reset opacity
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -500,32 +313,39 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    // Calculate center
     const centerX = config.centerX || canvas.width / 2;
     const centerY = config.centerY || canvas.height / 2;
+
+    // Calculate radius and angle from center
     const dx = x - centerX;
     const dy = y - centerY;
     const radius = Math.sqrt(dx * dx + dy * dy);
-    
-    // Calculate angle in radians
     let angle = Math.atan2(dy, dx);
-    if (angle < 0) angle += 2 * Math.PI;
-    
-    // Adjust angle to match our clock layout (January at 12 o'clock)
-    // Convert angle to month (0-11)
-    const clockAngle = (angle + Math.PI/2) % (2 * Math.PI); // Rotate by 90° so 0 is at 12 o'clock
-    const month = Math.floor((clockAngle / (2 * Math.PI)) * 12);
+    if (angle < 0) angle += 2 * Math.PI; // Convert to 0-2π range
 
+    // Calculate year and month based on angle and radius
     const spiralSpacing = 30 * config.zoom;
     const startRadius = 50 * config.zoom;
-    
-    // Calculate which year ring was clicked based on distance from center
-    const yearDiff = (radius - startRadius) / spiralSpacing;
-    const year = config.startYear + Math.floor(yearDiff);
+
+    // Calculate which spiral loop we're on (year)
+    const yearOffset = Math.floor((radius - startRadius) / spiralSpacing);
+    const year = config.startYear + yearOffset;
+
+    // Calculate position within the loop (month)
+    const yearAngle = angle % (2 * Math.PI);
+    const month = Math.floor((yearAngle / (2 * Math.PI)) * 12);
 
     onSpiralClick(year, month, x, y);
   };
 
-  return <canvas ref={canvasRef} className="absolute inset-0 z-20 cursor-pointer" onClick={handleCanvasClick} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 z-20 cursor-pointer"
+      onClick={handleCanvasClick}
+    />
+  );
 };
 
 export default SpiralVisualization;
