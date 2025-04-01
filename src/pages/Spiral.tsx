@@ -8,7 +8,7 @@ import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
-import { Info, ZoomIn, ZoomOut } from "lucide-react";
+import { Info } from "lucide-react";
 
 const Spiral: React.FC = () => {
   const [events, setEvents] = useState<TimeEvent[]>([]);
@@ -57,7 +57,6 @@ const Spiral: React.FC = () => {
     const updatedEvents = [...events, newEvent];
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
-    setShowEventForm(false);
   };
   
   const handleZoomChange = (value: number[]) => {
@@ -76,24 +75,7 @@ const Spiral: React.FC = () => {
       ...prev,
       startYear: validStartYear,
     }));
-    saveConfig({
-      startYear: validStartYear,
-      zoom: config.zoom
-    });
-  };
-  
-  const handleZoomIn = () => {
-    setConfig(prev => ({
-      ...prev,
-      zoom: Math.min(prev.zoom + 0.2, 3),
-    }));
-  };
-  
-  const handleZoomOut = () => {
-    setConfig(prev => ({
-      ...prev,
-      zoom: Math.max(prev.zoom - 0.2, 0.5),
-    }));
+    saveConfig(validStartYear);
   };
   
   return (
@@ -113,14 +95,6 @@ const Spiral: React.FC = () => {
         <div className="absolute top-4 right-4 flex flex-col items-end gap-4 bg-background/20 backdrop-blur-sm p-4 rounded-lg">
           <div className="flex items-center gap-2">
             <label className="text-white text-sm">Zoom:</label>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="bg-background/30 hover:bg-background/50"
-              onClick={handleZoomOut}
-            >
-              <ZoomOut className="h-4 w-4" />
-            </Button>
             <Slider
               value={[config.zoom]}
               min={0.5}
@@ -129,14 +103,6 @@ const Spiral: React.FC = () => {
               onValueChange={handleZoomChange}
               className="w-32"
             />
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="bg-background/30 hover:bg-background/50"
-              onClick={handleZoomIn}
-            >
-              <ZoomIn className="h-4 w-4" />
-            </Button>
           </div>
           
           <div className="flex items-center gap-2">
