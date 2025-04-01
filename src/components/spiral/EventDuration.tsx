@@ -37,9 +37,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       lineWidth={2 + startEvent.intensity * 0.5}
       transparent
       opacity={0.6 + startEvent.intensity * 0.04}
-      // Added lineJoin and lineCap for smoother rendering
-      lineJoin="round"
-      lineCap="round"
+      // Removed the unsupported lineJoin and lineCap properties
     />
   );
 };

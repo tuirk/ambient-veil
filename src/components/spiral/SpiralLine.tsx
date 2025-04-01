@@ -33,9 +33,7 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       lineWidth={1}
       transparent
       opacity={0.4}
-      // Added lineJoin and lineCap for smoother rendering
-      lineJoin="round"
-      lineCap="round"
+      // Removed the unsupported lineJoin and lineCap properties
     />
   );
 };
