@@ -56,10 +56,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       lineWidth={lineWidth}
       transparent
       opacity={opacity}
-      // Apply blur effect for seasonal rough dates
-      vertexColors={isRoughDate ? true : false}
       // For rough dates, use dashed line effect
-      dashed={isRoughDate}
+      dashed={isRoughDate ? true : false}
       dashSize={isRoughDate ? 0.1 : 0}
       dashOffset={isRoughDate ? 0.1 : 0}
       dashScale={isRoughDate ? 10 : 0}
