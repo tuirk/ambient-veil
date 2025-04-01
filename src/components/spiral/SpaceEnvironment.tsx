@@ -15,7 +15,7 @@ export const SpaceEnvironment: React.FC = () => {
 };
 
 // Enhanced space dust that creates a more immersive galaxy effect
-const CosmicDust: React.FC = () => {
+const CosmicDust = () => {
   const particles = useRef<THREE.Points>(null);
   const count = 3000;
   
@@ -87,7 +87,7 @@ const CosmicDust: React.FC = () => {
         size={0.15}
         vertexColors
         transparent
-        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png')}
+        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/71823fe3-8bc8-4e6a-845e-a136c64ca75a.png')}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -96,7 +96,7 @@ const CosmicDust: React.FC = () => {
 };
 
 // Nebula clouds in the background
-const SpaceNebula: React.FC = () => {
+const SpaceNebula = () => {
   const mesh = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
