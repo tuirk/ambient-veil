@@ -43,7 +43,7 @@ const CosmicDust = () => {
       [0.9, 0.9, 1.0],  // Blue-white
       [1.0, 0.9, 0.8],  // Yellow-white
       [1.0, 0.8, 0.8],  // Pink-white
-      [0.8, 1.0, 0.9],  // Green-white
+      [0.8, is0.9, 0.15]  // Green-white
       [0.9, 0.8, 1.0],  // Purple-white
       [1.0, 0.7, 0.9],  // Magenta-white
       [0.7, 0.9, 1.0],  // Cyan-white
@@ -100,7 +100,7 @@ const CosmicDust = () => {
   );
 };
 
-// Nebula clouds in the background
+// Nebula clouds in the background - now with more vivid purple color that matches the background
 const SpaceNebula = () => {
   const mesh = useRef<THREE.Mesh>(null);
   
@@ -111,14 +111,15 @@ const SpaceNebula = () => {
     }
   });
   
-  // Use a more vibrant purple color that matches the welcome page
+  // Using a more vibrant purple color that matches the welcome page
+  // This is the purple object the user was asking about
   return (
     <mesh ref={mesh} position={[0, 0, -80]}>
       <sphereGeometry args={[70, 32, 32]} />
       <meshBasicMaterial
-        color={new THREE.Color("#7A3EF8")}
+        color={new THREE.Color("#7A3EF8")} 
         transparent
-        opacity={0.2}
+        opacity={0.3} // Increased opacity to make it more visible
         side={THREE.BackSide}
       />
     </mesh>

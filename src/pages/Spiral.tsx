@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import DeepSpaceBackground from "@/components/DeepSpaceBackground";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
+import EventManager from "@/components/EventManager"; // Import the new EventManager component
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,20 @@ const Spiral: React.FC = () => {
   
   const handleSaveEvent = (newEvent: TimeEvent) => {
     const updatedEvents = [...events, newEvent];
+    setEvents(updatedEvents);
+    saveEvents(updatedEvents);
+  };
+  
+  const handleEditEvent = (updatedEvent: TimeEvent) => {
+    const updatedEvents = events.map(event => 
+      event.id === updatedEvent.id ? updatedEvent : event
+    );
+    setEvents(updatedEvents);
+    saveEvents(updatedEvents);
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    const updatedEvents = events.filter(event => event.id !== eventId);
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
   };
@@ -101,9 +116,18 @@ const Spiral: React.FC = () => {
             />
           </div>
           
-          <Button onClick={() => setShowEventForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
-            Add Memory
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setShowEventForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
+              Add Memory
+            </Button>
+            
+            {/* Event Manager Button */}
+            <EventManager 
+              events={events}
+              onEdit={handleEditEvent}
+              onDelete={handleDeleteEvent}
+            />
+          </div>
         </div>
         
         {/* Help button */}
