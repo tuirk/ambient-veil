@@ -1,5 +1,5 @@
 
-import { TimeEvent, SpiralConfig } from "@/types/event";
+import { TimeEvent } from "@/types/event";
 
 const EVENTS_STORAGE_KEY = "youAreHere_events";
 const CONFIG_STORAGE_KEY = "youAreHere_config";
@@ -26,33 +26,35 @@ export const getEvents = (): TimeEvent[] => {
   }
 };
 
-export const saveConfig = (config: Partial<SpiralConfig>): void => {
-  // Get existing config first
-  const existingConfig = getConfig();
-  // Merge with new values
-  const updatedConfig = { ...existingConfig, ...config };
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(updatedConfig));
+export const saveConfig = (startYear: number): void => {
+  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({ startYear }));
 };
 
-export const getConfig = (): SpiralConfig => {
-  const currentYear = new Date().getFullYear();
-  const defaultConfig: SpiralConfig = { 
-    startYear: currentYear - 5,
-    currentYear: currentYear,
-    zoom: 1,
-    centerX: window.innerWidth / 2,
-    centerY: window.innerHeight / 2,
-    yearDepth: 3
-  };
-  
+export const getConfig = (): { startYear: number } => {
   const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
-  if (!storedConfig) return defaultConfig;
+  if (!storedConfig) {
+    // Default to 5 years ago, but ensure it's within 10 years of current year
+    const currentYear = new Date().getFullYear();
+    const defaultStartYear = Math.max(currentYear - 10, currentYear - 5);
+    return { startYear: defaultStartYear };
+  }
   
   try {
-    const parsedConfig = JSON.parse(storedConfig);
-    return { ...defaultConfig, ...parsedConfig };
+    const config = JSON.parse(storedConfig);
+    
+    // Ensure startYear is within 10 years of current year
+    const currentYear = new Date().getFullYear();
+    if (currentYear - config.startYear > 10) {
+      config.startYear = currentYear - 10;
+    }
+    
+    return config;
   } catch (e) {
     console.error("Failed to parse stored config:", e);
-    return defaultConfig;
+    
+    // Default to 5 years ago, but ensure it's within 10 years of current year
+    const currentYear = new Date().getFullYear();
+    const defaultStartYear = Math.max(currentYear - 10, currentYear - 5);
+    return { startYear: defaultStartYear };
   }
 };
