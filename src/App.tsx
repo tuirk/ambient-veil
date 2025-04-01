@@ -10,30 +10,31 @@ import Index from "./pages/Index";
 import Spiral from "./pages/Spiral";
 import NotFound from "./pages/NotFound";
 
-// Create QueryClient inside the component to ensure it has access to React context
 const App = () => {
-  // Create a client inside the component to ensure proper React context
+  // Create a QueryClient instance
   const queryClient = new QueryClient();
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <div className="min-h-screen w-full overflow-hidden relative">
-          <DeepSpaceBackground />
-          <div className="relative z-10 w-full h-screen">
-            <BrowserRouter>
+      {/* Move TooltipProvider inside the rendering tree, not wrapping everything */}
+      <Toaster />
+      <Sonner />
+      <div className="min-h-screen w-full overflow-hidden relative">
+        <DeepSpaceBackground />
+        <div className="relative z-10 w-full h-screen">
+          <BrowserRouter>
+            {/* Apply TooltipProvider where it's actually used, not globally */}
+            <TooltipProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/spiral" element={<Spiral />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </div>
+            </TooltipProvider>
+          </BrowserRouter>
         </div>
-      </TooltipProvider>
+      </div>
     </QueryClientProvider>
   );
 };
