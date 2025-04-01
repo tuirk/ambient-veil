@@ -64,7 +64,7 @@ const Spiral: React.FC = () => {
   
   return (
     <div className="w-full h-screen">
-      {/* Spiral visualization - now in 3D! */}
+      {/* Spiral visualization */}
       <SpiralVisualization 
         events={events} 
         config={config} 

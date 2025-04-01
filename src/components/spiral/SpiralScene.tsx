@@ -3,7 +3,6 @@ import React, { useRef, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { SpaceEnvironment } from "./SpaceEnvironment";
 import { SpiralLine } from "./SpiralLine";
 import { MonthMarkers } from "./MonthMarkers";
 import { EventVisualizations } from "./EventVisualizations";
@@ -41,13 +40,6 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         minDistance={5}
         maxDistance={30}
       />
-      
-      {/* Enhanced space background */}
-      <color attach="background" args={["#010203"]} />
-      <fogExp2 attach="fog" args={[0x000000, 0.001]} />
-      
-      {/* Create more detailed 3D space environment */}
-      <SpaceEnvironment />
       
       <ambientLight intensity={0.3} />
       <directionalLight position={[10, 10, 5]} intensity={0.5} />
