@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import DeepSpaceBackground from "@/components/DeepSpaceBackground";
-import SpiralVisualization from "@/components/SpiralVisualization";
+import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
