@@ -22,8 +22,16 @@ export const generateSpiralPoints = (
   const todayMonth = now.getMonth();
   const todayDay = now.getDate();
   
+  // Number of years to render
+  const yearSpan = currentYear - startYear + 1;
+  // Base radius of the spiral
+  const baseRadius = radius;
+  
   // Generate for each year in range
-  for (let year = startYear; year <= currentYear; year++) {
+  for (let yearOffset = 0; yearOffset < yearSpan; yearOffset++) {
+    const year = startYear + yearOffset;
+    
+    // Determine how much of this year to render
     const yearProgress = year === todayYear 
       ? (todayMonth / 12) + (todayDay / 365)
       : 1; // Full year for past years
@@ -37,17 +45,19 @@ export const generateSpiralPoints = (
       const month = Math.floor(progress * 12);
       const day = Math.floor((progress * 12 - month) * 30) + 1;
       
-      // Correct angle calculation for clockwise rotation starting from 12 o'clock
-      // By using negative angle rotation and starting from PI/2 (12 o'clock)
-      const angleRad = -step * (Math.PI * 2 / stepsPerLoop) + Math.PI/2;
+      // Calculate angle with continuous progression
+      // Use negative angle for clockwise rotation and offset for proper positioning
+      const angleRad = -progress * Math.PI * 2 + Math.PI/2;
       
-      // Calculate position in 3D space
-      // Increase radius slightly for each year to create spiral effect
-      const yearIndex = year - startYear;
-      const currentRadius = radius + yearIndex * 0.5;
+      // Calculate the total progress through all years
+      const totalProgress = yearOffset + progress;
       
+      // Use a consistent radius expansion formula for smooth spiral
+      const currentRadius = baseRadius + totalProgress * 0.5;
+      
+      // Position calculation with gradual height change
       const x = currentRadius * Math.cos(angleRad);
-      const y = -yearIndex * heightPerLoop - (step / stepsPerLoop) * heightPerLoop;
+      const y = -totalProgress * heightPerLoop; // Smooth height progression
       const z = currentRadius * Math.sin(angleRad);
       
       points.push({ 
@@ -72,16 +82,19 @@ export const getEventPosition = (
   const month = event.startDate.getMonth();
   const day = event.startDate.getDate();
   
-  // Calculate angle correctly for clockwise rotation from 12 o'clock
-  const yearFraction = month / 12 + day / 365;
-  const angleRad = -yearFraction * Math.PI * 2 + Math.PI/2;
+  // Calculate yearOffset and progress within year for consistent positioning
+  const yearOffset = year - startYear;
+  const yearProgress = month / 12 + day / 365;
+  const totalProgress = yearOffset + yearProgress;
   
-  // Calculate position in 3D space
-  const yearIndex = year - startYear;
-  const currentRadius = radius + yearIndex * 0.5;
+  // Calculate angle consistently with generateSpiralPoints
+  const angleRad = -yearProgress * Math.PI * 2 + Math.PI/2;
+  
+  // Use the same radius formula as in generateSpiralPoints
+  const currentRadius = radius + totalProgress * 0.5;
   
   const x = currentRadius * Math.cos(angleRad);
-  const y = -yearIndex * heightPerLoop - yearFraction * heightPerLoop;
+  const y = -totalProgress * heightPerLoop;
   const z = currentRadius * Math.sin(angleRad);
   
   return new Vector3(x, y, z);
@@ -91,7 +104,7 @@ export const calculateSpiralSegment = (
   startEvent: TimeEvent,
   endEvent: TimeEvent,
   startYear: number,
-  segmentPoints: number = 50, // Increase number of points for smoother curves
+  segmentPoints: number = 100, // Increase points for smoother curves
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
@@ -103,6 +116,7 @@ export const calculateSpiralSegment = (
   // Calculate total days between dates
   const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
+  // Create significantly more points for smoother curves
   for (let i = 0; i <= segmentPoints; i++) {
     const progress = i / segmentPoints;
     const currentDate = new Date(startDate.getTime() + progress * totalDays * 24 * 60 * 60 * 1000);
@@ -111,20 +125,20 @@ export const calculateSpiralSegment = (
     const month = currentDate.getMonth();
     const day = currentDate.getDate();
     
-    // Calculate angle correctly for clockwise rotation from 12 o'clock
-    const yearFraction = month / 12 + day / 365;
-    const yearIndex = year - startYear;
+    // Calculate yearOffset and progress consistently
+    const yearOffset = year - startYear;
+    const yearProgress = month / 12 + day / 365;
+    const totalProgress = yearOffset + yearProgress;
     
-    // Calculate smooth spiral position
-    const angle = -yearFraction * Math.PI * 2 + Math.PI/2;
+    // Calculate angle consistently with other functions
+    const angleRad = -yearProgress * Math.PI * 2 + Math.PI/2;
     
-    // Gradually increase radius for each year to create spiral effect
-    const yearProgress = yearIndex + yearFraction;
-    const currentRadius = radius + yearProgress * 0.5;
+    // Use consistent radius calculation
+    const currentRadius = radius + totalProgress * 0.5;
     
-    const x = currentRadius * Math.cos(angle);
-    const y = -yearProgress * heightPerLoop;
-    const z = currentRadius * Math.sin(angle);
+    const x = currentRadius * Math.cos(angleRad);
+    const y = -totalProgress * heightPerLoop;
+    const z = currentRadius * Math.sin(angleRad);
     
     points.push(new Vector3(x, y, z));
   }
