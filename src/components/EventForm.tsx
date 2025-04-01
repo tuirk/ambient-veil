@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { TimeEvent } from "@/types/event";
 import { v4 as uuidv4 } from "uuid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEASONS, getSeasonalDateRange } from "@/utils/seasonalUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface EventFormProps {
   open: boolean;
@@ -33,8 +34,19 @@ const EventForm: React.FC<EventFormProps> = ({
   preselectedYear,
   preselectedMonth,
 }) => {
+  const { toast } = useToast();
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 50 }, (_, i) => currentYear - 25 + i);
+  
+  // Calculate allowed date range
+  const minYear = currentYear - 5;
+  const maxYear = currentYear + 1;
+  
+  // Generate available years for selection (from minYear to maxYear)
+  const years = Array.from(
+    { length: maxYear - minYear + 1 }, 
+    (_, i) => minYear + i
+  );
+  
   const months = [
     "January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"
@@ -45,7 +57,11 @@ const EventForm: React.FC<EventFormProps> = ({
   const [intensity, setIntensity] = useState(5);
   
   // Exact date states
-  const [startYear, setStartYear] = useState(preselectedYear || currentYear);
+  const [startYear, setStartYear] = useState(
+    preselectedYear ? 
+      Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
+      currentYear
+  );
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
   const [hasEndDate, setHasEndDate] = useState(false);
   const [endYear, setEndYear] = useState(startYear);
@@ -54,10 +70,75 @@ const EventForm: React.FC<EventFormProps> = ({
   // Rough date states
   const [useRoughDate, setUseRoughDate] = useState(false);
   const [roughSeason, setRoughSeason] = useState<string>("Spring");
-  const [roughYear, setRoughYear] = useState(preselectedYear || currentYear);
+  const [roughYear, setRoughYear] = useState(
+    preselectedYear ? 
+      Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
+      currentYear
+  );
+
+  // When preselected values change, update form state
+  useEffect(() => {
+    if (preselectedYear) {
+      const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
+      setStartYear(constrainedYear);
+      setEndYear(constrainedYear);
+      setRoughYear(constrainedYear);
+    }
+    
+    if (preselectedMonth !== undefined) {
+      setStartMonth(preselectedMonth);
+      setEndMonth(preselectedMonth);
+    }
+  }, [preselectedYear, preselectedMonth, minYear, maxYear]);
 
   const handleSave = () => {
     if (!title) return;
+
+    // Validate date ranges
+    if (useRoughDate) {
+      if (roughYear < minYear || roughYear > maxYear) {
+        toast({
+          title: "Invalid Date Range",
+          description: `Year must be between ${minYear} and ${maxYear}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      const startDate = new Date(startYear, startMonth);
+      const minDate = new Date(minYear, 0, 1); // Jan 1 of minYear
+      const maxDate = new Date(maxYear, 11, 31); // Dec 31 of maxYear
+      
+      if (startDate < minDate || startDate > maxDate) {
+        toast({
+          title: "Invalid Date Range",
+          description: `Start date must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (hasEndDate) {
+        const endDate = new Date(endYear, endMonth);
+        if (endDate < minDate || endDate > maxDate) {
+          toast({
+            title: "Invalid Date Range",
+            description: `End date must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (endDate < startDate) {
+          toast({
+            title: "Invalid Date Range",
+            description: "End date cannot be before start date",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
 
     let newEvent: TimeEvent;
 

@@ -8,12 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info, ListIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const Spiral: React.FC = () => {
+  const { toast } = useToast();
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 5;
+
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: new Date().getFullYear() - 5,
-    currentYear: new Date().getFullYear(),
+    startYear: minYear,
+    currentYear: currentYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
     centerY: window.innerHeight / 2,
@@ -30,13 +35,26 @@ const Spiral: React.FC = () => {
     setEvents(savedEvents);
     
     const savedConfig = getConfig();
+    // Ensure config values are within valid range
     setConfig(prev => ({
       ...prev,
-      startYear: savedConfig.startYear,
+      startYear: Math.min(savedConfig.startYear, minYear),
     }));
-  }, []);
+  }, [minYear]);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
+    // Only allow clicks within the allowed date range
+    const maxYear = currentYear + 1;
+    
+    if (year < minYear || year > maxYear) {
+      toast({
+        title: "Outside Allowed Time Range",
+        description: `You can only add memories between ${minYear} and ${maxYear}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setSelectedYear(year);
     setSelectedMonth(month);
     setShowEventForm(true);
@@ -99,7 +117,7 @@ const Spiral: React.FC = () => {
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
-              <li>Adjust the start year and zoom to navigate your timeline.</li>
+              <li>You can add memories from {minYear} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
             </ul>
           </div>
@@ -132,8 +150,10 @@ const Spiral: React.FC = () => {
                         <h3 className="font-medium">{event.title}</h3>
                       </div>
                       <div className="text-sm text-gray-400">
-                        {event.startDate.toLocaleDateString()}
-                        {event.endDate ? ` - ${event.endDate.toLocaleDateString()}` : ""}
+                        {event.isRoughDate 
+                          ? `${event.roughDateSeason} ${event.roughDateYear}`
+                          : event.startDate.toLocaleDateString() + (event.endDate ? ` - ${event.endDate.toLocaleDateString()}` : "")
+                        }
                       </div>
                     </div>
                     <div className="mt-2 flex justify-between items-center">
