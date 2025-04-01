@@ -19,3 +19,4 @@ export interface SpiralConfig {
   centerX: number;
   centerY: number;
 }
+

@@ -3,21 +3,21 @@ import React, { useState, useEffect } from "react";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
+import { saveEvents, getEvents, saveConfig, getConfig, isFirstTimeUser, setFirstTimeStatus } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info, ListIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Info, ListIcon, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 const Spiral: React.FC = () => {
   const { toast } = useToast();
   const currentYear = new Date().getFullYear();
-  const minYear = currentYear - 5;
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: minYear,
+    startYear: currentYear - 5,
     currentYear: currentYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
@@ -28,6 +28,8 @@ const Spiral: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
   const [showMemoryList, setShowMemoryList] = useState(false);
+  const [showYearSelect, setShowYearSelect] = useState(false);
+  const [selectedStartYear, setSelectedStartYear] = useState(currentYear - 5);
   
   // Load events and config from localStorage
   useEffect(() => {
@@ -35,16 +37,18 @@ const Spiral: React.FC = () => {
     setEvents(savedEvents);
     
     const savedConfig = getConfig();
-    // Ensure config values are within valid range
-    setConfig(prev => ({
-      ...prev,
-      startYear: Math.min(savedConfig.startYear, minYear),
-    }));
-  }, [minYear]);
+    setConfig(savedConfig);
+    
+    // Check if this is the first time usage
+    if (isFirstTimeUser()) {
+      setShowYearSelect(true);
+    }
+  }, []);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
     const maxYear = currentYear + 1;
+    const minYear = Math.min(config.startYear, currentYear - 5);
     
     if (year < minYear || year > maxYear) {
       toast({
@@ -72,6 +76,24 @@ const Spiral: React.FC = () => {
     saveEvents(updatedEvents);
   };
   
+  const handleStartYearSelection = () => {
+    // Update config with the selected start year
+    const updatedConfig = {
+      ...config,
+      startYear: selectedStartYear
+    };
+    
+    setConfig(updatedConfig);
+    saveConfig(updatedConfig);
+    setFirstTimeStatus(false);
+    setShowYearSelect(false);
+    
+    toast({
+      title: "Timeline Start Year Set",
+      description: `Your timeline will begin from ${selectedStartYear}`,
+    });
+  };
+  
   return (
     <div className="w-full h-screen">
       {/* Spiral visualization */}
@@ -93,6 +115,14 @@ const Spiral: React.FC = () => {
         >
           <ListIcon className="mr-2 h-4 w-4" />
           View Memories
+        </Button>
+        <Button 
+          variant="outline" 
+          className="border-white/20 text-white hover:bg-white/10"
+          onClick={() => setShowYearSelect(true)}
+        >
+          <Clock className="mr-2 h-4 w-4" />
+          Timeline Settings
         </Button>
       </div>
       
@@ -117,7 +147,7 @@ const Spiral: React.FC = () => {
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
-              <li>You can add memories from {minYear} to {currentYear + 1}.</li>
+              <li>You can add memories from {Math.min(config.startYear, currentYear - 5)} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
             </ul>
           </div>
@@ -179,6 +209,53 @@ const Spiral: React.FC = () => {
         </DialogContent>
       </Dialog>
       
+      {/* Start Year Selection Dialog */}
+      <Dialog open={showYearSelect} onOpenChange={(open) => {
+        if (!isFirstTimeUser()) {
+          setShowYearSelect(open);
+        }
+      }}>
+        <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Timeline Settings</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Choose where your personal timeline should begin.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6 space-y-8">
+            <div className="space-y-4">
+              <h3 className="font-medium">Start Year: {selectedStartYear}</h3>
+              <Slider
+                value={[selectedStartYear]}
+                min={currentYear - 10}
+                max={currentYear}
+                step={1}
+                onValueChange={(value) => setSelectedStartYear(value[0])}
+                className="w-full"
+              />
+              <div className="flex justify-between text-sm text-gray-400">
+                <span>{currentYear - 10}</span>
+                <span>{currentYear}</span>
+              </div>
+              <p className="text-sm text-gray-300 mt-4">
+                This defines the earliest year shown on your timeline spiral.
+                You'll still be able to add memories from {Math.min(selectedStartYear, currentYear - 5)} onwards.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              onClick={handleStartYearSelection}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              Set Start Year
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Add event form */}
       <EventForm
         open={showEventForm}
@@ -186,9 +263,12 @@ const Spiral: React.FC = () => {
         onSave={handleSaveEvent}
         preselectedYear={selectedYear}
         preselectedMonth={selectedMonth}
+        startYear={config.startYear}
+        currentYear={currentYear}
       />
     </div>
   );
 };
 
 export default Spiral;
+

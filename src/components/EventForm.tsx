@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEASONS, getSeasonalDateRange } from "@/utils/seasonalUtils";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface EventFormProps {
   open: boolean;
@@ -16,6 +18,8 @@ interface EventFormProps {
   onSave: (event: TimeEvent) => void;
   preselectedYear?: number;
   preselectedMonth?: number;
+  startYear: number;
+  currentYear: number;
 }
 
 const MOOD_COLORS = [
@@ -27,18 +31,23 @@ const MOOD_COLORS = [
   "#16a34a", // Green
 ];
 
+const daysInMonth = (month: number, year: number): number => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
 const EventForm: React.FC<EventFormProps> = ({
   open,
   onClose,
   onSave,
   preselectedYear,
   preselectedMonth,
+  startYear,
+  currentYear,
 }) => {
   const { toast } = useToast();
-  const currentYear = new Date().getFullYear();
   
   // Calculate allowed date range
-  const minYear = currentYear - 5;
+  const minYear = Math.min(startYear, currentYear - 5);
   const maxYear = currentYear + 1;
   
   // Generate available years for selection (from minYear to maxYear)
@@ -63,9 +72,12 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
+  const [startDay, setStartDay] = useState(1);
+  const [includeDay, setIncludeDay] = useState(false);
   const [hasEndDate, setHasEndDate] = useState(false);
   const [endYear, setEndYear] = useState(startYear);
   const [endMonth, setEndMonth] = useState(startMonth);
+  const [endDay, setEndDay] = useState(1);
   
   // Rough date states
   const [useRoughDate, setUseRoughDate] = useState(false);
@@ -75,6 +87,10 @@ const EventForm: React.FC<EventFormProps> = ({
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
   );
+
+  // Days for the selected month
+  const [availableDays, setAvailableDays] = useState<number[]>([]);
+  const [availableEndDays, setAvailableEndDays] = useState<number[]>([]);
 
   // When preselected values change, update form state
   useEffect(() => {
@@ -91,6 +107,28 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [preselectedYear, preselectedMonth, minYear, maxYear]);
 
+  // Update available days when month/year changes
+  useEffect(() => {
+    const days = daysInMonth(startMonth, startYear);
+    setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
+    
+    // Reset day if it's higher than days in month
+    if (startDay > days) {
+      setStartDay(1);
+    }
+  }, [startMonth, startYear]);
+
+  // Update available end days when end month/year changes
+  useEffect(() => {
+    const days = daysInMonth(endMonth, endYear);
+    setAvailableEndDays(Array.from({ length: days }, (_, i) => i + 1));
+    
+    // Reset end day if it's higher than days in month
+    if (endDay > days) {
+      setEndDay(1);
+    }
+  }, [endMonth, endYear]);
+
   const handleSave = () => {
     if (!title) return;
 
@@ -105,7 +143,7 @@ const EventForm: React.FC<EventFormProps> = ({
         return;
       }
     } else {
-      const startDate = new Date(startYear, startMonth);
+      const startDate = new Date(startYear, startMonth, includeDay ? startDay : 1);
       const minDate = new Date(minYear, 0, 1); // Jan 1 of minYear
       const maxDate = new Date(maxYear, 11, 31); // Dec 31 of maxYear
       
@@ -119,7 +157,7 @@ const EventForm: React.FC<EventFormProps> = ({
       }
       
       if (hasEndDate) {
-        const endDate = new Date(endYear, endMonth);
+        const endDate = new Date(endYear, endMonth, includeDay ? endDay : 1);
         if (endDate < minDate || endDate > maxDate) {
           toast({
             title: "Invalid Date Range",
@@ -159,8 +197,8 @@ const EventForm: React.FC<EventFormProps> = ({
       };
     } else {
       // Create event with exact date
-      const startDate = new Date(startYear, startMonth);
-      const endDate = hasEndDate ? new Date(endYear, endMonth) : undefined;
+      const startDate = new Date(startYear, startMonth, includeDay ? startDay : 1);
+      const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
 
       newEvent = {
         id: uuidv4(),
@@ -183,6 +221,7 @@ const EventForm: React.FC<EventFormProps> = ({
     setIntensity(5);
     setHasEndDate(false);
     setUseRoughDate(false);
+    setIncludeDay(false);
   };
 
   return (
@@ -250,6 +289,7 @@ const EventForm: React.FC<EventFormProps> = ({
                 setUseRoughDate(e.target.checked);
                 if (e.target.checked) {
                   setHasEndDate(false); // Disable end date if rough date is selected
+                  setIncludeDay(false); // Disable day selection if rough date is selected
                 }
               }}
               className="rounded border-input"
@@ -322,6 +362,37 @@ const EventForm: React.FC<EventFormProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                <Checkbox
+                  id="includeDay"
+                  checked={includeDay}
+                  onCheckedChange={(checked) => setIncludeDay(!!checked)}
+                  className="border-input"
+                />
+                <Label htmlFor="includeDay" className="text-sm">
+                  I want to specify the exact day
+                </Label>
+              </div>
+
+              {includeDay && (
+                <div className="grid gap-2 pl-6">
+                  <label className="text-sm font-medium leading-none">
+                    Day
+                  </label>
+                  <select
+                    value={startDay}
+                    onChange={(e) => setStartDay(Number(e.target.value))}
+                    className="rounded-md border border-input bg-background/50 px-3 py-2"
+                  >
+                    {availableDays.map((day) => (
+                      <option key={day} value={day}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="hasEndDate"
@@ -364,6 +435,25 @@ const EventForm: React.FC<EventFormProps> = ({
                       ))}
                     </select>
                   </div>
+                  
+                  {includeDay && (
+                    <div className="mt-2">
+                      <label className="text-sm font-medium leading-none">
+                        End Day
+                      </label>
+                      <select
+                        value={endDay}
+                        onChange={(e) => setEndDay(Number(e.target.value))}
+                        className="rounded-md border border-input bg-background/50 px-3 py-2 w-full mt-1"
+                      >
+                        {availableEndDays.map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -382,3 +472,4 @@ const EventForm: React.FC<EventFormProps> = ({
 };
 
 export default EventForm;
+
