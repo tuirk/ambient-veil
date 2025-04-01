@@ -6,8 +6,8 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
-import { Info } from "lucide-react";
+import { Info, ListIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Spiral: React.FC = () => {
   const [events, setEvents] = useState<TimeEvent[]>([]);
@@ -22,6 +22,7 @@ const Spiral: React.FC = () => {
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
+  const [showMemoryList, setShowMemoryList] = useState(false);
   
   // Load events and config from localStorage
   useEffect(() => {
@@ -46,20 +47,11 @@ const Spiral: React.FC = () => {
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
   };
-  
-  const handleZoomChange = (value: number[]) => {
-    setConfig(prev => ({
-      ...prev,
-      zoom: value[0],
-    }));
-  };
-  
-  const handleStartYearChange = (newStartYear: number) => {
-    setConfig(prev => ({
-      ...prev,
-      startYear: newStartYear,
-    }));
-    saveConfig(newStartYear);
+
+  const handleDeleteEvent = (eventId: string) => {
+    const updatedEvents = events.filter(event => event.id !== eventId);
+    setEvents(updatedEvents);
+    saveEvents(updatedEvents);
   };
   
   return (
@@ -73,30 +65,16 @@ const Spiral: React.FC = () => {
       
       {/* Controls */}
       <div className="absolute top-4 right-4 flex flex-col items-end gap-4 bg-background/30 backdrop-blur-sm p-4 rounded-lg border border-white/10 shadow-lg">
-        <div className="flex items-center gap-2">
-          <label className="text-white text-sm">Zoom:</label>
-          <Slider
-            value={[config.zoom]}
-            min={0.5}
-            max={2}
-            step={0.1}
-            onValueChange={handleZoomChange}
-            className="w-32"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <label className="text-white text-sm">Start Year:</label>
-          <input
-            type="number"
-            value={config.startYear}
-            onChange={(e) => handleStartYearChange(Number(e.target.value))}
-            className="w-20 bg-background/50 border border-white/20 rounded px-2 py-1 text-white"
-          />
-        </div>
-        
         <Button onClick={() => setShowEventForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
           Add Memory
+        </Button>
+        <Button 
+          variant="outline" 
+          className="border-white/20 text-white hover:bg-white/10"
+          onClick={() => setShowMemoryList(true)}
+        >
+          <ListIcon className="mr-2 h-4 w-4" />
+          View Memories
         </Button>
       </div>
       
@@ -127,6 +105,59 @@ const Spiral: React.FC = () => {
           </div>
         </PopoverContent>
       </Popover>
+      
+      {/* Memory List Dialog */}
+      <Dialog open={showMemoryList} onOpenChange={setShowMemoryList}>
+        <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Your Memories</DialogTitle>
+          </DialogHeader>
+          
+          <div className="max-h-[60vh] overflow-y-auto p-1">
+            {events.length === 0 ? (
+              <p className="text-center py-8 text-gray-400">No memories yet. Click anywhere on the spiral to add one.</p>
+            ) : (
+              <div className="space-y-4">
+                {events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime()).map(event => (
+                  <div 
+                    key={event.id} 
+                    className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: event.color }}
+                        />
+                        <h3 className="font-medium">{event.title}</h3>
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {event.startDate.toLocaleDateString()}
+                        {event.endDate ? ` - ${event.endDate.toLocaleDateString()}` : ""}
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 rounded-full bg-white/10">
+                          Intensity: {event.intensity}
+                        </span>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteEvent(event.id)}
+                        className="h-8 bg-red-900/50 hover:bg-red-800"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Add event form */}
       <EventForm
