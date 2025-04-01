@@ -62,7 +62,7 @@ export const EventLabel: React.FC<EventLabelProps> = ({
         outlineWidth={0.01}
         outlineColor="#000000"
         fillOpacity={opacity}  // Use fillOpacity instead of opacity
-        depthTest={false}
+        renderOrder={10}  // Use renderOrder instead of depthTest
       >
         {event.title}
       </Text>
