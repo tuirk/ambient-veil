@@ -33,10 +33,6 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       lineWidth={1}
       transparent
       opacity={0.4}
-      // Using curveType parameter instead of 'curve'
-      // The Line component in @react-three/drei supports different curve types
-      curveType="catmullrom" // This creates a smooth curve through the points
-      curveTension={0.5} // Controls how tight the curve is (0-1)
     />
   );
 };
