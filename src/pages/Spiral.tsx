@@ -65,7 +65,8 @@ const Spiral: React.FC = () => {
   
   return (
     <div className="min-h-screen w-full overflow-hidden relative">
-      {/* Remove DeepSpaceBackground as we'll use Three.js Stars instead */}
+      {/* Add back DeepSpaceBackground for additional visual effects */}
+      <DeepSpaceBackground />
       
       {/* Main content */}
       <div className="relative z-10 w-full h-screen">
@@ -77,7 +78,7 @@ const Spiral: React.FC = () => {
         />
         
         {/* Controls */}
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-4 bg-background/20 backdrop-blur-sm p-4 rounded-lg">
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-4 bg-background/30 backdrop-blur-sm p-4 rounded-lg border border-white/10 shadow-lg">
           <div className="flex items-center gap-2">
             <label className="text-white text-sm">Zoom:</label>
             <Slider
@@ -100,7 +101,7 @@ const Spiral: React.FC = () => {
             />
           </div>
           
-          <Button onClick={() => setShowEventForm(true)}>
+          <Button onClick={() => setShowEventForm(true)} className="bg-indigo-600 hover:bg-indigo-700">
             Add Memory
           </Button>
         </div>
@@ -111,7 +112,7 @@ const Spiral: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute bottom-4 right-4 rounded-full bg-background/30 backdrop-blur-sm hover:bg-background/50"
+              className="absolute bottom-4 right-4 rounded-full bg-background/30 backdrop-blur-sm hover:bg-background/50 border border-white/10"
             >
               <Info className="h-5 w-5" />
             </Button>

@@ -1,6 +1,7 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Line, Text, Stars } from "@react-three/drei";
+import { OrbitControls, Line, Text, Stars, useTexture, Billboard } from "@react-three/drei";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { generateSpiralPoints, getEventPosition, calculateSpiralSegment } from "@/utils/spiralUtils";
@@ -10,6 +11,111 @@ interface SpiralVisualizationProps {
   config: SpiralConfig;
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
 }
+
+// Enhanced space dust that creates a more immersive galaxy effect
+const CosmicDust = () => {
+  const particles = useRef<THREE.Points>(null);
+  const count = 3000;
+  
+  // Generate random particles throughout the scene
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    // Distribute particles in a spherical volume
+    const radius = 50 * Math.random() + 10;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos((Math.random() * 2) - 1);
+    
+    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i3 + 2] = radius * Math.cos(phi);
+    
+    // Different colors for cosmic dust
+    const colorChoices = [
+      [0.9, 0.9, 1.0],  // Blue-white
+      [1.0, 0.9, 0.8],  // Yellow-white
+      [1.0, 0.8, 0.8],  // Pink-white
+      [0.8, 1.0, 0.9],  // Green-white
+      [0.9, 0.8, 1.0],  // Purple-white
+    ];
+    
+    const color = colorChoices[Math.floor(Math.random() * colorChoices.length)];
+    colors[i3] = color[0];
+    colors[i3 + 1] = color[1];
+    colors[i3 + 2] = color[2];
+    
+    // Vary the size of particles
+    sizes[i] = Math.random() * 1.5 + 0.2;
+  }
+  
+  useFrame((state) => {
+    if (particles.current) {
+      // Slowly rotate the entire dust field
+      particles.current.rotation.y += 0.0003;
+      particles.current.rotation.x += 0.0001;
+    }
+  });
+  
+  return (
+    <points ref={particles}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-size"
+          count={count}
+          array={sizes}
+          itemSize={1}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.15}
+        vertexColors
+        transparent
+        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png')}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+};
+
+// Nebula clouds in the background
+const SpaceNebula = () => {
+  const mesh = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (mesh.current) {
+      // Very slow rotation for the nebula
+      mesh.current.rotation.z += 0.0001;
+    }
+  });
+  
+  return (
+    <mesh ref={mesh} position={[0, 0, -80]}>
+      <sphereGeometry args={[70, 32, 32]} />
+      <meshBasicMaterial
+        color={new THREE.Color(0x2a004c)}
+        transparent
+        opacity={0.2}
+        side={THREE.BackSide}
+      />
+    </mesh>
+  );
+};
 
 // Spiral component that renders the spiral line
 const SpiralLine: React.FC<{ 
@@ -54,7 +160,7 @@ const MonthMarkers: React.FC<{
         // Calculate position for this month
         const yearIndex = year - startYear;
         const monthFraction = month / 12;
-        const angleRad = monthFraction * Math.PI * 2 - Math.PI/2;
+        const angleRad = -monthFraction * Math.PI * 2 + Math.PI/2;
         const radius = 5 * zoom + yearIndex * 0.5;
         
         const x = radius * Math.cos(angleRad);
@@ -178,7 +284,14 @@ const SpiralScene: React.FC<{
         maxDistance={30}
       />
       
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade />
+      {/* Enhanced space background */}
+      <color attach="background" args={["#010203"]} />
+      <fogExp2 attach="fog" args={[0x000000, 0.001]} />
+      
+      {/* Create more detailed 3D space environment */}
+      <Stars radius={100} depth={50} count={7000} factor={4} saturation={0.5} fade speed={1} />
+      <SpaceNebula />
+      <CosmicDust />
       
       <ambientLight intensity={0.3} />
       <directionalLight position={[10, 10, 5]} intensity={0.5} />
@@ -199,23 +312,38 @@ const SpiralScene: React.FC<{
       
       {/* Render all events */}
       {events.map((event) => {
-        // Future events render
+        // Future events render as scattered objects
         if (event.startDate.getFullYear() > config.currentYear) {
-          // Future event - render as floating debris
-          const randomPos = new THREE.Vector3(
-            (Math.random() - 0.5) * 20,
-            (Math.random() - 0.5) * 20, 
-            (Math.random() - 0.5) * 20
-          );
+          // Create a more interesting future event visualization as floating debris
+          const randomDistance = 15 + Math.random() * 20;
+          const randomAngle = Math.random() * Math.PI * 2;
+          const randomHeight = (Math.random() - 0.5) * 20;
           
+          const x = randomDistance * Math.cos(randomAngle);
+          const y = randomHeight;
+          const z = randomDistance * Math.sin(randomAngle);
+          
+          // Create different geometry based on intensity
           return (
             <mesh 
               key={event.id} 
-              position={randomPos}
-              onClick={() => {}}
+              position={[x, y, z]}
+              rotation={[Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]}
             >
-              <sphereGeometry args={[0.05 + event.intensity * 0.01, 4, 4]} />
-              <meshBasicMaterial color={event.color} transparent opacity={0.5} />
+              {event.intensity > 7 ? (
+                <octahedronGeometry args={[0.2 + event.intensity * 0.03, 0]} />
+              ) : event.intensity > 4 ? (
+                <tetrahedronGeometry args={[0.2 + event.intensity * 0.03, 0]} />
+              ) : (
+                <dodecahedronGeometry args={[0.15 + event.intensity * 0.02, 0]} />
+              )}
+              <meshStandardMaterial 
+                color={event.color} 
+                transparent 
+                opacity={0.7} 
+                emissive={event.color}
+                emissiveIntensity={0.5}
+              />
             </mesh>
           );
         }
@@ -291,6 +419,8 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           near: 0.1,
           far: 1000 
         }}
+        gl={{ antialias: true }}
+        linear
       >
         <SpiralScene 
           events={events} 

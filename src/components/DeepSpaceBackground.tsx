@@ -21,10 +21,23 @@ interface Galaxy {
   blur: number;
 }
 
+interface Nebula {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  opacity: number;
+  hue: number;
+  rotation: number;
+  blur: number;
+}
+
 const DeepSpaceBackground: React.FC = () => {
   const starsContainerRef = useRef<HTMLDivElement>(null);
   const galaxiesContainerRef = useRef<HTMLDivElement>(null);
+  const nebulaeContainerRef = useRef<HTMLDivElement>(null);
   const backgroundImageRef = useRef<HTMLDivElement>(null);
+  const dustParticlesRef = useRef<HTMLDivElement>(null);
   
   // Generate stars with different colors and sizes
   const generateStars = (count: number): Star[] => {
@@ -36,6 +49,7 @@ const DeepSpaceBackground: React.FC = () => {
         'rgb(255, 220, 200)', // slight orange
         'rgb(230, 230, 255)', // slight blue
         'rgb(255, 230, 230)', // slight red
+        'rgb(220, 240, 255)', // cyan-white
       ];
       
       return {
@@ -53,7 +67,6 @@ const DeepSpaceBackground: React.FC = () => {
   // Generate distant galaxies and clusters
   const generateGalaxies = (count: number): Galaxy[] => {
     return Array.from({ length: count }).map(() => {
-      // More subtle, varied colors for galaxies
       return {
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -62,6 +75,22 @@ const DeepSpaceBackground: React.FC = () => {
         rotation: Math.random() * 360,
         hue: Math.floor(Math.random() * 360),
         blur: Math.random() * 50 + 20, // More blur for distant effect
+      };
+    });
+  };
+  
+  // Generate colorful nebulae
+  const generateNebulae = (count: number): Nebula[] => {
+    return Array.from({ length: count }).map(() => {
+      return {
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        width: Math.random() * 40 + 20,
+        height: Math.random() * 40 + 20,
+        opacity: Math.random() * 0.1 + 0.05,
+        hue: Math.floor(Math.random() * 360),
+        rotation: Math.random() * 360,
+        blur: Math.random() * 70 + 30,
       };
     });
   };
@@ -79,10 +108,25 @@ const DeepSpaceBackground: React.FC = () => {
     }));
   };
   
+  // Generate dust particles (smaller and more numerous)
+  const generateDustParticles = (count: number): Star[] => {
+    return Array.from({ length: count }).map(() => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 1.5 + 0.2, // Very small
+      opacity: Math.random() * 0.5 + 0.1, // Less visible
+      animationDuration: Math.random() * 100 + 50, // Slow movement
+      animationDelay: Math.random() * 20,
+      color: `rgba(${Math.floor(Math.random() * 100 + 155)}, ${Math.floor(Math.random() * 100 + 155)}, ${Math.floor(Math.random() * 100 + 155)}, 0.6)`, // Various colors
+    }));
+  };
+  
   useEffect(() => {
     const stars = generateStars(200);
     const galaxies = generateGalaxies(12);
+    const nebulae = generateNebulae(8);
     const lensFlareStars = generateLensFlareStars(15);
+    const dustParticles = generateDustParticles(400);
     
     if (starsContainerRef.current) {
       // Clear existing stars
@@ -140,13 +184,57 @@ const DeepSpaceBackground: React.FC = () => {
         galaxiesContainerRef.current?.appendChild(galaxyElement);
       });
     }
+    
+    if (nebulaeContainerRef.current) {
+      // Clear existing nebulae
+      nebulaeContainerRef.current.innerHTML = '';
+      
+      // Create nebula elements
+      nebulae.forEach((nebula) => {
+        const nebulaElement = document.createElement('div');
+        nebulaElement.className = 'nebula';
+        nebulaElement.style.left = `${nebula.x}%`;
+        nebulaElement.style.top = `${nebula.y}%`;
+        nebulaElement.style.width = `${nebula.width}%`;
+        nebulaElement.style.height = `${nebula.height}%`;
+        nebulaElement.style.opacity = `${nebula.opacity}`;
+        nebulaElement.style.transform = `rotate(${nebula.rotation}deg)`;
+        nebulaElement.style.filter = `blur(${nebula.blur}px) hue-rotate(${nebula.hue}deg)`;
+        nebulaElement.style.animation = `nebula-drift ${Math.random() * 100 + 80}s ease-in-out infinite`;
+        
+        nebulaeContainerRef.current?.appendChild(nebulaElement);
+      });
+    }
+    
+    if (dustParticlesRef.current) {
+      // Clear existing dust particles
+      dustParticlesRef.current.innerHTML = '';
+      
+      // Create dust particle elements
+      dustParticles.forEach((particle) => {
+        const dustElement = document.createElement('div');
+        dustElement.className = 'dust-particle';
+        dustElement.style.left = `${particle.x}%`;
+        dustElement.style.top = `${particle.y}%`;
+        dustElement.style.width = `${particle.size}px`;
+        dustElement.style.height = `${particle.size}px`;
+        dustElement.style.opacity = `${particle.opacity}`;
+        dustElement.style.backgroundColor = particle.color;
+        dustElement.style.animation = `float ${particle.animationDuration}s linear infinite`;
+        dustElement.style.animationDelay = `${particle.animationDelay}s`;
+        
+        dustParticlesRef.current?.appendChild(dustElement);
+      });
+    }
   }, []);
   
   return (
     <div className="deep-space-bg">
       <div ref={backgroundImageRef} className="background-image"></div>
+      <div ref={nebulaeContainerRef} className="absolute inset-0 overflow-hidden"></div>
       <div ref={galaxiesContainerRef} className="absolute inset-0 overflow-hidden"></div>
       <div ref={starsContainerRef} className="absolute inset-0 overflow-hidden"></div>
+      <div ref={dustParticlesRef} className="absolute inset-0 overflow-hidden"></div>
       <div className="absolute inset-0 bg-gradient-radial from-transparent to-black/50 opacity-70"></div>
     </div>
   );
