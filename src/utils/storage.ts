@@ -32,29 +32,12 @@ export const saveConfig = (startYear: number): void => {
 
 export const getConfig = (): { startYear: number } => {
   const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
-  if (!storedConfig) {
-    // Default to 5 years ago, but ensure it's within 10 years of current year
-    const currentYear = new Date().getFullYear();
-    const defaultStartYear = Math.max(currentYear - 10, currentYear - 5);
-    return { startYear: defaultStartYear };
-  }
+  if (!storedConfig) return { startYear: new Date().getFullYear() - 5 }; // Default to 5 years ago
   
   try {
-    const config = JSON.parse(storedConfig);
-    
-    // Ensure startYear is within 10 years of current year
-    const currentYear = new Date().getFullYear();
-    if (currentYear - config.startYear > 10) {
-      config.startYear = currentYear - 10;
-    }
-    
-    return config;
+    return JSON.parse(storedConfig);
   } catch (e) {
     console.error("Failed to parse stored config:", e);
-    
-    // Default to 5 years ago, but ensure it's within 10 years of current year
-    const currentYear = new Date().getFullYear();
-    const defaultStartYear = Math.max(currentYear - 10, currentYear - 5);
-    return { startYear: defaultStartYear };
+    return { startYear: new Date().getFullYear() - 5 };
   }
 };
