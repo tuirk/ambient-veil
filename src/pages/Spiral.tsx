@@ -65,7 +65,7 @@ const Spiral: React.FC = () => {
   
   return (
     <div className="min-h-screen w-full overflow-hidden relative">
-      {/* Add back DeepSpaceBackground for additional visual effects */}
+      {/* Add DeepSpaceBackground for consistent visuals with welcome page */}
       <DeepSpaceBackground />
       
       {/* Main content */}

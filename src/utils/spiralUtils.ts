@@ -91,14 +91,14 @@ export const calculateSpiralSegment = (
   startEvent: TimeEvent,
   endEvent: TimeEvent,
   startYear: number,
-  segmentPoints: number = 20,
+  segmentPoints: number = 50, // Increase number of points for smoother curves
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
   const points: Vector3[] = [];
   
   const startDate = new Date(startEvent.startDate);
-  const endDate = new Date(endEvent.endDate || startEvent.startDate);
+  const endDate = new Date(endEvent.startDate || endEvent.endDate || startEvent.startDate);
   
   // Calculate total days between dates
   const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -113,15 +113,18 @@ export const calculateSpiralSegment = (
     
     // Calculate angle correctly for clockwise rotation from 12 o'clock
     const yearFraction = month / 12 + day / 365;
-    const angleRad = -yearFraction * Math.PI * 2 + Math.PI/2;
-    
-    // Calculate position in 3D space
     const yearIndex = year - startYear;
-    const currentRadius = radius + yearIndex * 0.5;
     
-    const x = currentRadius * Math.cos(angleRad);
-    const y = -yearIndex * heightPerLoop - yearFraction * heightPerLoop;
-    const z = currentRadius * Math.sin(angleRad);
+    // Calculate smooth spiral position
+    const angle = -yearFraction * Math.PI * 2 + Math.PI/2;
+    
+    // Gradually increase radius for each year to create spiral effect
+    const yearProgress = yearIndex + yearFraction;
+    const currentRadius = radius + yearProgress * 0.5;
+    
+    const x = currentRadius * Math.cos(angle);
+    const y = -yearProgress * heightPerLoop;
+    const z = currentRadius * Math.sin(angle);
     
     points.push(new Vector3(x, y, z));
   }

@@ -14,10 +14,11 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   currentYear, 
   zoom 
 }) => {
+  // Use more points for a smoother spiral
   const spiralPoints = generateSpiralPoints(
     startYear, 
     currentYear, 
-    360, 
+    720, // Double the resolution for smoother spiral
     5 * zoom, 
     1.5 * zoom
   );
@@ -31,7 +32,9 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       color="white"
       lineWidth={1}
       transparent
-      opacity={0.3}
+      opacity={0.4}
+      // Add curve parameter for smoother appearance
+      curve
     />
   );
 };

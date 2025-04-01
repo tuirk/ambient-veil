@@ -10,6 +10,9 @@ export const SpaceEnvironment: React.FC = () => {
       <Stars radius={100} depth={50} count={7000} factor={4} saturation={0.5} fade speed={1} />
       <SpaceNebula />
       <CosmicDust />
+      {/* Add ambient and point lights for better illumination */}
+      <ambientLight intensity={0.2} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>
   );
 };
@@ -35,13 +38,15 @@ const CosmicDust = () => {
     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i3 + 2] = radius * Math.cos(phi);
     
-    // Different colors for cosmic dust
+    // Different colors for cosmic dust with more vibrant cosmic colors
     const colorChoices = [
       [0.9, 0.9, 1.0],  // Blue-white
       [1.0, 0.9, 0.8],  // Yellow-white
       [1.0, 0.8, 0.8],  // Pink-white
       [0.8, 1.0, 0.9],  // Green-white
       [0.9, 0.8, 1.0],  // Purple-white
+      [1.0, 0.7, 0.9],  // Magenta-white
+      [0.7, 0.9, 1.0],  // Cyan-white
     ];
     
     const color = colorChoices[Math.floor(Math.random() * colorChoices.length)];
@@ -106,11 +111,12 @@ const SpaceNebula = () => {
     }
   });
   
+  // Use a more vibrant purple color that matches the welcome page
   return (
     <mesh ref={mesh} position={[0, 0, -80]}>
       <sphereGeometry args={[70, 32, 32]} />
       <meshBasicMaterial
-        color={new THREE.Color(0x2a004c)}
+        color={new THREE.Color("#7A3EF8")}
         transparent
         opacity={0.2}
         side={THREE.BackSide}
