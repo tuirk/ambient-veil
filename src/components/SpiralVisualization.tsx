@@ -55,7 +55,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
 
     // Spiral parameters
     const spiralSpacing = 30 * config.zoom; // Space between spiral loops
-    const startRadius = 50 * config.zoom; // Initial radius
+    const initialRadius = 50 * config.zoom; // Initial radius - renamed to avoid conflict
     const maxRadius = Math.min(canvas.width, canvas.height) * 0.45; // Max radius
 
     // Draw base spiral (faint gray background)
@@ -63,7 +63,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       ctx,
       centerX,
       centerY,
-      startRadius,
+      initialRadius,
       spiralSpacing,
       totalYears,
       maxRadius
@@ -75,7 +75,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       events,
       centerX,
       centerY,
-      startRadius,
+      initialRadius, // Pass initialRadius instead of startRadius
       spiralSpacing,
       config.startYear,
       maxRadius
@@ -160,7 +160,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
     events: TimeEvent[],
     centerX: number,
     centerY: number,
-    startRadius: number,
+    initialRadius: number, // Renamed parameter to avoid conflict
     spiralSpacing: number,
     startYear: number,
     maxRadius: number
@@ -173,7 +173,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
       
       if (!event.endDate) {
         // Single point event
-        const radius = startRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
+        const radius = initialRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
         if (radius <= maxRadius) {
           drawEventPoint(
             ctx,
@@ -191,8 +191,8 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         const endMonth = event.endDate.getMonth();
         const endAngle = endYearDiff * 2 * Math.PI + (endMonth / 12) * 2 * Math.PI;
         
-        const startRadius = startRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
-        const endRadius = startRadius + (spiralSpacing * endAngle) / (2 * Math.PI);
+        const startRadius = initialRadius + (spiralSpacing * startAngle) / (2 * Math.PI);
+        const endRadius = initialRadius + (spiralSpacing * endAngle) / (2 * Math.PI);
         
         if (startRadius <= maxRadius || endRadius <= maxRadius) {
           drawEventArc(
