@@ -32,10 +32,10 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
     return new THREE.CatmullRomCurve3(positions, false, "centripetal", 0.5);
   }, [spiralPoints]);
   
-  // Create parameters for the tube geometry
+  // Create parameters for the tube geometry - making it slimmer
   const tubeParams = useMemo(() => ({
     tubularSegments: 500,
-    radius: 0.12, // Thickness of the tube
+    radius: 0.07, // Reduced thickness for a more delicate appearance
     radialSegments: 8,
     closed: false
   }), []);
@@ -47,9 +47,9 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
     if (meshRef.current && meshRef.current.material) {
       // TypeScript fix: check if material is MeshBasicMaterial
       const material = meshRef.current.material as THREE.MeshBasicMaterial;
-      // Subtle pulsing effect
-      const pulse = Math.sin(clock.getElapsedTime() * 0.5) * 0.03;
-      material.opacity = 0.3 + pulse;
+      // Very subtle pulsing effect
+      const pulse = Math.sin(clock.getElapsedTime() * 0.3) * 0.02;
+      material.opacity = 0.2 + pulse;
     }
   });
   
@@ -59,7 +59,7 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
       <meshBasicMaterial 
         color={new THREE.Color(0xffffff)} 
         transparent={true} 
-        opacity={0.3}
+        opacity={0.2}
         side={THREE.DoubleSide}
         depthWrite={false} // Important for proper transparency
       />

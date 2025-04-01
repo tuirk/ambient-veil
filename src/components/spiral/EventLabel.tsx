@@ -22,21 +22,21 @@ export const EventLabel: React.FC<EventLabelProps> = ({
   const [opacity, setOpacity] = useState(0);
   const billboardRef = useRef<any>(null);
   
-  // Orbit animation
+  // More subtle orbit animation
   useFrame(({ clock }) => {
     if (billboardRef.current) {
-      // Small circular motion
+      // Smaller, slower circular motion
       const time = clock.getElapsedTime();
-      const offsetX = Math.sin(time * 0.5) * 0.15;
-      const offsetZ = Math.cos(time * 0.5) * 0.15;
+      const offsetX = Math.sin(time * 0.3) * 0.1;
+      const offsetZ = Math.cos(time * 0.3) * 0.1;
       
       billboardRef.current.position.x = position.x + offsetX;
-      billboardRef.current.position.y = position.y + 0.4; // Fixed height above event
+      billboardRef.current.position.y = position.y + 0.35; // Lower height above event
       billboardRef.current.position.z = position.z + offsetZ;
     }
   });
   
-  // Zoom-based visibility
+  // Zoom-based visibility with smoother transition
   useFrame(() => {
     if (camera) {
       // Calculate distance to camera
@@ -45,18 +45,18 @@ export const EventLabel: React.FC<EventLabelProps> = ({
         .distanceTo(camera.position);
       
       // Show label only when zoomed in close enough
-      const targetOpacity = distance < 10 ? 1 : 0;
+      const targetOpacity = distance < 12 ? 1 : 0;
       
-      // Smooth transition for opacity
-      setOpacity(THREE.MathUtils.lerp(opacity, targetOpacity, 0.05));
+      // Smoother transition for opacity
+      setOpacity(THREE.MathUtils.lerp(opacity, targetOpacity, 0.03));
     }
   });
   
   return (
-    <Billboard ref={billboardRef} follow={true} position={[position.x, position.y + 0.4, position.z]}>
+    <Billboard ref={billboardRef} follow={true} position={[position.x, position.y + 0.35, position.z]}>
       <Text
         color={event.color}
-        fontSize={0.2}
+        fontSize={0.15}
         anchorX="center"
         anchorY="middle"
         outlineWidth={0.01}
