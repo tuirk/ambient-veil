@@ -43,7 +43,7 @@ const CosmicDust = () => {
       [0.9, 0.9, 1.0],  // Blue-white
       [1.0, 0.9, 0.8],  // Yellow-white
       [1.0, 0.8, 0.8],  // Pink-white
-      [0.8, is0.9, 0.15]  // Green-white
+      [0.8, 0.9, 0.15],  // Green-white
       [0.9, 0.8, 1.0],  // Purple-white
       [1.0, 0.7, 0.9],  // Magenta-white
       [0.7, 0.9, 1.0],  // Cyan-white
