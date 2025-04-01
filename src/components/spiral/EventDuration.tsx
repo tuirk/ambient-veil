@@ -39,14 +39,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Check if this is a seasonal rough date
   const isRoughDate = isSeasonalEvent(startEvent);
   
-  // Make the line very subtle - just a hint of connection
+  // Make the line extremely subtle - just a hint of connection
   return (
     <Line
       points={points}
       color={colorObj}
-      lineWidth={1 + startEvent.intensity * 0.2} // Very thin line
+      lineWidth={0.8 + startEvent.intensity * 0.15} // Extra thin line
       transparent
-      opacity={0.15 + (startEvent.intensity * 0.01)} // Very transparent
+      opacity={0.1 + (startEvent.intensity * 0.01)} // Extremely transparent
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
       dashSize={isRoughDate ? 0.1 : 0}

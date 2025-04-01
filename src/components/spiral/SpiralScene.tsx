@@ -24,13 +24,12 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   // Update camera position based on zoom
   useEffect(() => {
     if (camera) {
-      // Revert to fixed distance multiplied by zoom
-      // This gives more intuitive zoom behavior
-      const distance = 15; 
+      // Position camera at a distance that gives good overall view
+      const distance = 20;
       camera.position.set(distance, distance, distance);
       camera.lookAt(0, -3, 0);
       
-      // Apply zoom directly to the camera instead
+      // Apply zoom directly to the camera
       camera.zoom = config.zoom;
       camera.updateProjectionMatrix();
     }
@@ -43,7 +42,9 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         enablePan={true}
         enableZoom={true}
         minDistance={5}
-        maxDistance={30} // Reverted to fixed max distance for consistent zoom behavior
+        maxDistance={40} // Extended max distance for better viewing of large data sets
+        minZoom={0.5}    // Allow zooming out more
+        maxZoom={2}      // Limit max zoom to prevent clipping
       />
       
       <ambientLight intensity={0.3} />

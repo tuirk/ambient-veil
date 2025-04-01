@@ -35,7 +35,7 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
   // Create parameters for the tube geometry - even slimmer
   const tubeParams = useMemo(() => ({
     tubularSegments: 500,
-    radius: 0.05, // Very slim thickness
+    radius: 0.035, // Extra slim thickness
     radialSegments: 8,
     closed: false
   }), []);
@@ -50,8 +50,8 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
       if (material) {
         // Very subtle pulsing opacity for ethereal effect
         const time = clock.getElapsedTime();
-        const pulse = Math.sin(time * 0.3) * 0.04;
-        material.opacity = 0.15 + pulse; // Very translucent
+        const pulse = Math.sin(time * 0.3) * 0.02;
+        material.opacity = 0.1 + pulse; // Extremely translucent
       }
     }
   });
@@ -62,7 +62,7 @@ export const TubularSpiral: React.FC<TubularSpiralProps> = ({
       <meshBasicMaterial 
         color={new THREE.Color(0xffffff)} 
         transparent={true} 
-        opacity={0.15} // Much more transparent
+        opacity={0.1} // Very transparent - just a hint
         side={THREE.DoubleSide}
         depthWrite={false} // Important for proper transparency
       />
