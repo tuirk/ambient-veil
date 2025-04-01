@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
+import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -55,8 +56,19 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Regular event with or without end date
-        if (!event.endDate) {
+        // Rough dates (seasonal) or events with end dates should render as durations
+        if (isSeasonalEvent(event) || event.endDate) {
+          return (
+            <EventDuration
+              key={event.id}
+              startEvent={event}
+              endEvent={{...event, startDate: event.endDate || event.startDate}}
+              startYear={config.startYear}
+              zoom={config.zoom}
+            />
+          );
+        } else {
+          // Regular events (single point in time)
           return (
             <EventPoint
               key={event.id}
@@ -68,16 +80,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 const month = event.startDate.getMonth();
                 onEventClick(year, month, 0, 0);
               }}
-            />
-          );
-        } else {
-          return (
-            <EventDuration
-              key={event.id}
-              startEvent={event}
-              endEvent={{...event, startDate: event.endDate}}
-              startYear={config.startYear}
-              zoom={config.zoom}
             />
           );
         }

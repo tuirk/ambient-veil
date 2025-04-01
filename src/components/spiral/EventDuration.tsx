@@ -4,6 +4,7 @@ import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { calculateSpiralSegment } from "@/utils/spiralUtils";
+import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventDurationProps {
   startEvent: TimeEvent;   // Event that marks the start of the duration
@@ -15,6 +16,7 @@ interface EventDurationProps {
 /**
  * Renders a line segment between two events on the spiral, representing a duration
  * Higher point count (200) ensures smooth curves for all colors
+ * For seasonal rough dates, renders with a special visual effect
  */
 export const EventDuration: React.FC<EventDurationProps> = ({ 
   startEvent, 
@@ -35,13 +37,32 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Use the color of the start event for the line
   const colorObj = new THREE.Color(startEvent.color);
   
+  // Check if this is a seasonal rough date
+  const isRoughDate = isSeasonalEvent(startEvent);
+  
+  // For seasonal dates, use different visual properties
+  const lineWidth = isRoughDate 
+    ? 3 + startEvent.intensity * 0.5 // Wider line for rough dates
+    : 2 + startEvent.intensity * 0.5;
+    
+  const opacity = isRoughDate
+    ? 0.5 + startEvent.intensity * 0.03 // More transparent for rough dates
+    : 0.6 + startEvent.intensity * 0.04;
+  
   return (
     <Line
       points={points}
       color={colorObj}
-      lineWidth={2 + startEvent.intensity * 0.5} // Line thickness based on event intensity
+      lineWidth={lineWidth}
       transparent
-      opacity={0.6 + startEvent.intensity * 0.04} // Opacity also influenced by intensity
+      opacity={opacity}
+      // Apply blur effect for seasonal rough dates
+      vertexColors={isRoughDate ? true : false}
+      // For rough dates, use dashed line effect
+      dashed={isRoughDate}
+      dashSize={isRoughDate ? 0.1 : 0}
+      dashOffset={isRoughDate ? 0.1 : 0}
+      dashScale={isRoughDate ? 10 : 0}
     />
   );
 };

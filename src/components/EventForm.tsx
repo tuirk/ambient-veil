@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { TimeEvent } from "@/types/event";
 import { v4 as uuidv4 } from "uuid";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SEASONS, getSeasonalDateRange } from "@/utils/seasonalUtils";
 
 interface EventFormProps {
   open: boolean;
@@ -41,26 +43,53 @@ const EventForm: React.FC<EventFormProps> = ({
   const [title, setTitle] = useState("");
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
+  
+  // Exact date states
   const [startYear, setStartYear] = useState(preselectedYear || currentYear);
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
   const [hasEndDate, setHasEndDate] = useState(false);
   const [endYear, setEndYear] = useState(startYear);
   const [endMonth, setEndMonth] = useState(startMonth);
+  
+  // Rough date states
+  const [useRoughDate, setUseRoughDate] = useState(false);
+  const [roughSeason, setRoughSeason] = useState<string>("Spring");
+  const [roughYear, setRoughYear] = useState(preselectedYear || currentYear);
 
   const handleSave = () => {
     if (!title) return;
 
-    const startDate = new Date(startYear, startMonth);
-    const endDate = hasEndDate ? new Date(endYear, endMonth) : undefined;
+    let newEvent: TimeEvent;
 
-    const newEvent: TimeEvent = {
-      id: uuidv4(),
-      title,
-      color: selectedColor,
-      intensity,
-      startDate,
-      endDate,
-    };
+    if (useRoughDate) {
+      // Create event with rough date
+      const { startDate, endDate } = getSeasonalDateRange(roughSeason, roughYear);
+      
+      newEvent = {
+        id: uuidv4(),
+        title,
+        color: selectedColor,
+        intensity,
+        startDate,
+        endDate,
+        isRoughDate: true,
+        roughDateSeason: roughSeason,
+        roughDateYear: roughYear
+      };
+    } else {
+      // Create event with exact date
+      const startDate = new Date(startYear, startMonth);
+      const endDate = hasEndDate ? new Date(endYear, endMonth) : undefined;
+
+      newEvent = {
+        id: uuidv4(),
+        title,
+        color: selectedColor,
+        intensity,
+        startDate,
+        endDate,
+      };
+    }
 
     onSave(newEvent);
     resetForm();
@@ -72,6 +101,7 @@ const EventForm: React.FC<EventFormProps> = ({
     setSelectedColor(MOOD_COLORS[0]);
     setIntensity(5);
     setHasEndDate(false);
+    setUseRoughDate(false);
   };
 
   return (
@@ -130,67 +160,46 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none">When</label>
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                value={startMonth}
-                onChange={(e) => setStartMonth(Number(e.target.value))}
-                className="rounded-md border border-input bg-background/50 px-3 py-2"
-              >
-                {months.map((month, index) => (
-                  <option key={month} value={index}>
-                    {month}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={startYear}
-                onChange={(e) => setStartYear(Number(e.target.value))}
-                className="rounded-md border border-input bg-background/50 px-3 py-2"
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="hasEndDate"
-              checked={hasEndDate}
-              onChange={(e) => setHasEndDate(e.target.checked)}
+              id="useRoughDate"
+              checked={useRoughDate}
+              onChange={(e) => {
+                setUseRoughDate(e.target.checked);
+                if (e.target.checked) {
+                  setHasEndDate(false); // Disable end date if rough date is selected
+                }
+              }}
               className="rounded border-input"
             />
-            <label htmlFor="hasEndDate" className="text-sm">
-              This spans a period of time
+            <label htmlFor="useRoughDate" className="text-sm">
+              I only remember the season
             </label>
           </div>
 
-          {hasEndDate && (
-            <div className="grid gap-2 pl-6">
-              <label className="text-sm font-medium leading-none">
-                Ends
-              </label>
+          {useRoughDate ? (
+            <div className="grid gap-2">
+              <label className="text-sm font-medium leading-none">Season & Year</label>
               <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={endMonth}
-                  onChange={(e) => setEndMonth(Number(e.target.value))}
-                  className="rounded-md border border-input bg-background/50 px-3 py-2"
+                <Select 
+                  value={roughSeason} 
+                  onValueChange={(value) => setRoughSeason(value)}
                 >
-                  {months.map((month, index) => (
-                    <option key={month} value={index}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="bg-background/50">
+                    <SelectValue placeholder="Select season" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEASONS.map((season) => (
+                      <SelectItem key={season} value={season}>
+                        {season}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <select
-                  value={endYear}
-                  onChange={(e) => setEndYear(Number(e.target.value))}
+                  value={roughYear}
+                  onChange={(e) => setRoughYear(Number(e.target.value))}
                   className="rounded-md border border-input bg-background/50 px-3 py-2"
                 >
                   {years.map((year) => (
@@ -201,6 +210,82 @@ const EventForm: React.FC<EventFormProps> = ({
                 </select>
               </div>
             </div>
+          ) : (
+            <>
+              <div className="grid gap-2">
+                <label className="text-sm font-medium leading-none">When</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={startMonth}
+                    onChange={(e) => setStartMonth(Number(e.target.value))}
+                    className="rounded-md border border-input bg-background/50 px-3 py-2"
+                  >
+                    {months.map((month, index) => (
+                      <option key={month} value={index}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={startYear}
+                    onChange={(e) => setStartYear(Number(e.target.value))}
+                    className="rounded-md border border-input bg-background/50 px-3 py-2"
+                  >
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="hasEndDate"
+                  checked={hasEndDate}
+                  onChange={(e) => setHasEndDate(e.target.checked)}
+                  className="rounded border-input"
+                  disabled={useRoughDate}
+                />
+                <label htmlFor="hasEndDate" className="text-sm">
+                  This spans a period of time
+                </label>
+              </div>
+
+              {hasEndDate && (
+                <div className="grid gap-2 pl-6">
+                  <label className="text-sm font-medium leading-none">
+                    Ends
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={endMonth}
+                      onChange={(e) => setEndMonth(Number(e.target.value))}
+                      className="rounded-md border border-input bg-background/50 px-3 py-2"
+                    >
+                      {months.map((month, index) => (
+                        <option key={month} value={index}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={endYear}
+                      onChange={(e) => setEndYear(Number(e.target.value))}
+                      className="rounded-md border border-input bg-background/50 px-3 py-2"
+                    >
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
