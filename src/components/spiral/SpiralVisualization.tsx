@@ -24,13 +24,8 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           near: 0.1,
           far: 1000 
         }}
-        gl={{ 
-          antialias: true,
-          alpha: true, // Enable transparency
-          powerPreference: "high-performance" // Request higher performance
-        }}
+        gl={{ antialias: true }}
         linear
-        dpr={[1, 2]} // Responsive pixel ratio for better performance
       >
         <SpiralScene 
           events={events} 

@@ -4,8 +4,6 @@ import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
-import { EventLabel } from "./EventLabel";
-import { EventDustCloud } from "./EventDustCloud";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
@@ -19,81 +17,72 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   config,
   onEventClick
 }) => {
-  if (!events || events.length === 0) {
-    console.log("No events to display");
-    return null;
-  }
-
   return (
     <>
-      {/* Render dust clouds first for all events */}
       {events.map((event) => {
-        // Process all events for dust clouds - both past and future
-        if (!event || !event.startDate) {
-          console.log("Invalid event data:", event);
-          return null;
-        }
-        
-        // Generate dust cloud for the event
-        return (
-          <EventDustCloud
-            key={`dust-${event.id}`}
-            event={event}
-            startYear={config.startYear}
-            zoom={config.zoom}
-          />
-        );
-      })}
-      
-      {/* Then render the event points and durations */}
-      {events.map((event) => {
-        if (!event || !event.startDate) {
-          return null;
-        }
-        
-        // Future events are now also rendered as dust clouds
+        // Future events render as scattered objects
         if (event.startDate.getFullYear() > config.currentYear) {
-          return null; // Already handled above in the dust cloud section
+          // Create a more interesting future event visualization as floating debris
+          const randomDistance = 15 + Math.random() * 20;
+          const randomAngle = Math.random() * Math.PI * 2;
+          const randomHeight = (Math.random() - 0.5) * 20;
+          
+          const x = randomDistance * Math.cos(randomAngle);
+          const y = randomHeight;
+          const z = randomDistance * Math.sin(randomAngle);
+          
+          // Create different geometry based on intensity
+          return (
+            <mesh 
+              key={event.id} 
+              position={[x, y, z]}
+              rotation={[Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]}
+            >
+              {event.intensity > 7 ? (
+                <octahedronGeometry args={[0.2 + event.intensity * 0.03, 0]} />
+              ) : event.intensity > 4 ? (
+                <tetrahedronGeometry args={[0.2 + event.intensity * 0.03, 0]} />
+              ) : (
+                <dodecahedronGeometry args={[0.15 + event.intensity * 0.02, 0]} />
+              )}
+              <meshStandardMaterial 
+                color={event.color} 
+                transparent 
+                opacity={0.7} 
+                emissive={event.color}
+                emissiveIntensity={0.5}
+              />
+            </mesh>
+          );
         }
         
-        // For point events (without duration), add a visible anchor point
-        if (!event.endDate && !isSeasonalEvent(event)) {
+        // Rough dates (seasonal) or events with end dates should render as durations
+        if (isSeasonalEvent(event) || event.endDate) {
           return (
-            <React.Fragment key={`event-${event.id}`}>
-              <EventPoint
-                event={event}
-                startYear={config.startYear}
-                zoom={config.zoom}
-                onClick={() => {
-                  const year = event.startDate.getFullYear();
-                  const month = event.startDate.getMonth();
-                  onEventClick(year, month, 0, 0);
-                }}
-              />
-              {/* Add label for significant one-time events */}
-              {event.intensity > 7 && (
-                <EventLabel
-                  key={`label-${event.id}`}
-                  event={event}
-                  startYear={config.startYear}
-                  zoom={config.zoom}
-                />
-              )}
-            </React.Fragment>
+            <EventDuration
+              key={event.id}
+              startEvent={event}
+              endEvent={{...event, startDate: event.endDate || event.startDate}}
+              startYear={config.startYear}
+              zoom={config.zoom}
+            />
           );
-        } 
-        
-        // For duration events, we'll render a subtle path indicator
-        // The dust cloud will do most of the visual work
-        return (
-          <EventDuration
-            key={`duration-${event.id}`}
-            startEvent={event}
-            endEvent={{...event, startDate: event.endDate || event.startDate}}
-            startYear={config.startYear}
-            zoom={config.zoom}
-          />
-        );
+        } else {
+          // Regular events (single point in time)
+          return (
+            <EventPoint
+              key={event.id}
+              event={event}
+              startYear={config.startYear}
+              zoom={config.zoom}
+              onClick={() => {
+                const year = event.startDate.getFullYear();
+                const month = event.startDate.getMonth();
+                onEventClick(year, month, 0, 0);
+              }}
+            />
+          );
+        }
       })}
     </>
   );

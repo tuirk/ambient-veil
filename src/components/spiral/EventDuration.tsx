@@ -14,8 +14,9 @@ interface EventDurationProps {
 }
 
 /**
- * Renders a very subtle path indicator between two events
- * The main visual work is done by dust particles, this is just a hint
+ * Renders a line segment between two events on the spiral, representing a duration
+ * Higher point count (200) ensures smooth curves for all colors
+ * For seasonal rough dates, renders with a special visual effect
  */
 export const EventDuration: React.FC<EventDurationProps> = ({ 
   startEvent, 
@@ -28,7 +29,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     startEvent, 
     endEvent, 
     startYear, 
-    30,  // Fewer points needed for a subtle path
+    200,  // Using 200 points for consistently smooth curves regardless of color
     5 * zoom, 
     1.5 * zoom
   );
@@ -39,19 +40,26 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Check if this is a seasonal rough date
   const isRoughDate = isSeasonalEvent(startEvent);
   
-  // Make the line extremely subtle - just a ghost hint of connection
-  // Even more subtle now, as the dust cloud will be the main visual element
+  // For seasonal dates, use different visual properties
+  const lineWidth = isRoughDate 
+    ? 3 + startEvent.intensity * 0.5 // Wider line for rough dates
+    : 2 + startEvent.intensity * 0.5;
+    
+  const opacity = isRoughDate
+    ? 0.5 + startEvent.intensity * 0.03 // More transparent for rough dates
+    : 0.6 + startEvent.intensity * 0.04;
+  
   return (
     <Line
       points={points}
       color={colorObj}
-      lineWidth={0.05 + startEvent.intensity * 0.005} // Almost invisible line
+      lineWidth={lineWidth}
       transparent
-      opacity={0.005 + (startEvent.intensity * 0.0005)} // Barely visible
+      opacity={opacity}
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
-      dashSize={isRoughDate ? 0.03 : 0}
-      dashOffset={isRoughDate ? 0.03 : 0}
+      dashSize={isRoughDate ? 0.1 : 0}
+      dashOffset={isRoughDate ? 0.1 : 0}
       dashScale={isRoughDate ? 10 : 0}
     />
   );
