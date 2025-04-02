@@ -91,7 +91,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
         />
       </sprite>
       
-      {/* Event label (title and year) - removed depthTest prop */}
+      {/* Event label (title and year) - fix outlineColor to use valid hex */}
       <Text
         position={[0, size * 2 + 0.12, 0]}
         color="white"
@@ -99,7 +99,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorX="center"
         anchorY="bottom"
         outlineWidth={0.004}
-        outlineColor="#00000080"
+        outlineColor="#000000"
       >
         {event.title}
       </Text>
@@ -111,7 +111,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorX="center"
         anchorY="bottom"
         outlineWidth={0.003}
-        outlineColor="#00000080"
+        outlineColor="#000000"
       >
         {year}
       </Text>
