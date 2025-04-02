@@ -126,6 +126,26 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const backgroundParticleCount = Math.floor(particleCount * 0.7);
   const tertiaryParticleCount = Math.floor(particleCount * 0.4);
   
+  // Helper function to create color variations
+  const getColorVariation = (baseColor: THREE.Color, strength: number = 0.15) => {
+    const newColor = baseColor.clone();
+    
+    // Small random shifts in hue
+    const hsl: {h: number, s: number, l: number} = {h: 0, s: 0, l: 0};
+    newColor.getHSL(hsl);
+    hsl.h += (Math.random() - 0.5) * strength;
+    hsl.s += (Math.random() - 0.5) * strength * 0.5;
+    hsl.l += (Math.random() - 0.5) * strength * 0.3;
+    
+    // Ensure values stay in valid range
+    hsl.h = (hsl.h + 1) % 1;
+    hsl.s = Math.max(0, Math.min(1, hsl.s));
+    hsl.l = Math.max(0.2, Math.min(0.9, hsl.l));
+    
+    newColor.setHSL(hsl.h, hsl.s, hsl.l);
+    return newColor;
+  };
+  
   // Generate particles distributed along the path
   const { 
     particlePositions, 
@@ -170,26 +190,6 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     const baseColor = new THREE.Color(startEvent.color);
     const slightlyLighter = baseColor.clone().multiplyScalar(1.2);
     const slightlyDarker = baseColor.clone().multiplyScalar(0.8);
-    
-    // Helper function to create color variations
-    const getColorVariation = (baseColor: THREE.Color, strength: number = 0.15) => {
-      const newColor = baseColor.clone();
-      
-      // Small random shifts in hue
-      const hsl = {};
-      newColor.getHSL(hsl);
-      hsl.h += (Math.random() - 0.5) * strength;
-      hsl.s += (Math.random() - 0.5) * strength * 0.5;
-      hsl.l += (Math.random() - 0.5) * strength * 0.3;
-      
-      // Ensure values stay in valid range
-      hsl.h = (hsl.h + 1) % 1;
-      hsl.s = Math.max(0, Math.min(1, hsl.s));
-      hsl.l = Math.max(0.2, Math.min(0.9, hsl.l));
-      
-      newColor.setHSL(hsl.h, hsl.s, hsl.l);
-      return newColor;
-    };
     
     // Primary particles
     for (let i = 0; i < particleCount; i++) {
@@ -346,7 +346,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       tertiaryParticleColors: terColors,
       tertiaryParticleOpacities: terOpacities
     };
-  }, [points, particleCount, backgroundParticleCount, tertiaryParticleCount, isRoughDate, startEvent.intensity, isMinimalDuration, baseColor]);
+  }, [points, particleCount, backgroundParticleCount, tertiaryParticleCount, isRoughDate, startEvent.intensity, isMinimalDuration, startEvent.color]);
   
   // Animation factors linked to intensity - more intense events animate more dramatically
   const animationSpeed = useMemo(() => {
