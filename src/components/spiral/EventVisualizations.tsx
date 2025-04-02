@@ -1,3 +1,4 @@
+
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -50,9 +51,28 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           const randomAngle = Math.random() * Math.PI * 2;
           const randomHeight = (Math.random() - 0.5) * 20;
           
-          const x = randomDistance * Math.cos(randomAngle);
-          const y = randomHeight;
-          const z = randomDistance * Math.sin(randomAngle);
+          // For future events, let them hang from spiral but not exactly on it
+          // Calculate the base spiral position first
+          const year = event.startDate.getFullYear();
+          const month = event.startDate.getMonth();
+          const dayOfMonth = event.startDate.getDate() || 15; // Default to mid-month
+          
+          // Calculate year progress (0-1 through the year)
+          const yearProgress = month / 12 + (dayOfMonth / 365);
+          
+          // Calculate rough spiral position (simplified)
+          const yearOffset = year - config.startYear;
+          const baseRadius = 5 * config.zoom + yearOffset * 0.5;
+          const angleRad = -yearProgress * Math.PI * 2 + Math.PI/2;
+          
+          // Add semi-random offset to make future events float near the spiral
+          const offsetDistance = 1 + Math.random() * 2;
+          const offsetAngle = angleRad + (Math.random() * 0.6 - 0.3);
+          const heightOffset = -0.5 + Math.random() * 1;
+          
+          const x = baseRadius * Math.cos(offsetAngle) * (1 + Math.random() * 0.2);
+          const z = baseRadius * Math.sin(offsetAngle) * (1 + Math.random() * 0.2);
+          const y = -yearOffset * 1.5 * config.zoom - yearProgress * 1.5 * config.zoom + heightOffset;
           
           // Create different geometry based on intensity
           return (

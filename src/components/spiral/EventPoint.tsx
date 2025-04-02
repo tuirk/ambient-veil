@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Text } from "@react-three/drei";
 import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
 
@@ -43,8 +44,8 @@ export const EventPoint: React.FC<EventPointProps> = ({
   });
   
   // Calculate size based on event intensity (1-10)
-  // Reduced by 25% for all event points
-  const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
+  // Further reduced by 25% for all event points (on top of previous reduction)
+  const size = 0.028 + (event.intensity / 10) * 0.056; // Reduced from 0.0375/0.075
   
   // Create a texture for the glow effect - creating the canvas element first
   const canvas = document.createElement("canvas");
@@ -62,6 +63,9 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Now create the texture from the canvas
   const glowTexture = new THREE.CanvasTexture(canvas);
   
+  // Format date for display
+  const year = event.startDate.getFullYear();
+  
   return (
     <group position={position} onClick={onClick}>
       {/* Core particle - small but visible */}
@@ -72,20 +76,51 @@ export const EventPoint: React.FC<EventPointProps> = ({
           transparent 
           opacity={0.9}
           emissive={event.color}
-          emissiveIntensity={1.5}
+          emissiveIntensity={1.1} // Reduced from 1.5
         />
       </mesh>
       
       {/* Glow effect for one-time events */}
-      <sprite ref={glowRef} scale={[0.45 + event.intensity * 0.06, 0.45 + event.intensity * 0.06, 1]}>
+      <sprite ref={glowRef} scale={[0.34 + event.intensity * 0.045, 0.34 + event.intensity * 0.045, 1]}>
         <spriteMaterial 
           map={glowTexture} 
           color={event.color} 
           transparent 
-          opacity={0.7}
+          opacity={0.6} // Reduced from 0.7
           blending={THREE.AdditiveBlending}
         />
       </sprite>
+      
+      {/* Event label (title and year) */}
+      <Text
+        position={[0, size * 2 + 0.12, 0]}
+        color="white"
+        fontSize={0.10}
+        anchorX="center"
+        anchorY="bottom"
+        outlineWidth={0.004}
+        outlineColor="#00000080"
+        transparent
+        opacity={0.9}
+        depthTest={false}
+      >
+        {event.title}
+      </Text>
+      
+      <Text
+        position={[0, size * 2 + 0.02, 0]}
+        color="white"
+        fontSize={0.08}
+        anchorX="center"
+        anchorY="bottom"
+        outlineWidth={0.003}
+        outlineColor="#00000080"
+        transparent
+        opacity={0.7}
+        depthTest={false}
+      >
+        {year}
+      </Text>
     </group>
   );
 };
