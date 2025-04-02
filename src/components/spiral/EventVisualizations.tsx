@@ -1,3 +1,4 @@
+
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -61,25 +62,32 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Add the new cosmic effect to all events
+        // Is this a process/duration event (has end date or is seasonal)?
+        const isProcessEvent = isSeasonalEvent(event) || !!event.endDate;
+        
+        // Add the cosmic effect and appropriate visualization based on event type
         return (
           <React.Fragment key={event.id}>
-            {/* Add the dramatic cosmic effect */}
+            {/* Add the cosmic effect - different sizes for one-time vs process events */}
             <CosmicEventEffect
               event={event}
               startYear={config.startYear}
               zoom={config.zoom}
+              isProcessEvent={isProcessEvent}
             />
             
-            {/* Keep the existing event visualization for interaction */}
-            {isSeasonalEvent(event) || event.endDate ? (
+            {/* For process events: render dust trail along spiral */}
+            {isProcessEvent && (
               <EventDuration
                 startEvent={event}
                 endEvent={{...event, startDate: event.endDate || event.startDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
               />
-            ) : (
+            )}
+            
+            {/* For one-time events: render cosmic burst at a single point */}
+            {!isProcessEvent && (
               <EventPoint
                 event={event}
                 startYear={config.startYear}

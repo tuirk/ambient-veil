@@ -9,12 +9,14 @@ interface CosmicEventEffectProps {
   event: TimeEvent;
   startYear: number;
   zoom: number;
+  isProcessEvent?: boolean;
 }
 
 export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({ 
   event, 
   startYear, 
-  zoom 
+  zoom,
+  isProcessEvent = false
 }) => {
   // Get the base position on the spiral
   const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
@@ -42,9 +44,14 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
     return new THREE.CanvasTexture(canvas);
   }, []);
   
-  // Generate particles for nebula effect
+  // Generate particles for nebula effect - different for one-time vs process events
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
-    const count = 100 + Math.floor(event.intensity * 30);
+    // One-time events have more concentrated, brighter particles
+    // Process events have more spread-out, diffuse particles
+    const count = isProcessEvent 
+      ? 80 + Math.floor(event.intensity * 20) // Fewer particles for process events
+      : 120 + Math.floor(event.intensity * 40); // More particles for one-time events
+    
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
@@ -59,15 +66,25 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
     ).lerp(baseColor, 0.7); // Mix with original for subtlety
     
     // Intensity affects spread and size
-    const spread = 0.5 + event.intensity * 0.15;
+    // One-time events: concentrated in a smaller area
+    // Process events: more spread out along the spiral
+    const spread = isProcessEvent
+      ? 0.3 + event.intensity * 0.1 // More contained for process events
+      : 0.6 + event.intensity * 0.2; // More expansive for one-time events
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       
       // Create a spherical distribution with some randomization
+      // One-time events: more spherical distribution
+      // Process events: more elongated along spiral direction
       const radius = (Math.random() * spread) * (0.1 + Math.random() * 0.9);
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
+      
+      // For process events, particles are more stretched along the spiral path
+      const phi = isProcessEvent
+        ? Math.acos((Math.random() * 1.5) - 1) // More vertical stretch
+        : Math.acos((Math.random() * 2) - 1);  // Even distribution
       
       positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
@@ -80,44 +97,70 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
       colors[i3 + 2] = baseColor.b * (1 - colorMix) + complementaryColor.b * colorMix;
       
       // Size varies based on distance from center and intensity
-      sizes[i] = (0.1 + Math.random() * 0.3) * (0.5 + event.intensity * 0.1);
+      // One-time events: larger particles
+      // Process events: smaller particles
+      const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;
+      sizes[i] = (0.1 + Math.random() * 0.3) * (0.5 + event.intensity * 0.1) * sizeMultiplier;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
-  }, [event.color, event.intensity]);
+  }, [event.color, event.intensity, isProcessEvent]);
   
   // Animation for the cosmic effect
   useFrame((state, delta) => {
     if (particlesRef.current) {
-      // Rotate the particle system slowly
-      particlesRef.current.rotation.y += delta * 0.1;
-      particlesRef.current.rotation.z += delta * 0.05;
+      // One-time events: faster rotation, more dynamic
+      // Process events: slower, more stable rotation
+      const rotationSpeed = isProcessEvent ? 0.05 : 0.15;
       
-      // Pulsate the particles slightly
+      // Rotate the particle system
+      particlesRef.current.rotation.y += delta * rotationSpeed;
+      particlesRef.current.rotation.z += delta * (rotationSpeed * 0.5);
+      
+      // Pulsate the particles - stronger for one-time events
       const time = state.clock.getElapsedTime();
-      const pulseScale = 1 + Math.sin(time * 2) * 0.05;
+      const pulseIntensity = isProcessEvent ? 0.03 : 0.08;
+      const pulseSpeed = isProcessEvent ? 1.5 : 2.5;
+      const pulseScale = 1 + Math.sin(time * pulseSpeed) * pulseIntensity;
+      
       particlesRef.current.scale.set(pulseScale, pulseScale, pulseScale);
     }
     
     if (glowRef.current) {
-      // Pulsate the glow
+      // Pulsate the glow - stronger for one-time events
       const time = state.clock.getElapsedTime();
-      const pulseScale = 1 + Math.sin(time * 1.5) * 0.2;
+      const pulseIntensity = isProcessEvent ? 0.1 : 0.2;
+      const pulseSpeed = isProcessEvent ? 1.2 : 1.8;
+      const pulseScale = 1 + Math.sin(time * pulseSpeed) * pulseIntensity;
+      
+      // One-time events: larger glow
+      // Process events: more subdued glow
+      const baseScale = isProcessEvent 
+        ? 0.6 + event.intensity * 0.08
+        : 0.9 + event.intensity * 0.12;
+      
       glowRef.current.scale.set(
-        0.8 + event.intensity * 0.1 * pulseScale, 
-        0.8 + event.intensity * 0.1 * pulseScale, 
+        baseScale * pulseScale, 
+        baseScale * pulseScale, 
         1
       );
     }
     
     if (ringRef.current) {
-      // Rotate the ring continuously
-      ringRef.current.rotation.z += delta * 0.3;
+      // Rotate the ring - faster for one-time events
+      const rotationSpeed = isProcessEvent ? 0.2 : 0.4;
+      ringRef.current.rotation.z += delta * rotationSpeed;
     }
   });
   
   // Create a tint color for the glow based on event color
   const glowColor = new THREE.Color(event.color);
+  
+  // Size of core elements - larger for one-time events
+  const ringSize = isProcessEvent ? 0.25 : 0.35;
+  const lightIntensity = isProcessEvent 
+    ? 0.4 + event.intensity * 0.15
+    : 0.6 + event.intensity * 0.25;
   
   return (
     <group position={position}>
@@ -166,7 +209,7 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
       
       {/* Thin glowing ring */}
       <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.3, 0.35, 64]} />
+        <ringGeometry args={[ringSize * 0.9, ringSize, 64]} />
         <meshBasicMaterial
           color={event.color}
           transparent
@@ -180,7 +223,7 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
       {/* Point light for illumination */}
       <pointLight 
         color={event.color} 
-        intensity={0.5 + event.intensity * 0.2}
+        intensity={lightIntensity}
         distance={3}
         decay={2}
       />

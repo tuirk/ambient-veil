@@ -198,6 +198,7 @@ const EventForm: React.FC<EventFormProps> = ({
     } else {
       // Create event with exact date
       const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
+      // Only set endDate if hasEndDate is true
       const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
 
       newEvent = {
@@ -280,23 +281,36 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="useRoughDate"
-              checked={useRoughDate}
-              onChange={(e) => {
-                setUseRoughDate(e.target.checked);
-                if (e.target.checked) {
-                  setHasEndDate(false); // Disable end date if rough date is selected
-                  setIncludeDay(false); // Disable day selection if rough date is selected
-                }
-              }}
-              className="rounded border-input"
-            />
-            <label htmlFor="useRoughDate" className="text-sm">
-              I only remember the season
-            </label>
+          <div className="grid gap-4 pt-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium leading-none">Choose Date Type:</Label>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div 
+                className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                  !useRoughDate 
+                    ? "border-primary bg-primary/20 shadow-md" 
+                    : "border-muted bg-background/60 hover:bg-background/80"
+                }`}
+                onClick={() => setUseRoughDate(false)}
+              >
+                <h3 className="font-medium mb-1">One-Time Event</h3>
+                <p className="text-xs text-muted-foreground">Specific date for a single moment</p>
+              </div>
+              
+              <div 
+                className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                  useRoughDate 
+                    ? "border-primary bg-primary/20 shadow-md" 
+                    : "border-muted bg-background/60 hover:bg-background/80"
+                }`}
+                onClick={() => setUseRoughDate(true)}
+              >
+                <h3 className="font-medium mb-1">Seasonal/Process</h3>
+                <p className="text-xs text-muted-foreground">A season or period of time</p>
+              </div>
+            </div>
           </div>
 
           {useRoughDate ? (
@@ -393,17 +407,15 @@ const EventForm: React.FC<EventFormProps> = ({
               )}
 
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="hasEndDate"
                   checked={hasEndDate}
-                  onChange={(e) => setHasEndDate(e.target.checked)}
-                  className="rounded border-input"
-                  disabled={useRoughDate}
+                  onCheckedChange={(checked) => setHasEndDate(!!checked)}
+                  className="border-input"
                 />
-                <label htmlFor="hasEndDate" className="text-sm">
+                <Label htmlFor="hasEndDate" className="text-sm">
                   This spans a period of time
-                </label>
+                </Label>
               </div>
 
               {hasEndDate && (
