@@ -1,7 +1,7 @@
-
 import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Line } from "@react-three/drei";
 import { TimeEvent } from "@/types/event";
 import { calculateSpiralSegment } from "@/utils/spiralUtils";
 
@@ -33,7 +33,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   
   // References for animation
   const particlesRef = useRef<THREE.Points>(null);
-  const lineRef = useRef<THREE.Line>(null);
+  const lineRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.PointLight>(null);
   
   // Generate particle texture for glow effect
@@ -57,7 +57,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Generate dense particle cloud along the duration
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
     // Increased particle count for more visibility
-    const particleCount = Math.min(400, 100 + Math.floor(startEvent.intensity * 50));
+    const particleCount = Math.min(600, 200 + Math.floor(startEvent.intensity * 50));
     
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -74,7 +74,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       const basePoint = points[pointIndex];
       
       // Add some randomness within a "cloud" around the path
-      const spread = 0.3 + (startEvent.intensity / 10) * 0.4; // Scale with intensity
+      const spread = 0.4 + (startEvent.intensity / 10) * 0.5; // Scale with intensity
       const offsetX = (Math.random() - 0.5) * spread;
       const offsetY = (Math.random() - 0.5) * spread;
       const offsetZ = (Math.random() - 0.5) * spread;
@@ -84,15 +84,15 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       positions[i3 + 2] = basePoint.z + offsetZ;
       
       // All particles have the same base color but vary in brightness
-      // Slight variation for visual interest but maintaining brand color
-      const brightness = 0.85 + Math.random() * 0.3;
+      // Keep closer to event color with just minor variations for visual interest
+      const brightness = 0.9 + Math.random() * 0.2;
       colors[i3] = baseColor.r * brightness;
       colors[i3 + 1] = baseColor.g * brightness;
       colors[i3 + 2] = baseColor.b * brightness;
       
       // Vary particle sizes based on intensity and random factor
-      const sizeVariation = Math.random() * 0.5 + 0.5; // 0.5 to 1.0
-      sizes[i] = (0.15 + (startEvent.intensity / 10) * 0.25) * sizeVariation;
+      const sizeVariation = Math.random() * 0.6 + 0.6; // 0.6 to 1.2
+      sizes[i] = (0.25 + (startEvent.intensity / 10) * 0.35) * sizeVariation;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
@@ -120,38 +120,22 @@ export const EventDuration: React.FC<EventDurationProps> = ({
         glowRef.current.position.set(position.x, position.y, position.z);
         
         // Pulse the intensity
-        const pulseIntensity = (Math.sin(time * 1.2) * 0.3 + 0.7) * startEvent.intensity * 0.25;
+        const pulseIntensity = (Math.sin(time * 1.2) * 0.3 + 0.8) * startEvent.intensity * 0.3;
         glowRef.current.intensity = pulseIntensity;
       }
-    }
-    
-    if (lineRef.current) {
-      // Subtle animation for the line
-      const time = state.clock.getElapsedTime();
-      const pulse = Math.sin(time * 0.5) * 0.15 + 1;
-      lineRef.current.material.opacity = (0.7 + startEvent.intensity * 0.05) * pulse;
     }
   });
 
   return (
     <group>
-      {/* Core line showing the path */}
-      <line ref={lineRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={points.length}
-            array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial
-          color={eventColorObj}
-          transparent
-          opacity={0.7 + startEvent.intensity * 0.05}
-          linewidth={2 + startEvent.intensity * 0.5}
-        />
-      </line>
+      {/* Core line showing the path - replaced native line with drei's Line */}
+      <Line
+        points={points}
+        color={eventColorObj}
+        linewidth={2 + startEvent.intensity * 0.5}
+        opacity={0.8 + startEvent.intensity * 0.05}
+        transparent
+      />
       
       {/* Dense particle cloud around the line */}
       <points ref={particlesRef}>
@@ -176,10 +160,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.25}
+          size={0.35}
           vertexColors
           transparent
-          opacity={0.9}
+          opacity={0.95}
           alphaMap={particleTexture}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
@@ -191,8 +175,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
         <pointLight
           ref={glowRef}
           color={eventColorObj}
-          intensity={startEvent.intensity * 0.15}
-          distance={2}
+          intensity={startEvent.intensity * 0.25}
+          distance={3}
           position={points[0]}
         />
       )}
@@ -200,14 +184,39 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       {/* Core intense glow at the origin */}
       {points.length > 0 && (
         <mesh position={points[0]}>
-          <sphereGeometry args={[0.1 + startEvent.intensity * 0.02, 8, 8]} />
+          <sphereGeometry args={[0.15 + startEvent.intensity * 0.04, 8, 8]} />
           <meshBasicMaterial
             color={startEvent.color}
             transparent
-            opacity={0.8}
+            opacity={0.85}
             blending={THREE.AdditiveBlending}
           />
         </mesh>
+      )}
+      
+      {/* Add additional glow spots along the duration path */}
+      {points.length > 5 && (
+        <>
+          <mesh position={points[Math.floor(points.length * 0.33)]}>
+            <sphereGeometry args={[0.12 + startEvent.intensity * 0.03, 8, 8]} />
+            <meshBasicMaterial
+              color={startEvent.color}
+              transparent
+              opacity={0.7}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+          
+          <mesh position={points[Math.floor(points.length * 0.66)]}>
+            <sphereGeometry args={[0.12 + startEvent.intensity * 0.03, 8, 8]} />
+            <meshBasicMaterial
+              color={startEvent.color}
+              transparent
+              opacity={0.7}
+              blending={THREE.AdditiveBlending}
+            />
+          </mesh>
+        </>
       )}
     </group>
   );
