@@ -45,9 +45,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     <Line
       points={points}
       color={colorObj}
-      lineWidth={0.3 + startEvent.intensity * 0.05} // Even thinner line
+      lineWidth={0.2 + startEvent.intensity * 0.03} // Even thinner line
       transparent
-      opacity={0.04 + (startEvent.intensity * 0.005)} // More transparent
+      opacity={0.03 + (startEvent.intensity * 0.003)} // More transparent
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
       dashSize={isRoughDate ? 0.1 : 0}
