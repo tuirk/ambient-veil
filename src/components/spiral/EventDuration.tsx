@@ -45,13 +45,13 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     <Line
       points={points}
       color={colorObj}
-      lineWidth={0.1 + startEvent.intensity * 0.01} // Thinner line
+      lineWidth={0.05 + startEvent.intensity * 0.005} // Almost invisible line
       transparent
-      opacity={0.01 + (startEvent.intensity * 0.001)} // Almost invisible
+      opacity={0.005 + (startEvent.intensity * 0.0005)} // Barely visible
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
-      dashSize={isRoughDate ? 0.05 : 0}
-      dashOffset={isRoughDate ? 0.05 : 0}
+      dashSize={isRoughDate ? 0.03 : 0}
+      dashOffset={isRoughDate ? 0.03 : 0}
       dashScale={isRoughDate ? 10 : 0}
     />
   );

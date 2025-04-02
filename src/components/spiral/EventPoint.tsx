@@ -40,18 +40,18 @@ export const EventPoint: React.FC<EventPointProps> = ({
     <group position={position} onClick={onClick}>
       {/* Visible sphere */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[0.1 + event.intensity * 0.02, 8, 8]} />
+        <sphereGeometry args={[0.2 + event.intensity * 0.04, 8, 8]} />
         <meshBasicMaterial 
           color={colorObj} 
           transparent 
-          opacity={0.7 + event.intensity * 0.03} 
+          opacity={0.85 + event.intensity * 0.05} 
         />
       </mesh>
       {/* Light source for glow effect */}
       <pointLight 
         color={colorObj} 
-        intensity={event.intensity * 0.5} 
-        distance={1} 
+        intensity={event.intensity * 1.0} 
+        distance={1.5} 
       />
     </group>
   );

@@ -17,11 +17,11 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
   zoom
 }) => {
   // DRAMATICALLY increase particle count based on event intensity
-  // These numbers are 5-8x higher than before for massive visual impact
+  // These numbers are 10-15x higher than before for massive visual impact
   const getParticleCount = (intensity: number) => {
-    if (intensity >= 8) return Math.floor(1500 + (intensity - 8) * 400); // High: 1500-2300
-    if (intensity >= 4) return Math.floor(800 + (intensity - 4) * 200);  // Medium: 800-1600
-    return Math.floor(400 + intensity * 50);                           // Low: 400-800
+    if (intensity >= 8) return Math.floor(2500 + (intensity - 8) * 600); // High: 2500-3800
+    if (intensity >= 4) return Math.floor(1600 + (intensity - 4) * 300);  // Medium: 1600-2800
+    return Math.floor(800 + intensity * 100);                           // Low: 800-1800
   };
   
   const particlesCount = getParticleCount(event.intensity);
@@ -36,7 +36,7 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
     
     const color = new THREE.Color(event.color);
     // MUCH larger base size for dramatic visual effect
-    const baseSize = 1.0 + (event.intensity * 0.5); 
+    const baseSize = 2.0 + (event.intensity * 1.0); 
     
     // If it's a duration event, scatter particles along the path and WELL beyond
     if (event.endDate) {
@@ -57,14 +57,14 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         const pathIndex = Math.floor(Math.random() * points.length);
         const point = points[pathIndex];
         
-        // EXTREME scatter radius for massive nebula effect - 6-8x larger than before
-        const scatter = 15.0 * (0.8 + (event.intensity / 10));
+        // EXTREME scatter radius for massive nebula effect - 10-12x larger than before
+        const scatter = 20.0 * (0.8 + (event.intensity / 10));
         
         // Random scattered position with dramatic 3D volumetric effect
         const randomOffset = new THREE.Vector3(
-          (Math.random() - 0.5) * scatter * 4.5, // Huge horizontal spread
-          (Math.random() - 0.5) * scatter * 4.0, // Massive vertical spread
-          (Math.random() - 0.5) * scatter * 4.5  // Huge depth spread
+          (Math.random() - 0.5) * scatter * 6.0, // Huge horizontal spread
+          (Math.random() - 0.5) * scatter * 5.0, // Massive vertical spread
+          (Math.random() - 0.5) * scatter * 6.0  // Huge depth spread
         );
         
         positions[i3] = point.x + randomOffset.x;
@@ -72,9 +72,9 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         positions[i3 + 2] = point.z + randomOffset.z;
         
         // Dramatic color variation for stunning nebula look
-        const colorVariation = 0.9; // Increased variation for cosmic look
+        const colorVariation = 0.6; // Increased variation for cosmic look
         // Larger hue shifts for more dramatic color variation
-        const hueShift = Math.random() * 0.4 - 0.2; // -0.2 to +0.2 hue shift
+        const hueShift = Math.random() * 0.2 - 0.1; // -0.1 to +0.1 hue shift
         const tempColor = new THREE.Color(color.getHex());
         
         // Get HSL components to modify
@@ -82,10 +82,10 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         tempColor.getHSL(hsl);
         // Apply dramatic hue variation for nebula effect
         hsl.h = Math.max(0, Math.min(1, hsl.h + hueShift));
-        // Randomize saturation dramatically
-        hsl.s = Math.max(0, Math.min(1, hsl.s * (0.7 + Math.random() * 0.6)));
-        // Randomize luminance for glowing core and diffuse edges
-        hsl.l = Math.max(0, Math.min(1, hsl.l * (0.7 + Math.random() * 0.8)));
+        // Maintain higher saturation
+        hsl.s = Math.max(0.5, Math.min(1, hsl.s * (0.8 + Math.random() * 0.4)));
+        // Maintain higher luminance for visibility
+        hsl.l = Math.max(0.4, Math.min(1, hsl.l * (0.8 + Math.random() * 0.5)));
         tempColor.setHSL(hsl.h, hsl.s, hsl.l);
         
         colors[i3] = tempColor.r * (1 - colorVariation + Math.random() * colorVariation);
@@ -93,13 +93,13 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         colors[i3 + 2] = tempColor.b * (1 - colorVariation + Math.random() * colorVariation);
         
         // Much more dramatic size variation for stunning nebula effect
-        sizes[i] = baseSize * (0.5 + Math.random() * 12.0);
+        sizes[i] = baseSize * (0.7 + Math.random() * 15.0);
       }
     } else {
       // For point events, create a massive nebula explosion effect
       const centerPosition = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
       // MUCH wider spread factor for truly dramatic particle explosion
-      const spreadFactor = 12.0 + (event.intensity * 1.5); 
+      const spreadFactor = 15.0 + (event.intensity * 2.0); 
       
       for (let i = 0; i < particlesCount; i++) {
         const i3 = i * 3;
@@ -121,9 +121,9 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         
         // Create major asymmetry for dramatic nebula look
         const asymmetry = new THREE.Vector3(
-          (Math.random() - 0.5) * 3.0,
-          (Math.random() - 0.5) * 3.0,
-          (Math.random() - 0.5) * 3.0
+          (Math.random() - 0.5) * 4.0,
+          (Math.random() - 0.5) * 4.0,
+          (Math.random() - 0.5) * 4.0
         );
         
         positions[i3] = centerPosition.x + r * Math.sin(theta) * Math.cos(phi) + asymmetry.x;
@@ -134,19 +134,19 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         const distanceFromCenter = Math.min(1, r / spreadFactor);
         
         // Extreme color variation for visual richness of nebula
-        const colorVariation = 0.9;
+        const colorVariation = 0.6;
         // Create dramatically different color for each particle
-        const hueShift = (Math.random() * 0.4) - 0.2; // Larger hue shift range
+        const hueShift = (Math.random() * 0.2) - 0.1; // Reasonable hue shift range
         const tempColor = new THREE.Color(color.getHex());
         
         // Adjust HSL values for stunning nebula effect
         let hsl = {h: 0, s: 0, l: 0};
         tempColor.getHSL(hsl);
         hsl.h = Math.max(0, Math.min(1, hsl.h + hueShift));
-        // Varied saturation
-        hsl.s = Math.max(0.3, Math.min(1, hsl.s * (1.3 - distanceFromCenter * 0.6)));
-        // More dramatic luminance changes
-        hsl.l = Math.max(0.2, Math.min(1, hsl.l * (1.3 - distanceFromCenter * 0.4)));
+        // Maintain higher saturation
+        hsl.s = Math.max(0.5, Math.min(1, hsl.s * (1.2 - distanceFromCenter * 0.4)));
+        // Maintain higher luminance
+        hsl.l = Math.max(0.4, Math.min(1, hsl.l * (1.2 - distanceFromCenter * 0.3)));
         tempColor.setHSL(hsl.h, hsl.s, hsl.l);
         
         colors[i3] = tempColor.r * (1 - colorVariation + Math.random() * colorVariation);
@@ -154,9 +154,9 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         colors[i3 + 2] = tempColor.b * (1 - colorVariation + Math.random() * colorVariation);
         
         // Create dramatic size variation based on distance from center
-        const sizeVariation = 0.5 + Math.random() * 15.0; // Much larger variation
+        const sizeVariation = 0.7 + Math.random() * 18.0; // Much larger variation
         const centerProximity = 1 - (distanceFromCenter * 0.6);
-        sizes[i] = baseSize * sizeVariation * (0.7 + centerProximity);
+        sizes[i] = baseSize * sizeVariation * (0.8 + centerProximity);
       }
     }
     
@@ -169,9 +169,9 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
       // More dramatic pulsing opacity for the whole cloud
       if (pointsRef.current.material instanceof THREE.PointsMaterial) {
         const time = clock.getElapsedTime();
-        const pulse = Math.sin(time * 0.3) * 0.3;
+        const pulse = Math.sin(time * 0.3) * 0.15;
         // Higher base opacity for more visibility
-        pointsRef.current.material.opacity = 0.95 + pulse;
+        pointsRef.current.material.opacity = 0.98 + pulse;
       }
       
       // Create more dramatic movement for individual particles
@@ -187,7 +187,7 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         const zFreq = 0.07 + Math.sin(i * 0.15) * 0.07;
         
         // Apply more dramatic drift - like cosmic dust in space
-        const driftFactor = 0.04 * (event.intensity / 5);
+        const driftFactor = 0.05 * (event.intensity / 5);
         positions[i3] += Math.sin(time * xFreq + i) * driftFactor;
         positions[i3 + 1] += Math.cos(time * yFreq + i * 0.7) * driftFactor * 1.2;
         positions[i3 + 2] += Math.sin(time * zFreq + i * 1.3) * driftFactor;
@@ -220,7 +220,7 @@ export const EventDustCloud: React.FC<EventDustCloudProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.5} // Larger base size
+        size={0.7} // Larger base size
         vertexColors
         transparent
         alphaMap={new THREE.TextureLoader().load('/lovable-uploads/bdc4b9a9-a9b1-4e5b-a2f6-cbddfe02b5ca.png')}

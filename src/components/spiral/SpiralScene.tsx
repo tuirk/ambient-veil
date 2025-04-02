@@ -25,7 +25,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   useEffect(() => {
     if (camera) {
       // Position camera at a distance that gives good overall view
-      const distance = 20 / Math.max(0.5, config.zoom);
+      const distance = 25 / Math.max(0.5, config.zoom); // Increased initial distance
       camera.position.set(distance, distance, distance);
       camera.lookAt(0, -3, 0);
       camera.updateProjectionMatrix();
@@ -36,7 +36,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
     <>
       {/* Enhanced space background */}
       <color attach="background" args={["#010203"]} />
-      <fogExp2 attach="fog" args={[0x000000, 0.001]} />
+      <fogExp2 attach="fog" args={[0x000000, 0.0005]} /> {/* Reduced fog for better visibility */}
       
       {/* Create more detailed 3D space environment */}
       <Stars radius={100} depth={50} count={5000} factor={4} saturation={0.5} fade speed={1} />
@@ -46,13 +46,13 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         enablePan={true}
         enableZoom={true}
         minDistance={5}
-        maxDistance={40}
+        maxDistance={60} // Increased max distance
         minZoom={0.5}
         maxZoom={2}
       />
       
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[10, 10, 5]} intensity={0.5} />
+      <ambientLight intensity={0.4} /> {/* Slightly increased ambient light */}
+      <directionalLight position={[10, 10, 5]} intensity={0.6} /> {/* Slightly increased directional light */}
       
       {/* Render the main spiral */}
       <SpiralLine 
@@ -68,7 +68,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         zoom={config.zoom}
       />
       
-      {/* Render all events - this is where the issue was */}
+      {/* Render all events */}
       <EventVisualizations 
         events={events}
         config={config}
