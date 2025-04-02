@@ -120,6 +120,12 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [endMonth, endYear]);
 
+  useEffect(() => {
+    if (useRoughDate || hasEndDate) {
+      setEventType("process");
+    }
+  }, [useRoughDate, hasEndDate]);
+
   const handleSave = () => {
     if (!title) return;
 
@@ -189,7 +195,7 @@ const EventForm: React.FC<EventFormProps> = ({
       const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
       const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
 
-      const type = hasEndDate ? "process" : eventType;
+      const type = includeDay && !hasEndDate ? "one-time" : "process";
 
       newEvent = {
         id: uuidv4(),
@@ -287,8 +293,8 @@ const EventForm: React.FC<EventFormProps> = ({
                 }`}
                 onClick={() => setUseRoughDate(false)}
               >
-                <h3 className="font-medium mb-1">One-Time Event</h3>
-                <p className="text-xs text-muted-foreground">Specific date for a single moment</p>
+                <h3 className="font-medium mb-1">Exact Date</h3>
+                <p className="text-xs text-muted-foreground">Specific date for a single moment or period</p>
               </div>
               
               <div 
@@ -299,8 +305,8 @@ const EventForm: React.FC<EventFormProps> = ({
                 }`}
                 onClick={() => setUseRoughDate(true)}
               >
-                <h3 className="font-medium mb-1">Seasonal/Process</h3>
-                <p className="text-xs text-muted-foreground">A season or period of time</p>
+                <h3 className="font-medium mb-1">Seasonal</h3>
+                <p className="text-xs text-muted-foreground">A general season within a year</p>
               </div>
             </div>
           </div>
@@ -341,7 +347,7 @@ const EventForm: React.FC<EventFormProps> = ({
             <>
               <div className="grid gap-2">
                 <label className="text-sm font-medium leading-none">Event Type</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   <div 
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                       eventType === "one-time"
@@ -351,10 +357,11 @@ const EventForm: React.FC<EventFormProps> = ({
                     onClick={() => {
                       setEventType("one-time");
                       setHasEndDate(false);
+                      setIncludeDay(true);
                     }}
                   >
-                    <h3 className="font-medium text-sm">One-Time</h3>
-                    <p className="text-xs text-muted-foreground">A single moment</p>
+                    <h3 className="font-medium text-sm">One-Time Event</h3>
+                    <p className="text-xs text-muted-foreground">A single moment on a specific day</p>
                   </div>
                   
                   <div 
@@ -367,14 +374,16 @@ const EventForm: React.FC<EventFormProps> = ({
                       setEventType("process");
                     }}
                   >
-                    <h3 className="font-medium text-sm">Process</h3>
-                    <p className="text-xs text-muted-foreground">A period of time</p>
+                    <h3 className="font-medium text-sm">Process/Period</h3>
+                    <p className="text-xs text-muted-foreground">A period of time or month-level event</p>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-medium leading-none">When</label>
+                <label className="text-sm font-medium leading-none">
+                  {eventType === "one-time" ? "When" : "Start Date"}
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <select
                     value={startMonth}
@@ -401,20 +410,8 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="includeDay"
-                  checked={includeDay}
-                  onCheckedChange={(checked) => setIncludeDay(!!checked)}
-                  className="border-input"
-                />
-                <Label htmlFor="includeDay" className="text-sm">
-                  I want to specify the exact day
-                </Label>
-              </div>
-
-              {includeDay && (
-                <div className="grid gap-2 pl-6">
+              {eventType === "one-time" ? (
+                <div className="grid gap-2">
                   <label className="text-sm font-medium leading-none">
                     Day
                   </label>
@@ -430,63 +427,31 @@ const EventForm: React.FC<EventFormProps> = ({
                     ))}
                   </select>
                 </div>
-              )}
-
-              {eventType === "process" && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="hasEndDate"
-                    checked={hasEndDate}
-                    onCheckedChange={(checked) => setHasEndDate(!!checked)}
-                    className="border-input"
-                  />
-                  <Label htmlFor="hasEndDate" className="text-sm">
-                    This process has an end date
-                  </Label>
-                </div>
-              )}
-
-              {eventType === "process" && hasEndDate && (
-                <div className="grid gap-2 pl-6">
-                  <label className="text-sm font-medium leading-none">
-                    Ends
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <select
-                      value={endMonth}
-                      onChange={(e) => setEndMonth(Number(e.target.value))}
-                      className="rounded-md border border-input bg-background/50 px-3 py-2"
-                    >
-                      {months.map((month, index) => (
-                        <option key={month} value={index}>
-                          {month}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={endYear}
-                      onChange={(e) => setEndYear(Number(e.target.value))}
-                      className="rounded-md border border-input bg-background/50 px-3 py-2"
-                    >
-                      {years.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="includeDay"
+                      checked={includeDay}
+                      onCheckedChange={(checked) => setIncludeDay(!!checked)}
+                      className="border-input"
+                    />
+                    <Label htmlFor="includeDay" className="text-sm">
+                      I want to specify the exact day
+                    </Label>
                   </div>
-                  
+
                   {includeDay && (
-                    <div className="mt-2">
+                    <div className="grid gap-2 pl-6">
                       <label className="text-sm font-medium leading-none">
-                        End Day
+                        Start Day
                       </label>
                       <select
-                        value={endDay}
-                        onChange={(e) => setEndDay(Number(e.target.value))}
-                        className="rounded-md border border-input bg-background/50 px-3 py-2 w-full mt-1"
+                        value={startDay}
+                        onChange={(e) => setStartDay(Number(e.target.value))}
+                        className="rounded-md border border-input bg-background/50 px-3 py-2"
                       >
-                        {availableEndDays.map((day) => (
+                        {availableDays.map((day) => (
                           <option key={day} value={day}>
                             {day}
                           </option>
@@ -494,7 +459,70 @@ const EventForm: React.FC<EventFormProps> = ({
                       </select>
                     </div>
                   )}
-                </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="hasEndDate"
+                      checked={hasEndDate}
+                      onCheckedChange={(checked) => setHasEndDate(!!checked)}
+                      className="border-input"
+                    />
+                    <Label htmlFor="hasEndDate" className="text-sm">
+                      This process has an end date
+                    </Label>
+                  </div>
+
+                  {hasEndDate && (
+                    <div className="grid gap-2 pl-6">
+                      <label className="text-sm font-medium leading-none">
+                        End Date
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={endMonth}
+                          onChange={(e) => setEndMonth(Number(e.target.value))}
+                          className="rounded-md border border-input bg-background/50 px-3 py-2"
+                        >
+                          {months.map((month, index) => (
+                            <option key={month} value={index}>
+                              {month}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={endYear}
+                          onChange={(e) => setEndYear(Number(e.target.value))}
+                          className="rounded-md border border-input bg-background/50 px-3 py-2"
+                        >
+                          {years.map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {includeDay && (
+                        <div className="mt-2">
+                          <label className="text-sm font-medium leading-none">
+                            End Day
+                          </label>
+                          <select
+                            value={endDay}
+                            onChange={(e) => setEndDay(Number(e.target.value))}
+                            className="rounded-md border border-input bg-background/50 px-3 py-2 w-full mt-1"
+                          >
+                            {availableEndDays.map((day) => (
+                              <option key={day} value={day}>
+                                {day}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
