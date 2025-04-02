@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo, useEffect } from "react";
 import { Line, useTexture } from "@react-three/drei";
 import * as THREE from "three";
@@ -127,18 +126,18 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const tertiaryParticleCount = Math.floor(particleCount * 0.4);
   
   // Helper function to create color variations
-  const getColorVariation = (baseColor: THREE.Color, strength: number = 0.15) => {
+  const getColorVariation = (baseColor: THREE.Color, strength: number = 0.05) => {
     const newColor = baseColor.clone();
     
     // Small random shifts in hue
     const hsl: {h: number, s: number, l: number} = {h: 0, s: 0, l: 0};
     newColor.getHSL(hsl);
-    hsl.h += (Math.random() - 0.5) * strength;
-    hsl.s += (Math.random() - 0.5) * strength * 0.5;
-    hsl.l += (Math.random() - 0.5) * strength * 0.3;
+    
+    // Keep exact same hue, only vary saturation and lightness slightly
+    hsl.s += (Math.random() - 0.5) * strength;
+    hsl.l += (Math.random() - 0.5) * strength;
     
     // Ensure values stay in valid range
-    hsl.h = (hsl.h + 1) % 1;
     hsl.s = Math.max(0, Math.min(1, hsl.s));
     hsl.l = Math.max(0.2, Math.min(0.9, hsl.l));
     
@@ -289,7 +288,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       bgOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.6 + Math.random() * 0.6);
       
       // Slightly varied colors for background
-      const variedColor = getColorVariation(baseColor, 0.2);
+      const variedColor = getColorVariation(baseColor, 0.1);
       bgColors[i3] = variedColor.r;
       bgColors[i3 + 1] = variedColor.g;
       bgColors[i3 + 2] = variedColor.b;
@@ -326,7 +325,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       terOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.7 + Math.random() * 0.5);
       
       // Some color variation
-      const variedColor = getColorVariation(baseColor, 0.25);
+      const variedColor = getColorVariation(baseColor, 0.1);
       terColors[i3] = variedColor.r;
       terColors[i3 + 1] = variedColor.g;
       terColors[i3 + 2] = variedColor.b;

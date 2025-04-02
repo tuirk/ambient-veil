@@ -17,7 +17,7 @@ const Spiral: React.FC = () => {
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: currentYear - 5,
+    startYear: currentYear - 5, // Set startYear to current year - 5 by default
     currentYear: currentYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
@@ -37,7 +37,23 @@ const Spiral: React.FC = () => {
     setEvents(savedEvents);
     
     const savedConfig = getConfig();
-    setConfig(savedConfig);
+    
+    // Ensure the startYear is no more than 5 years before current year
+    const minStartYear = currentYear - 5;
+    const adjustedConfig = {
+      ...savedConfig,
+      startYear: Math.max(savedConfig.startYear, minStartYear)
+    };
+    
+    setConfig(adjustedConfig);
+    
+    // If the config needed adjustment, save it back
+    if (adjustedConfig.startYear !== savedConfig.startYear) {
+      saveConfig(adjustedConfig);
+    }
+    
+    // Also update the selectedStartYear state
+    setSelectedStartYear(Math.max(savedConfig.startYear, minStartYear));
     
     // Check if this is the first time usage
     if (isFirstTimeUser()) {
@@ -48,7 +64,7 @@ const Spiral: React.FC = () => {
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
     const maxYear = currentYear + 1;
-    const minYear = Math.min(config.startYear, currentYear - 5);
+    const minYear = currentYear - 5; // Limited to 5 years before current year
     
     if (year < minYear || year > maxYear) {
       toast({
@@ -77,10 +93,14 @@ const Spiral: React.FC = () => {
   };
   
   const handleStartYearSelection = () => {
+    // Ensure startYear is not earlier than current year - 5
+    const minStartYear = currentYear - 5;
+    const validStartYear = Math.max(selectedStartYear, minStartYear);
+    
     // Update config with the selected start year
     const updatedConfig = {
       ...config,
-      startYear: selectedStartYear
+      startYear: validStartYear
     };
     
     setConfig(updatedConfig);
@@ -90,7 +110,7 @@ const Spiral: React.FC = () => {
     
     toast({
       title: "Timeline Start Year Set",
-      description: `Your timeline will begin from ${selectedStartYear}`,
+      description: `Your timeline will begin from ${validStartYear}`,
     });
   };
   
@@ -147,7 +167,7 @@ const Spiral: React.FC = () => {
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
-              <li>You can add memories from {Math.min(config.startYear, currentYear - 5)} to {currentYear + 1}.</li>
+              <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
             </ul>
           </div>
@@ -228,19 +248,19 @@ const Spiral: React.FC = () => {
               <h3 className="font-medium">Start Year: {selectedStartYear}</h3>
               <Slider
                 value={[selectedStartYear]}
-                min={currentYear - 10}
+                min={currentYear - 5} // Min is now 5 years ago
                 max={currentYear}
                 step={1}
                 onValueChange={(value) => setSelectedStartYear(value[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-gray-400">
-                <span>{currentYear - 10}</span>
+                <span>{currentYear - 5}</span>
                 <span>{currentYear}</span>
               </div>
               <p className="text-sm text-gray-300 mt-4">
                 This defines the earliest year shown on your timeline spiral.
-                You'll still be able to add memories from {Math.min(selectedStartYear, currentYear - 5)} onwards.
+                You can only add memories from {currentYear - 5} onwards.
               </p>
             </div>
           </div>
@@ -263,7 +283,7 @@ const Spiral: React.FC = () => {
         onSave={handleSaveEvent}
         preselectedYear={selectedYear}
         preselectedMonth={selectedMonth}
-        startYear={config.startYear}
+        startYear={currentYear - 5} // Always limit to 5 years before current year
         currentYear={currentYear}
       />
     </div>
@@ -271,4 +291,3 @@ const Spiral: React.FC = () => {
 };
 
 export default Spiral;
-

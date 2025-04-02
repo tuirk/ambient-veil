@@ -85,21 +85,35 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         }
         
         // Determine if this should be visualized as a one-time or process event
-        // regardless of the eventType property (which could be wrong)
         const actuallyOneTimeEvent = isOneTimeEvent(event);
         
-        // Add the cosmic effect and appropriate visualization based on event type
         return (
           <React.Fragment key={event.id}>
-            {/* Add the cosmic effect - different sizes for one-time vs process events */}
-            <CosmicEventEffect
-              event={event}
-              startYear={config.startYear}
-              zoom={config.zoom}
-              isProcessEvent={!actuallyOneTimeEvent}
-            />
+            {/* ONLY add cosmic effect for actual one-time events */}
+            {actuallyOneTimeEvent && (
+              <CosmicEventEffect
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+                isProcessEvent={false}
+              />
+            )}
             
-            {/* For process events: render dust trail along spiral */}
+            {/* For one-time events: render cosmic burst at a single point */}
+            {actuallyOneTimeEvent && (
+              <EventPoint
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+                onClick={() => {
+                  const year = event.startDate.getFullYear();
+                  const month = event.startDate.getMonth();
+                  onEventClick(year, month, 0, 0);
+                }}
+              />
+            )}
+            
+            {/* For process events with end date: render nebula dust trail along spiral */}
             {!actuallyOneTimeEvent && event.endDate && (
               <EventDuration
                 startEvent={event}
@@ -116,20 +130,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={event} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
-              />
-            )}
-            
-            {/* For one-time events: render cosmic burst at a single point */}
-            {actuallyOneTimeEvent && (
-              <EventPoint
-                event={event}
-                startYear={config.startYear}
-                zoom={config.zoom}
-                onClick={() => {
-                  const year = event.startDate.getFullYear();
-                  const month = event.startDate.getMonth();
-                  onEventClick(year, month, 0, 0);
-                }}
               />
             )}
           </React.Fragment>
