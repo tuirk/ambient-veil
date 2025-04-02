@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { SEASONS, getSeasonalDateRange } from "@/utils/seasonalUtils";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface EventFormProps {
   open: boolean;
@@ -58,58 +60,76 @@ const EventForm: React.FC<EventFormProps> = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
+  // Basic event details
   const [title, setTitle] = useState("");
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
   
-  const [selectedStartYear, setSelectedStartYear] = useState(
+  // Date selection logic
+  const [dateLength, setDateLength] = useState<"ONE_DAY" | "SPAN">("ONE_DAY");
+  const [spanType, setSpanType] = useState<"SEASONAL" | "EXACT">("EXACT");
+  
+  // One-day event
+  const [singleDay, setSingleDay] = useState(1);
+  const [singleMonth, setSingleMonth] = useState(preselectedMonth || 0);
+  const [singleYear, setSingleYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
   );
-  const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
-  const [startDay, setStartDay] = useState(1);
-  const [includeDay, setIncludeDay] = useState(false);
-  const [hasEndDate, setHasEndDate] = useState(false);
-  const [endYear, setEndYear] = useState(selectedStartYear);
-  const [endMonth, setEndMonth] = useState(startMonth);
-  const [endDay, setEndDay] = useState(1);
   
-  const [useRoughDate, setUseRoughDate] = useState(false);
-  const [roughSeason, setRoughSeason] = useState<string>("Spring");
-  const [roughYear, setRoughYear] = useState(
+  // Span - Exact dates
+  const [startDay, setStartDay] = useState(1);
+  const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
+  const [startYear, setStartYear] = useState(
+    preselectedYear ? 
+      Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
+      currentYear
+  );
+  const [specifyDays, setSpecifyDays] = useState(false);
+  const [endDay, setEndDay] = useState(1);
+  const [endMonth, setEndMonth] = useState(startMonth);
+  const [endYear, setEndYear] = useState(startYear);
+  
+  // Span - Seasonal
+  const [season, setSeason] = useState<string>("Spring");
+  const [seasonYear, setSeasonYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
   );
 
+  // Available days for each month
   const [availableDays, setAvailableDays] = useState<number[]>([]);
   const [availableEndDays, setAvailableEndDays] = useState<number[]>([]);
+  const [availableSingleDays, setAvailableSingleDays] = useState<number[]>([]);
 
-  const [eventType, setEventType] = useState<"one-time" | "process">("one-time");
-
+  // Initialize with preselected values if available
   useEffect(() => {
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
-      setSelectedStartYear(constrainedYear);
+      setSingleYear(constrainedYear);
+      setStartYear(constrainedYear);
       setEndYear(constrainedYear);
-      setRoughYear(constrainedYear);
+      setSeasonYear(constrainedYear);
     }
     
     if (preselectedMonth !== undefined) {
+      setSingleMonth(preselectedMonth);
       setStartMonth(preselectedMonth);
       setEndMonth(preselectedMonth);
     }
   }, [preselectedYear, preselectedMonth, minYear, maxYear]);
 
+  // Update available days when months/years change
   useEffect(() => {
-    const days = daysInMonth(startMonth, selectedStartYear);
+    const days = daysInMonth(startMonth, startYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
     if (startDay > days) {
       setStartDay(1);
     }
-  }, [startMonth, selectedStartYear]);
+  }, [startMonth, startYear]);
 
   useEffect(() => {
     const days = daysInMonth(endMonth, endYear);
@@ -119,45 +139,54 @@ const EventForm: React.FC<EventFormProps> = ({
       setEndDay(1);
     }
   }, [endMonth, endYear]);
-
+  
   useEffect(() => {
-    if (useRoughDate || hasEndDate) {
-      setEventType("process");
+    const days = daysInMonth(singleMonth, singleYear);
+    setAvailableSingleDays(Array.from({ length: days }, (_, i) => i + 1));
+    
+    if (singleDay > days) {
+      setSingleDay(1);
     }
-  }, [useRoughDate, hasEndDate]);
+  }, [singleMonth, singleYear]);
 
   const handleSave = () => {
     if (!title) return;
 
-    if (useRoughDate) {
-      if (roughYear < minYear || roughYear > maxYear) {
+    // Validate date ranges
+    if (dateLength === "ONE_DAY") {
+      const eventDate = new Date(singleYear, singleMonth, singleDay);
+      const minDate = new Date(minYear, 0, 1);
+      const maxDate = new Date(maxYear, 11, 31);
+      
+      if (eventDate < minDate || eventDate > maxDate) {
         toast({
-          title: "Invalid Date Range",
-          description: `Year must be between ${minYear} and ${maxYear}`,
+          title: "Invalid Date",
+          description: `Date must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
           variant: "destructive",
         });
         return;
       }
-    } else {
-      const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
-      const minDate = new Date(minYear, 0, 1); // Jan 1 of minYear
-      const maxDate = new Date(maxYear, 11, 31); // Dec 31 of maxYear
-      
-      if (startDate < minDate || startDate > maxDate) {
-        toast({
-          title: "Invalid Date Range",
-          description: `Start date must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (hasEndDate) {
-        const endDate = new Date(endYear, endMonth, includeDay ? endDay : 1);
-        if (endDate < minDate || endDate > maxDate) {
+    } else if (dateLength === "SPAN") {
+      if (spanType === "SEASONAL") {
+        if (seasonYear < minYear || seasonYear > maxYear) {
+          toast({
+            title: "Invalid Year",
+            description: `Year must be between ${minYear} and ${maxYear}`,
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        // Validate exact span dates
+        const startDate = new Date(startYear, startMonth, specifyDays ? startDay : 1);
+        const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
+        const minDate = new Date(minYear, 0, 1);
+        const maxDate = new Date(maxYear, 11, 31);
+        
+        if (startDate < minDate || startDate > maxDate || endDate < minDate || endDate > maxDate) {
           toast({
             title: "Invalid Date Range",
-            description: `End date must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
+            description: `Dates must be between ${minDate.toLocaleDateString()} and ${maxDate.toLocaleDateString()}`,
             variant: "destructive",
           });
           return;
@@ -176,36 +205,48 @@ const EventForm: React.FC<EventFormProps> = ({
 
     let newEvent: TimeEvent;
 
-    if (useRoughDate) {
-      const { startDate, endDate } = getSeasonalDateRange(roughSeason, roughYear);
-      
+    if (dateLength === "ONE_DAY") {
+      // Create a one-time event with a specific day
       newEvent = {
         id: uuidv4(),
         title,
         color: selectedColor,
         intensity,
-        startDate,
-        endDate,
-        isRoughDate: true,
-        roughDateSeason: roughSeason,
-        roughDateYear: roughYear,
-        eventType: "process"
+        startDate: new Date(singleYear, singleMonth, singleDay),
+        eventType: "one-time"
       };
-    } else {
-      const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
-      const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
-
-      const type = includeDay && !hasEndDate ? "one-time" : "process";
-
-      newEvent = {
-        id: uuidv4(),
-        title,
-        color: selectedColor,
-        intensity,
-        startDate,
-        endDate,
-        eventType: type
-      };
+    } else if (dateLength === "SPAN") {
+      if (spanType === "SEASONAL") {
+        // Create a seasonal event
+        const { startDate, endDate } = getSeasonalDateRange(season, seasonYear);
+        
+        newEvent = {
+          id: uuidv4(),
+          title,
+          color: selectedColor,
+          intensity,
+          startDate,
+          endDate,
+          isRoughDate: true,
+          roughDateSeason: season,
+          roughDateYear: seasonYear,
+          eventType: "process"
+        };
+      } else {
+        // Create an exact process event
+        const startDate = new Date(startYear, startMonth, specifyDays ? startDay : 1);
+        const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
+        
+        newEvent = {
+          id: uuidv4(),
+          title,
+          color: selectedColor,
+          intensity,
+          startDate,
+          endDate,
+          eventType: "process"
+        };
+      }
     }
 
     onSave(newEvent);
@@ -217,10 +258,9 @@ const EventForm: React.FC<EventFormProps> = ({
     setTitle("");
     setSelectedColor(MOOD_COLORS[0]);
     setIntensity(5);
-    setHasEndDate(false);
-    setUseRoughDate(false);
-    setIncludeDay(false);
-    setEventType("one-time");
+    setDateLength("ONE_DAY");
+    setSpanType("EXACT");
+    setSpecifyDays(false);
   };
 
   return (
@@ -234,6 +274,7 @@ const EventForm: React.FC<EventFormProps> = ({
         </DialogHeader>
 
         <div className="grid gap-5 py-4">
+          {/* Title field */}
           <div className="grid gap-2">
             <label htmlFor="title" className="text-sm font-medium leading-none">
               Title
@@ -247,6 +288,7 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
+          {/* Color selection */}
           <div className="grid gap-2">
             <label className="text-sm font-medium leading-none">Emotional Tone</label>
             <div className="flex flex-wrap gap-2 mt-1">
@@ -265,6 +307,7 @@ const EventForm: React.FC<EventFormProps> = ({
             </div>
           </div>
 
+          {/* Intensity slider */}
           <div className="grid gap-2">
             <label className="text-sm font-medium leading-none">
               Intensity: {intensity}
@@ -279,249 +322,228 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          <div className="grid gap-4 pt-2">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium leading-none">Choose Date Type:</Label>
-            </div>
+          {/* Date Length Selection */}
+          <div className="grid gap-3 pt-2">
+            <label className="text-sm font-medium leading-none">How long did this event last?</label>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div 
-                className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                  !useRoughDate 
-                    ? "border-primary bg-primary/20 shadow-md" 
-                    : "border-muted bg-background/60 hover:bg-background/80"
-                }`}
-                onClick={() => setUseRoughDate(false)}
-              >
-                <h3 className="font-medium mb-1">Exact Date</h3>
-                <p className="text-xs text-muted-foreground">Specific date for a single moment or period</p>
+            <RadioGroup
+              value={dateLength}
+              onValueChange={(value: "ONE_DAY" | "SPAN") => setDateLength(value)}
+              className="grid grid-cols-2 gap-4 mt-1"
+            >
+              <div className={`flex items-center space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
+                dateLength === "ONE_DAY" ? "border-primary bg-primary/10" : "border-muted"
+              }`}>
+                <RadioGroupItem value="ONE_DAY" id="date-one-day" className="sr-only" />
+                <Label htmlFor="date-one-day" className="flex flex-col cursor-pointer">
+                  <span className="font-medium">Just one day</span>
+                  <span className="text-xs text-muted-foreground mt-1">A specific date</span>
+                </Label>
               </div>
               
-              <div 
-                className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                  useRoughDate 
-                    ? "border-primary bg-primary/20 shadow-md" 
-                    : "border-muted bg-background/60 hover:bg-background/80"
-                }`}
-                onClick={() => setUseRoughDate(true)}
-              >
-                <h3 className="font-medium mb-1">Seasonal</h3>
-                <p className="text-xs text-muted-foreground">A general season within a year</p>
+              <div className={`flex items-center space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
+                dateLength === "SPAN" ? "border-primary bg-primary/10" : "border-muted"
+              }`}>
+                <RadioGroupItem value="SPAN" id="date-span" className="sr-only" />
+                <Label htmlFor="date-span" className="flex flex-col cursor-pointer">
+                  <span className="font-medium">Over a span</span>
+                  <span className="text-xs text-muted-foreground mt-1">A period of time</span>
+                </Label>
               </div>
-            </div>
+            </RadioGroup>
           </div>
 
-          {useRoughDate ? (
-            <div className="grid gap-2">
-              <label className="text-sm font-medium leading-none">Season & Year</label>
-              <div className="grid grid-cols-2 gap-2">
-                <Select 
-                  value={roughSeason} 
-                  onValueChange={(value) => setRoughSeason(value)}
-                >
-                  <SelectTrigger className="bg-background/50">
-                    <SelectValue placeholder="Select season" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SEASONS.map((season) => (
-                      <SelectItem key={season} value={season}>
-                        {season}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Date Fields - One Day Event */}
+          {dateLength === "ONE_DAY" && (
+            <div className="grid gap-3">
+              <label className="text-sm font-medium leading-none">Date</label>
+              <div className="grid grid-cols-3 gap-2">
                 <select
-                  value={roughYear}
-                  onChange={(e) => setRoughYear(Number(e.target.value))}
+                  value={singleDay}
+                  onChange={(e) => setSingleDay(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background/50 px-3 py-2"
+                >
+                  {availableSingleDays.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+                <select
+                  value={singleMonth}
+                  onChange={(e) => setSingleMonth(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background/50 px-3 py-2"
+                >
+                  {months.map((month, index) => (
+                    <option key={month} value={index}>{month}</option>
+                  ))}
+                </select>
+                <select
+                  value={singleYear}
+                  onChange={(e) => setSingleYear(Number(e.target.value))}
                   className="rounded-md border border-input bg-background/50 px-3 py-2"
                 >
                   {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
+                    <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
               </div>
             </div>
-          ) : (
+          )}
+
+          {/* Date Fields - Span Event */}
+          {dateLength === "SPAN" && (
             <>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium leading-none">Event Type</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div 
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      eventType === "one-time"
-                        ? "border-primary bg-primary/20 shadow-md" 
-                        : "border-muted bg-background/60 hover:bg-background/80"
-                    }`}
-                    onClick={() => {
-                      setEventType("one-time");
-                      setHasEndDate(false);
-                      setIncludeDay(true);
-                    }}
-                  >
-                    <h3 className="font-medium text-sm">One-Time Event</h3>
-                    <p className="text-xs text-muted-foreground">A single moment on a specific day</p>
+              {/* Span Type Selection */}
+              <div className="grid gap-3">
+                <label className="text-sm font-medium leading-none">How would you define this period?</label>
+                
+                <RadioGroup
+                  value={spanType}
+                  onValueChange={(value: "SEASONAL" | "EXACT") => setSpanType(value)}
+                  className="grid grid-cols-2 gap-4 mt-1"
+                >
+                  <div className={`flex items-center space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
+                    spanType === "SEASONAL" ? "border-primary bg-primary/10" : "border-muted"
+                  }`}>
+                    <RadioGroupItem value="SEASONAL" id="span-seasonal" className="sr-only" />
+                    <Label htmlFor="span-seasonal" className="flex flex-col cursor-pointer">
+                      <span className="font-medium">Seasonal</span>
+                      <span className="text-xs text-muted-foreground mt-1">Spring, Summer, etc.</span>
+                    </Label>
                   </div>
                   
-                  <div 
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      eventType === "process"
-                        ? "border-primary bg-primary/20 shadow-md" 
-                        : "border-muted bg-background/60 hover:bg-background/80"
-                    }`}
-                    onClick={() => {
-                      setEventType("process");
-                    }}
-                  >
-                    <h3 className="font-medium text-sm">Process/Period</h3>
-                    <p className="text-xs text-muted-foreground">A period of time or month-level event</p>
+                  <div className={`flex items-center space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
+                    spanType === "EXACT" ? "border-primary bg-primary/10" : "border-muted"
+                  }`}>
+                    <RadioGroupItem value="EXACT" id="span-exact" className="sr-only" />
+                    <Label htmlFor="span-exact" className="flex flex-col cursor-pointer">
+                      <span className="font-medium">Exact dates</span>
+                      <span className="text-xs text-muted-foreground mt-1">Specific start & end</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Seasonal */}
+              {spanType === "SEASONAL" && (
+                <div className="grid gap-3">
+                  <label className="text-sm font-medium leading-none">Season & Year</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Select 
+                      value={season} 
+                      onValueChange={(value) => setSeason(value)}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select season" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SEASONS.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <select
+                      value={seasonYear}
+                      onChange={(e) => setSeasonYear(Number(e.target.value))}
+                      className="rounded-md border border-input bg-background/50 px-3 py-2"
+                    >
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid gap-2">
-                <label className="text-sm font-medium leading-none">
-                  {eventType === "one-time" ? "When" : "Start Date"}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    value={startMonth}
-                    onChange={(e) => setStartMonth(Number(e.target.value))}
-                    className="rounded-md border border-input bg-background/50 px-3 py-2"
-                  >
-                    {months.map((month, index) => (
-                      <option key={month} value={index}>
-                        {month}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={selectedStartYear}
-                    onChange={(e) => setSelectedStartYear(Number(e.target.value))}
-                    className="rounded-md border border-input bg-background/50 px-3 py-2"
-                  >
-                    {years.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {eventType === "one-time" ? (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium leading-none">
-                    Day
-                  </label>
-                  <select
-                    value={startDay}
-                    onChange={(e) => setStartDay(Number(e.target.value))}
-                    className="rounded-md border border-input bg-background/50 px-3 py-2"
-                  >
-                    {availableDays.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
+              {/* Exact Dates */}
+              {spanType === "EXACT" && (
                 <>
                   <div className="flex items-center gap-2">
                     <Checkbox
-                      id="includeDay"
-                      checked={includeDay}
-                      onCheckedChange={(checked) => setIncludeDay(!!checked)}
+                      id="specifyDays"
+                      checked={specifyDays}
+                      onCheckedChange={(checked) => setSpecifyDays(!!checked)}
                       className="border-input"
                     />
-                    <Label htmlFor="includeDay" className="text-sm">
-                      I want to specify the exact day
+                    <Label htmlFor="specifyDays" className="text-sm">
+                      I want to specify exact days (not just months)
                     </Label>
                   </div>
 
-                  {includeDay && (
-                    <div className="grid gap-2 pl-6">
-                      <label className="text-sm font-medium leading-none">
-                        Start Day
-                      </label>
+                  {/* Start Date */}
+                  <div className="grid gap-3">
+                    <label className="text-sm font-medium leading-none">Start Date</label>
+                    <div className={`grid ${specifyDays ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+                      {specifyDays && (
+                        <select
+                          value={startDay}
+                          onChange={(e) => setStartDay(Number(e.target.value))}
+                          className="rounded-md border border-input bg-background/50 px-3 py-2"
+                        >
+                          {availableDays.map((day) => (
+                            <option key={day} value={day}>{day}</option>
+                          ))}
+                        </select>
+                      )}
                       <select
-                        value={startDay}
-                        onChange={(e) => setStartDay(Number(e.target.value))}
+                        value={startMonth}
+                        onChange={(e) => setStartMonth(Number(e.target.value))}
                         className="rounded-md border border-input bg-background/50 px-3 py-2"
                       >
-                        {availableDays.map((day) => (
-                          <option key={day} value={day}>
-                            {day}
-                          </option>
+                        {months.map((month, index) => (
+                          <option key={month} value={index}>{month}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={startYear}
+                        onChange={(e) => setStartYear(Number(e.target.value))}
+                        className="rounded-md border border-input bg-background/50 px-3 py-2"
+                      >
+                        {years.map((year) => (
+                          <option key={year} value={year}>{year}</option>
                         ))}
                       </select>
                     </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="hasEndDate"
-                      checked={hasEndDate}
-                      onCheckedChange={(checked) => setHasEndDate(!!checked)}
-                      className="border-input"
-                    />
-                    <Label htmlFor="hasEndDate" className="text-sm">
-                      This process has an end date
-                    </Label>
                   </div>
 
-                  {hasEndDate && (
-                    <div className="grid gap-2 pl-6">
-                      <label className="text-sm font-medium leading-none">
-                        End Date
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
+                  {/* End Date */}
+                  <div className="grid gap-3">
+                    <label className="text-sm font-medium leading-none">End Date</label>
+                    <div className={`grid ${specifyDays ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+                      {specifyDays && (
                         <select
-                          value={endMonth}
-                          onChange={(e) => setEndMonth(Number(e.target.value))}
+                          value={endDay}
+                          onChange={(e) => setEndDay(Number(e.target.value))}
                           className="rounded-md border border-input bg-background/50 px-3 py-2"
                         >
-                          {months.map((month, index) => (
-                            <option key={month} value={index}>
-                              {month}
-                            </option>
+                          {availableEndDays.map((day) => (
+                            <option key={day} value={day}>{day}</option>
                           ))}
                         </select>
-                        <select
-                          value={endYear}
-                          onChange={(e) => setEndYear(Number(e.target.value))}
-                          className="rounded-md border border-input bg-background/50 px-3 py-2"
-                        >
-                          {years.map((year) => (
-                            <option key={year} value={year}>
-                              {year}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      {includeDay && (
-                        <div className="mt-2">
-                          <label className="text-sm font-medium leading-none">
-                            End Day
-                          </label>
-                          <select
-                            value={endDay}
-                            onChange={(e) => setEndDay(Number(e.target.value))}
-                            className="rounded-md border border-input bg-background/50 px-3 py-2 w-full mt-1"
-                          >
-                            {availableEndDays.map((day) => (
-                              <option key={day} value={day}>
-                                {day}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
                       )}
+                      <select
+                        value={endMonth}
+                        onChange={(e) => setEndMonth(Number(e.target.value))}
+                        className="rounded-md border border-input bg-background/50 px-3 py-2"
+                      >
+                        {months.map((month, index) => (
+                          <option key={month} value={index}>{month}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={endYear}
+                        onChange={(e) => setEndYear(Number(e.target.value))}
+                        className="rounded-md border border-input bg-background/50 px-3 py-2"
+                      >
+                        {years.map((year) => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
                     </div>
-                  )}
+                  </div>
                 </>
               )}
             </>

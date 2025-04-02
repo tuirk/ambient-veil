@@ -17,6 +17,10 @@ const isOneTimeEvent = (event: TimeEvent): boolean => {
   // 1. A specific day (not just month/year or season)
   // 2. No end date
   
+  // If explicitly typed as "one-time", trust that
+  if (event.eventType === "one-time") return true;
+  
+  // Otherwise fallback to old logic for backward compatibility
   // If it has an end date, it's a process event
   if (event.endDate) return false;
   
