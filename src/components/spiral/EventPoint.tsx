@@ -91,7 +91,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
         />
       </sprite>
       
-      {/* Event label (title and year) - removed opacity prop */}
+      {/* Event label (title and year) - removed depthTest prop */}
       <Text
         position={[0, size * 2 + 0.12, 0]}
         color="white"
@@ -100,7 +100,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorY="bottom"
         outlineWidth={0.004}
         outlineColor="#00000080"
-        depthTest={false}
       >
         {event.title}
       </Text>
@@ -113,7 +112,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorY="bottom"
         outlineWidth={0.003}
         outlineColor="#00000080"
-        depthTest={false}
       >
         {year}
       </Text>
