@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo } from "react";
 import { Line, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -102,14 +102,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     return new THREE.CanvasTexture(canvas);
   }, []);
   
-  // Number of particles based on event intensity and span length
+  // Number of particles based on event intensity and span length - ENHANCED VALUES
   const particleCount = useMemo(() => {
     // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 50× spanLength
-    // Intensity 5 → 100× spanLength
-    // Intensity 10 → 200× spanLength
-    const intensityFactor = 0.5 + startEvent.intensity * 0.15;
-    const baseMultiplier = 100;
+    // Intensity 1 → 150× spanLength (increased from 50)
+    // Intensity 5 → 300× spanLength (increased from 100)
+    // Intensity 10 → 450× spanLength (increased from 200)
+    const intensityFactor = 1.5 + startEvent.intensity * 0.3; // Increased from 0.5 + 0.15
+    const baseMultiplier = 150; // Increased from 100
     
     // For minimal duration, use a fixed count to ensure visibility
     if (isMinimalDuration) {
@@ -117,13 +117,13 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     }
     
     // For actual spans, scale by length but cap for performance
-    const lengthFactor = Math.min(1, Math.log10(spanLengthInDays) / 3 + 0.5);
+    const lengthFactor = Math.min(1.2, Math.log10(spanLengthInDays) / 3 + 0.6); // Increased from 1.0
     return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
   }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
   
   // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.7);
-  const tertiaryParticleCount = Math.floor(particleCount * 0.4);
+  const backgroundParticleCount = Math.floor(particleCount * 0.8); // Increased from 0.7
+  const tertiaryParticleCount = Math.floor(particleCount * 0.5); // Increased from 0.4
   
   // Helper function to create color variations
   const getColorVariation = (baseColor: THREE.Color, strength: number = 0.05) => {
@@ -181,9 +181,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     // Path length for distribution calculation
     const pathLength = points.length;
     
-    // Base size calculation - scales with intensity
-    // Intensity 1 → 0.6x, Intensity 5 → 1x, Intensity 10 → 1.6x
-    const baseSizeFactor = 0.6 + startEvent.intensity * 0.1;
+    // Base size calculation - scales with intensity - ENHANCED VALUES
+    // Intensity 1 → 0.9x, Intensity 5 → 1.5x, Intensity 10 → 2.4x
+    const baseSizeFactor = 0.9 + startEvent.intensity * 0.15; // Increased from 0.6 + 0.1
     
     // Color variations to make the nebula more interesting
     const baseColor = new THREE.Color(startEvent.color);
@@ -233,16 +233,16 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       positions[i3 + 2] = point.z + randomOffset.z;
       
       // Vary the size of particles with intensity scaling and 20% random variation
-      // Base size for intensity 5 = 0.15
-      const baseSize = 0.15 * baseSizeFactor;
+      // Base size enhanced from 0.15 to 0.30
+      const baseSize = 0.30 * baseSizeFactor;
       const sizeVariation = 0.2; // 20% variation
       sizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
       // Vary opacity based on position and intensity
       // More intense events get slightly higher base opacity
       const pathProgress = pathIndex / pathLength;
-      const baseOpacity = isRoughDate ? 0.06 : 0.1; // Lower opacity for seasonal events
-      const intensityOpacityBoost = 0.06 * (startEvent.intensity / 10);
+      const baseOpacity = isRoughDate ? 0.08 : 0.12; // Increased from 0.06/0.1
+      const intensityOpacityBoost = 0.08 * (startEvent.intensity / 10); // Increased from 0.06
       
       // Opacity curve - slightly stronger in the middle of the path
       const progressFactor = 4 * (pathProgress * (1 - pathProgress));
@@ -277,14 +277,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       bgPositions[i3 + 1] = point.y + randomOffset.y;
       bgPositions[i3 + 2] = point.z + randomOffset.z;
       
-      // Larger but more transparent
-      const baseSize = 0.25 * baseSizeFactor;
+      // Larger but more transparent - ENHANCED SIZE
+      const baseSize = 0.40 * baseSizeFactor; // Increased from 0.25
       const sizeVariation = 0.3; // 30% variation
       bgSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
-      // Lower opacity for diffuse background glow
-      const baseOpacity = 0.04;
-      const intensityOpacityBoost = 0.03 * (startEvent.intensity / 10);
+      // Higher opacity for diffuse background glow
+      const baseOpacity = 0.06; // Increased from 0.04
+      const intensityOpacityBoost = 0.04 * (startEvent.intensity / 10); // Increased from 0.03
       bgOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.6 + Math.random() * 0.6);
       
       // Slightly varied colors for background
@@ -294,7 +294,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       bgColors[i3 + 2] = variedColor.b;
     }
     
-    // Tertiary particles - for additional volume and detail
+    // Tertiary particles - for additional volume and detail - ENHANCED SIZE
     for (let i = 0; i < tertiaryParticleCount; i++) {
       const pathIndex = Math.floor(Math.random() * (pathLength - 1));
       const point = points[pathIndex];
@@ -314,14 +314,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       terPositions[i3 + 1] = point.y + randomOffset.y;
       terPositions[i3 + 2] = point.z + randomOffset.z;
       
-      // Medium-sized particles
-      const baseSize = 0.18 * baseSizeFactor;
+      // Medium-sized particles - ENHANCED SIZE
+      const baseSize = 0.35 * baseSizeFactor; // Increased from 0.18
       const sizeVariation = 0.25; // 25% variation
       terSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
-      // Medium opacity
-      const baseOpacity = 0.07;
-      const intensityOpacityBoost = 0.04 * (startEvent.intensity / 10);
+      // Medium opacity - ENHANCED OPACITY
+      const baseOpacity = 0.09; // Increased from 0.07
+      const intensityOpacityBoost = 0.05 * (startEvent.intensity / 10); // Increased from 0.04
       terOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.7 + Math.random() * 0.5);
       
       // Some color variation
@@ -418,9 +418,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
         <Line
           points={points}
           color={colorObj}
-          lineWidth={0.4 + startEvent.intensity * 0.04}
+          lineWidth={0.6 + startEvent.intensity * 0.08} // Increased from 0.4/0.04
           transparent
-          opacity={0.1}
+          opacity={0.15} // Increased from 0.1
           blending={THREE.AdditiveBlending}
           dashed={isRoughDate}
           dashSize={isRoughDate ? 0.1 : 0}
@@ -452,10 +452,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.15}
+          size={0.30} // Increased from 0.15
           vertexColors
           transparent
-          opacity={0.8}
+          opacity={0.9} // Increased from 0.8
           depthWrite={false}
           map={particleTexture}
           blending={THREE.AdditiveBlending}
@@ -486,10 +486,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.25}
+          size={0.40} // Increased from 0.25
           vertexColors
           transparent
-          opacity={0.6}
+          opacity={0.7} // Increased from 0.6
           depthWrite={false}
           map={glowTexture}
           blending={THREE.AdditiveBlending}
@@ -520,10 +520,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.18}
+          size={0.35} // Increased from 0.18
           vertexColors
           transparent
-          opacity={0.7}
+          opacity={0.8} // Increased from 0.7
           depthWrite={false}
           map={particleTexture}
           blending={THREE.AdditiveBlending}
