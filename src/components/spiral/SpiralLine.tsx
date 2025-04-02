@@ -59,9 +59,9 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={0.75} // Reduced from 1 to make it less dominant
+      lineWidth={0.5} // Reduced from 0.75 to make it less dominant
       transparent
-      opacity={0.2} // Reduced from 0.3 to make it more subtle
+      opacity={0.15} // Reduced from 0.2 to make it more subtle
       blending={THREE.AdditiveBlending} // Softer blending mode
     />
   );

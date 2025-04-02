@@ -44,15 +44,9 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   return (
     <>
       {events.map((event) => {
-        // Future events render as scattered objects
+        // Future events should float near but not directly on the spiral
         if (event.startDate.getFullYear() > config.currentYear) {
-          // Create a more interesting future event visualization as floating debris
-          const randomDistance = 15 + Math.random() * 20;
-          const randomAngle = Math.random() * Math.PI * 2;
-          const randomHeight = (Math.random() - 0.5) * 20;
-          
-          // For future events, let them hang from spiral but not exactly on it
-          // Calculate the base spiral position first
+          // Calculate base position on spiral
           const year = event.startDate.getFullYear();
           const month = event.startDate.getMonth();
           const dayOfMonth = event.startDate.getDate() || 15; // Default to mid-month
@@ -63,26 +57,32 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           // Calculate rough spiral position (simplified)
           const yearOffset = year - config.startYear;
           const baseRadius = 5 * config.zoom + yearOffset * 0.5;
+          const baseHeight = -yearOffset * 1.5 * config.zoom - yearProgress * 1.5 * config.zoom;
           const angleRad = -yearProgress * Math.PI * 2 + Math.PI/2;
           
-          // Add semi-random offset to make future events float near the spiral
-          const offsetDistance = 1 + Math.random() * 2;
-          const offsetAngle = angleRad + (Math.random() * 0.6 - 0.3);
-          const heightOffset = -0.5 + Math.random() * 1;
+          // Add random offset from the spiral to create floating effect
+          // More intense events float closer to the spiral
+          const intensityFactor = (10 - event.intensity) / 10; // Lower intensity = larger offset
+          const offsetRadius = 0.5 + intensityFactor * 2.5 * Math.random();
+          const offsetHeight = (Math.random() - 0.5) * 1.5;
+          const offsetAngle = (Math.random() - 0.5) * 0.8; // Slight angular variation
           
-          const x = baseRadius * Math.cos(offsetAngle) * (1 + Math.random() * 0.2);
-          const z = baseRadius * Math.sin(offsetAngle) * (1 + Math.random() * 0.2);
-          const y = -yearOffset * 1.5 * config.zoom - yearProgress * 1.5 * config.zoom + heightOffset;
+          // Calculate final position with offsets
+          const finalAngle = angleRad + offsetAngle;
+          const x = (baseRadius + offsetRadius) * Math.cos(finalAngle);
+          const y = baseHeight + offsetHeight;
+          const z = (baseRadius + offsetRadius) * Math.sin(finalAngle);
           
-          // Create different geometry based on intensity
+          // Use event's mood color if available
+          const eventColor = event.mood?.color || event.color;
+          
+          // Create different geometry based on intensity and event type
           return (
             <mesh 
               key={event.id} 
               position={[x, y, z]}
               rotation={[Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]}
               onClick={() => {
-                const year = event.startDate.getFullYear();
-                const month = event.startDate.getMonth();
                 onEventClick(year, month, x, z);
               }}
             >
@@ -94,10 +94,10 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 <dodecahedronGeometry args={[0.15 + event.intensity * 0.02, 0]} />
               )}
               <meshStandardMaterial 
-                color={event.color} 
+                color={eventColor} 
                 transparent 
                 opacity={0.7} 
-                emissive={event.color}
+                emissive={eventColor}
                 emissiveIntensity={0.5}
               />
             </mesh>
