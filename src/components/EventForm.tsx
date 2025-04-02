@@ -42,12 +42,12 @@ const EventForm: React.FC<EventFormProps> = ({
   onSave,
   preselectedYear,
   preselectedMonth,
-  startYear,
+  startYear: minStartYear, // Renamed to minStartYear to avoid conflict
   currentYear,
 }) => {
   const { toast } = useToast();
   
-  const minYear = Math.min(startYear, currentYear - 5);
+  const minYear = Math.min(minStartYear, currentYear - 5);
   const maxYear = currentYear + 1;
   
   const years = Array.from(
@@ -81,7 +81,7 @@ const EventForm: React.FC<EventFormProps> = ({
   // Span - Exact dates
   const [startDay, setStartDay] = useState(1);
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
-  const [startYear, setStartYear] = useState(
+  const [spanStartYear, setSpanStartYear] = useState( // Renamed from startYear to spanStartYear
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
@@ -89,7 +89,7 @@ const EventForm: React.FC<EventFormProps> = ({
   const [specifyDays, setSpecifyDays] = useState(false);
   const [endDay, setEndDay] = useState(1);
   const [endMonth, setEndMonth] = useState(startMonth);
-  const [endYear, setEndYear] = useState(startYear);
+  const [endYear, setEndYear] = useState(spanStartYear); // Updated to use spanStartYear
   
   // Span - Seasonal
   const [season, setSeason] = useState<string>("Spring");
@@ -109,7 +109,7 @@ const EventForm: React.FC<EventFormProps> = ({
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
       setSingleYear(constrainedYear);
-      setStartYear(constrainedYear);
+      setSpanStartYear(constrainedYear); // Updated to use spanStartYear
       setEndYear(constrainedYear);
       setSeasonYear(constrainedYear);
     }
@@ -123,13 +123,13 @@ const EventForm: React.FC<EventFormProps> = ({
 
   // Update available days when months/years change
   useEffect(() => {
-    const days = daysInMonth(startMonth, startYear);
+    const days = daysInMonth(startMonth, spanStartYear); // Updated to use spanStartYear
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
     if (startDay > days) {
       setStartDay(1);
     }
-  }, [startMonth, startYear]);
+  }, [startMonth, spanStartYear]); // Updated to use spanStartYear
 
   useEffect(() => {
     const days = daysInMonth(endMonth, endYear);
@@ -178,7 +178,7 @@ const EventForm: React.FC<EventFormProps> = ({
         }
       } else {
         // Validate exact span dates
-        const startDate = new Date(startYear, startMonth, specifyDays ? startDay : 1);
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         const minDate = new Date(minYear, 0, 1);
         const maxDate = new Date(maxYear, 11, 31);
@@ -234,7 +234,7 @@ const EventForm: React.FC<EventFormProps> = ({
         };
       } else {
         // Create an exact process event
-        const startDate = new Date(startYear, startMonth, specifyDays ? startDay : 1);
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         
         newEvent = {
@@ -498,8 +498,8 @@ const EventForm: React.FC<EventFormProps> = ({
                         ))}
                       </select>
                       <select
-                        value={startYear}
-                        onChange={(e) => setStartYear(Number(e.target.value))}
+                        value={spanStartYear} // Updated to use spanStartYear
+                        onChange={(e) => setSpanStartYear(Number(e.target.value))} // Updated to use spanStartYear
                         className="rounded-md border border-input bg-background/50 px-3 py-2"
                       >
                         {years.map((year) => (
