@@ -45,29 +45,28 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Calculate size based on event intensity (1-10)
   const size = 0.05 + (event.intensity / 10) * 0.1;
   
-  // Create a texture for the glow effect
-  const glowTexture = new THREE.CanvasTexture(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 64;
-    canvas.height = 64;
-    const context = canvas.getContext("2d");
-    if (context) {
-      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-      gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
-      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, 64, 64);
-    }
-    return canvas;
-  });
+  // Create a texture for the glow effect - creating the canvas element first
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  if (context) {
+    const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+    gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 64, 64);
+  }
+  // Now create the texture from the canvas
+  const glowTexture = new THREE.CanvasTexture(canvas);
   
   return (
     <group position={position} onClick={onClick}>
       {/* Core particle - small but visible */}
       <mesh ref={meshRef}>
         <sphereGeometry args={[size, 8, 8]} />
-        <meshBasicMaterial 
+        <meshStandardMaterial 
           color={event.color} 
           transparent 
           opacity={0.9}
