@@ -12,6 +12,26 @@ interface EventVisualizationsProps {
   onEventClick: (year: number, month: number, x: number, y: number) => void;
 }
 
+// Helper function to determine if an event is actually a one-time event
+const isOneTimeEvent = (event: TimeEvent): boolean => {
+  // One-time events must have:
+  // 1. A specific day (not just month/year or season)
+  // 2. No end date
+  
+  // If it has an end date, it's a process event
+  if (event.endDate) return false;
+  
+  // If it's a rough date (seasonal), it's a process event
+  if (event.isRoughDate) return false;
+  
+  // Check if the start date has a specific day (not just month/year)
+  const startDate = event.startDate;
+  const hasSpecificDay = startDate && startDate.getDate() > 0;
+  
+  // Only events with specific day + no end date are one-time
+  return hasSpecificDay;
+};
+
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
   config,
@@ -61,8 +81,9 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Is this a process event or a one-time event?
-        const isProcessEvent = event.eventType === "process";
+        // Determine if this should be visualized as a one-time or process event
+        // regardless of the eventType property (which could be wrong)
+        const actuallyOneTimeEvent = isOneTimeEvent(event);
         
         // Add the cosmic effect and appropriate visualization based on event type
         return (
@@ -72,11 +93,11 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               event={event}
               startYear={config.startYear}
               zoom={config.zoom}
-              isProcessEvent={isProcessEvent}
+              isProcessEvent={!actuallyOneTimeEvent}
             />
             
             {/* For process events: render dust trail along spiral */}
-            {isProcessEvent && event.endDate && (
+            {!actuallyOneTimeEvent && event.endDate && (
               <EventDuration
                 startEvent={event}
                 endEvent={{...event, startDate: event.endDate}}
@@ -85,8 +106,8 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For process events with no end date: render minimal dust */}
-            {isProcessEvent && !event.endDate && (
+            {/* For process events with no end date but aren't one-time: render minimal dust */}
+            {!actuallyOneTimeEvent && !event.endDate && (
               <EventDuration
                 startEvent={event}
                 endEvent={event} // Same start and end point for minimal duration
@@ -96,7 +117,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
             )}
             
             {/* For one-time events: render cosmic burst at a single point */}
-            {!isProcessEvent && (
+            {actuallyOneTimeEvent && (
               <EventPoint
                 event={event}
                 startYear={config.startYear}

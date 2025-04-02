@@ -60,3 +60,13 @@ export function getSeasonalDateRange(season: string, year: number): { startDate:
 export function isSeasonalEvent(event: { isRoughDate?: boolean }): boolean {
   return !!event.isRoughDate;
 }
+
+/**
+ * All seasonal events should be treated as process events
+ * even if they don't have an explicit end date
+ * @param event The event to check
+ * @returns True as seasonal events are always process events
+ */
+export function isSeasonalProcessEvent(event: { isRoughDate?: boolean }): boolean {
+  return isSeasonalEvent(event);
+}
