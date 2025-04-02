@@ -28,7 +28,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     startEvent, 
     endEvent, 
     startYear, 
-    50,  // Fewer points needed for a subtle path
+    30,  // Fewer points needed for a subtle path
     5 * zoom, 
     1.5 * zoom
   );
@@ -45,13 +45,13 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     <Line
       points={points}
       color={colorObj}
-      lineWidth={0.2 + startEvent.intensity * 0.03} // Even thinner line
+      lineWidth={0.1 + startEvent.intensity * 0.01} // Thinner line
       transparent
-      opacity={0.03 + (startEvent.intensity * 0.003)} // More transparent
+      opacity={0.01 + (startEvent.intensity * 0.001)} // Almost invisible
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
-      dashSize={isRoughDate ? 0.1 : 0}
-      dashOffset={isRoughDate ? 0.1 : 0}
+      dashSize={isRoughDate ? 0.05 : 0}
+      dashOffset={isRoughDate ? 0.05 : 0}
       dashScale={isRoughDate ? 10 : 0}
     />
   );
