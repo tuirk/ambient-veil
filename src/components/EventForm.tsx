@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -46,11 +45,9 @@ const EventForm: React.FC<EventFormProps> = ({
 }) => {
   const { toast } = useToast();
   
-  // Calculate allowed date range
   const minYear = Math.min(startYear, currentYear - 5);
   const maxYear = currentYear + 1;
   
-  // Generate available years for selection (from minYear to maxYear)
   const years = Array.from(
     { length: maxYear - minYear + 1 }, 
     (_, i) => minYear + i
@@ -65,7 +62,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
   
-  // Exact date states - renamed startYear to selectedStartYear to avoid conflicts
   const [selectedStartYear, setSelectedStartYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
@@ -79,7 +75,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const [endMonth, setEndMonth] = useState(startMonth);
   const [endDay, setEndDay] = useState(1);
   
-  // Rough date states
   const [useRoughDate, setUseRoughDate] = useState(false);
   const [roughSeason, setRoughSeason] = useState<string>("Spring");
   const [roughYear, setRoughYear] = useState(
@@ -88,11 +83,11 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
 
-  // Days for the selected month
   const [availableDays, setAvailableDays] = useState<number[]>([]);
   const [availableEndDays, setAvailableEndDays] = useState<number[]>([]);
 
-  // When preselected values change, update form state
+  const [eventType, setEventType] = useState<"one-time" | "process">("one-time");
+
   useEffect(() => {
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
@@ -107,23 +102,19 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [preselectedYear, preselectedMonth, minYear, maxYear]);
 
-  // Update available days when month/year changes
   useEffect(() => {
     const days = daysInMonth(startMonth, selectedStartYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
-    // Reset day if it's higher than days in month
     if (startDay > days) {
       setStartDay(1);
     }
   }, [startMonth, selectedStartYear]);
 
-  // Update available end days when end month/year changes
   useEffect(() => {
     const days = daysInMonth(endMonth, endYear);
     setAvailableEndDays(Array.from({ length: days }, (_, i) => i + 1));
     
-    // Reset end day if it's higher than days in month
     if (endDay > days) {
       setEndDay(1);
     }
@@ -132,7 +123,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const handleSave = () => {
     if (!title) return;
 
-    // Validate date ranges
     if (useRoughDate) {
       if (roughYear < minYear || roughYear > maxYear) {
         toast({
@@ -181,7 +171,6 @@ const EventForm: React.FC<EventFormProps> = ({
     let newEvent: TimeEvent;
 
     if (useRoughDate) {
-      // Create event with rough date
       const { startDate, endDate } = getSeasonalDateRange(roughSeason, roughYear);
       
       newEvent = {
@@ -193,13 +182,14 @@ const EventForm: React.FC<EventFormProps> = ({
         endDate,
         isRoughDate: true,
         roughDateSeason: roughSeason,
-        roughDateYear: roughYear
+        roughDateYear: roughYear,
+        eventType: "process"
       };
     } else {
-      // Create event with exact date
       const startDate = new Date(selectedStartYear, startMonth, includeDay ? startDay : 1);
-      // Only set endDate if hasEndDate is true
       const endDate = hasEndDate ? new Date(endYear, endMonth, includeDay ? endDay : 1) : undefined;
+
+      const type = hasEndDate ? "process" : eventType;
 
       newEvent = {
         id: uuidv4(),
@@ -208,6 +198,7 @@ const EventForm: React.FC<EventFormProps> = ({
         intensity,
         startDate,
         endDate,
+        eventType: type
       };
     }
 
@@ -223,6 +214,7 @@ const EventForm: React.FC<EventFormProps> = ({
     setHasEndDate(false);
     setUseRoughDate(false);
     setIncludeDay(false);
+    setEventType("one-time");
   };
 
   return (
@@ -348,6 +340,40 @@ const EventForm: React.FC<EventFormProps> = ({
           ) : (
             <>
               <div className="grid gap-2">
+                <label className="text-sm font-medium leading-none">Event Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div 
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                      eventType === "one-time"
+                        ? "border-primary bg-primary/20 shadow-md" 
+                        : "border-muted bg-background/60 hover:bg-background/80"
+                    }`}
+                    onClick={() => {
+                      setEventType("one-time");
+                      setHasEndDate(false);
+                    }}
+                  >
+                    <h3 className="font-medium text-sm">One-Time</h3>
+                    <p className="text-xs text-muted-foreground">A single moment</p>
+                  </div>
+                  
+                  <div 
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                      eventType === "process"
+                        ? "border-primary bg-primary/20 shadow-md" 
+                        : "border-muted bg-background/60 hover:bg-background/80"
+                    }`}
+                    onClick={() => {
+                      setEventType("process");
+                    }}
+                  >
+                    <h3 className="font-medium text-sm">Process</h3>
+                    <p className="text-xs text-muted-foreground">A period of time</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
                 <label className="text-sm font-medium leading-none">When</label>
                 <div className="grid grid-cols-2 gap-2">
                   <select
@@ -406,19 +432,21 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="hasEndDate"
-                  checked={hasEndDate}
-                  onCheckedChange={(checked) => setHasEndDate(!!checked)}
-                  className="border-input"
-                />
-                <Label htmlFor="hasEndDate" className="text-sm">
-                  This spans a period of time
-                </Label>
-              </div>
+              {eventType === "process" && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="hasEndDate"
+                    checked={hasEndDate}
+                    onCheckedChange={(checked) => setHasEndDate(!!checked)}
+                    className="border-input"
+                  />
+                  <Label htmlFor="hasEndDate" className="text-sm">
+                    This process has an end date
+                  </Label>
+                </div>
+              )}
 
-              {hasEndDate && (
+              {eventType === "process" && hasEndDate && (
                 <div className="grid gap-2 pl-6">
                   <label className="text-sm font-medium leading-none">
                     Ends
