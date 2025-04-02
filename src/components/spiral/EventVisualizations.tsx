@@ -36,7 +36,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         const actuallyOneTimeEvent = isOneTimeEvent(event);
         
         return (
-          <React.Fragment key={event.id}>
+          <group key={event.id}>
             {/* ONLY add cosmic effect for actual one-time events */}
             {actuallyOneTimeEvent && (
               <CosmicEventEffect
@@ -80,7 +80,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 zoom={config.zoom}
               />
             )}
-          </React.Fragment>
+          </group>
         );
       })}
     </>

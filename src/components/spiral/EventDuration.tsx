@@ -57,7 +57,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Generate dense particle cloud along the duration
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
     // Increased particle count for more visibility
-    const particleCount = Math.min(600, 200 + Math.floor(startEvent.intensity * 50));
+    const particleCount = Math.min(800, 300 + Math.floor(startEvent.intensity * 80));
     
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -74,7 +74,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       const basePoint = points[pointIndex];
       
       // Add some randomness within a "cloud" around the path
-      const spread = 0.4 + (startEvent.intensity / 10) * 0.5; // Scale with intensity
+      const spread = 0.6 + (startEvent.intensity / 10) * 0.7; // Scale with intensity
       const offsetX = (Math.random() - 0.5) * spread;
       const offsetY = (Math.random() - 0.5) * spread;
       const offsetZ = (Math.random() - 0.5) * spread;
@@ -85,14 +85,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       
       // All particles have the same base color but vary in brightness
       // Keep closer to event color with just minor variations for visual interest
-      const brightness = 0.9 + Math.random() * 0.2;
+      const brightness = 0.95 + Math.random() * 0.3;
       colors[i3] = baseColor.r * brightness;
       colors[i3 + 1] = baseColor.g * brightness;
       colors[i3 + 2] = baseColor.b * brightness;
       
       // Vary particle sizes based on intensity and random factor
-      const sizeVariation = Math.random() * 0.6 + 0.6; // 0.6 to 1.2
-      sizes[i] = (0.25 + (startEvent.intensity / 10) * 0.35) * sizeVariation;
+      const sizeVariation = Math.random() * 0.8 + 0.7; // 0.7 to 1.5
+      sizes[i] = (0.35 + (startEvent.intensity / 10) * 0.45) * sizeVariation;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
@@ -110,19 +110,18 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       particlesRef.current.scale.set(pulse, pulse, pulse);
     }
     
-    if (glowRef.current) {
+    if (glowRef.current && points.length > 0) {
       // Pulsate the glow intensity
       const time = state.clock.getElapsedTime();
-      if (glowRef.current && points.length > 0) {
-        // Move glow along the path for longer events
-        const index = Math.floor((time * 0.2) % points.length);
-        const position = points[index];
-        glowRef.current.position.set(position.x, position.y, position.z);
-        
-        // Pulse the intensity
-        const pulseIntensity = (Math.sin(time * 1.2) * 0.3 + 0.8) * startEvent.intensity * 0.3;
-        glowRef.current.intensity = pulseIntensity;
-      }
+      
+      // Move glow along the path for longer events
+      const index = Math.floor((time * 0.2) % points.length);
+      const position = points[index];
+      glowRef.current.position.set(position.x, position.y, position.z);
+      
+      // Pulse the intensity
+      const pulseIntensity = (Math.sin(time * 1.2) * 0.3 + 0.8) * startEvent.intensity * 0.4;
+      glowRef.current.intensity = pulseIntensity;
     }
   });
 
@@ -132,8 +131,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       <Line
         points={points}
         color={eventColorObj}
-        linewidth={2 + startEvent.intensity * 0.5}
-        opacity={0.8 + startEvent.intensity * 0.05}
+        lineWidth={2 + startEvent.intensity * 0.5}
+        opacity={0.9 + startEvent.intensity * 0.1}
         transparent
       />
       
@@ -160,10 +159,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.35}
+          size={0.45}
           vertexColors
           transparent
-          opacity={0.95}
+          opacity={0.98}
           alphaMap={particleTexture}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
@@ -175,8 +174,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
         <pointLight
           ref={glowRef}
           color={eventColorObj}
-          intensity={startEvent.intensity * 0.25}
-          distance={3}
+          intensity={startEvent.intensity * 0.35}
+          distance={4}
           position={points[0]}
         />
       )}
@@ -184,11 +183,11 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       {/* Core intense glow at the origin */}
       {points.length > 0 && (
         <mesh position={points[0]}>
-          <sphereGeometry args={[0.15 + startEvent.intensity * 0.04, 8, 8]} />
+          <sphereGeometry args={[0.2 + startEvent.intensity * 0.05, 8, 8]} />
           <meshBasicMaterial
             color={startEvent.color}
             transparent
-            opacity={0.85}
+            opacity={0.9}
             blending={THREE.AdditiveBlending}
           />
         </mesh>
@@ -198,21 +197,21 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       {points.length > 5 && (
         <>
           <mesh position={points[Math.floor(points.length * 0.33)]}>
-            <sphereGeometry args={[0.12 + startEvent.intensity * 0.03, 8, 8]} />
+            <sphereGeometry args={[0.15 + startEvent.intensity * 0.04, 8, 8]} />
             <meshBasicMaterial
               color={startEvent.color}
               transparent
-              opacity={0.7}
+              opacity={0.8}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
           
           <mesh position={points[Math.floor(points.length * 0.66)]}>
-            <sphereGeometry args={[0.12 + startEvent.intensity * 0.03, 8, 8]} />
+            <sphereGeometry args={[0.15 + startEvent.intensity * 0.04, 8, 8]} />
             <meshBasicMaterial
               color={startEvent.color}
               transparent
-              opacity={0.7}
+              opacity={0.8}
               blending={THREE.AdditiveBlending}
             />
           </mesh>
