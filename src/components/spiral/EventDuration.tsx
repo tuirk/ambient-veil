@@ -40,13 +40,14 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const isRoughDate = isSeasonalEvent(startEvent);
   
   // Make the line extremely subtle - just a ghost hint of connection
+  // Even more subtle now, as the dust cloud will be the main visual element
   return (
     <Line
       points={points}
       color={colorObj}
-      lineWidth={0.5 + startEvent.intensity * 0.1} // Extra thin line
+      lineWidth={0.3 + startEvent.intensity * 0.05} // Even thinner line
       transparent
-      opacity={0.08 + (startEvent.intensity * 0.01)} // Extremely transparent
+      opacity={0.04 + (startEvent.intensity * 0.005)} // More transparent
       // For rough dates, use dashed line effect
       dashed={isRoughDate ? true : false}
       dashSize={isRoughDate ? 0.1 : 0}
