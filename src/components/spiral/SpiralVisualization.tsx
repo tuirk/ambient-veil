@@ -10,9 +10,6 @@ interface SpiralVisualizationProps {
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
 }
 
-/**
- * Main component that renders the 3D canvas with the spiral visualization
- */
 const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   events,
   config,
@@ -30,12 +27,12 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         gl={{ 
           antialias: true,
           alpha: true,
-          preserveDrawingBuffer: true
+          preserveDrawingBuffer: true  // For better quality effects
         }}
         linear
-        dpr={[1, 2]}
+        dpr={[1, 2]} // Better quality on high-DPI displays
       >
-        <fog attach="fog" args={['#000', 15, 50]} />
+        <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
         <SpiralScene 
           events={events} 
           config={config} 

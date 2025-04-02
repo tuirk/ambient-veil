@@ -1,32 +1,59 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
+import { TimeEvent, SpiralConfig } from "@/types/event";
+import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info, ListIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useSpiralEvents } from "@/hooks/useSpiralEvents";
-import { useSpiralConfig } from "@/hooks/useSpiralConfig";
-import { isWithinAllowedTimeRange } from "@/utils/eventUtils";
 
 const Spiral: React.FC = () => {
   const { toast } = useToast();
-  const { events, handleSaveEvent, handleDeleteEvent } = useSpiralEvents();
-  const { config } = useSpiralConfig();
+  const currentYear = new Date().getFullYear();
+
+  const [events, setEvents] = useState<TimeEvent[]>([]);
+  const [config, setConfig] = useState<SpiralConfig>({
+    startYear: currentYear - 5, // Fixed to current year - 5
+    currentYear: currentYear,
+    zoom: 1,
+    centerX: window.innerWidth / 2,
+    centerY: window.innerHeight / 2,
+  });
   
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
   const [showMemoryList, setShowMemoryList] = useState(false);
   
+  // Load events and config from localStorage
+  useEffect(() => {
+    const savedEvents = getEvents();
+    setEvents(savedEvents);
+    
+    const savedConfig = getConfig();
+    
+    // Always set startYear to 5 years before current year
+    const fixedConfig = {
+      ...savedConfig,
+      startYear: currentYear - 5
+    };
+    
+    setConfig(fixedConfig);
+    saveConfig(fixedConfig); // Save the fixed config
+  }, []);
+  
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
-    if (!isWithinAllowedTimeRange(year)) {
+    const maxYear = currentYear + 1;
+    const minYear = currentYear - 5; // Limited to 5 years before current year
+    
+    if (year < minYear || year > maxYear) {
       toast({
         title: "Outside Allowed Time Range",
-        description: `You can only add memories between ${config.startYear} and ${config.currentYear + 1}`,
+        description: `You can only add memories between ${minYear} and ${maxYear}`,
         variant: "destructive"
       });
       return;
@@ -35,6 +62,18 @@ const Spiral: React.FC = () => {
     setSelectedYear(year);
     setSelectedMonth(month);
     setShowEventForm(true);
+  };
+  
+  const handleSaveEvent = (newEvent: TimeEvent) => {
+    const updatedEvents = [...events, newEvent];
+    setEvents(updatedEvents);
+    saveEvents(updatedEvents);
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    const updatedEvents = events.filter(event => event.id !== eventId);
+    setEvents(updatedEvents);
+    saveEvents(updatedEvents);
   };
   
   return (
@@ -82,7 +121,7 @@ const Spiral: React.FC = () => {
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
-              <li>You can add memories from {config.startYear} to {config.currentYear + 1}.</li>
+              <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
             </ul>
           </div>
@@ -151,8 +190,8 @@ const Spiral: React.FC = () => {
         onSave={handleSaveEvent}
         preselectedYear={selectedYear}
         preselectedMonth={selectedMonth}
-        startYear={config.startYear}
-        currentYear={config.currentYear}
+        startYear={currentYear - 5} // Always limit to 5 years before current year
+        currentYear={currentYear}
       />
     </div>
   );
