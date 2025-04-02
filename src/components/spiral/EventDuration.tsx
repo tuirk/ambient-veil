@@ -15,8 +15,7 @@ interface EventDurationProps {
 
 /**
  * Renders a line segment between two events on the spiral, representing a duration
- * Higher point count (200) ensures smooth curves for all colors
- * For seasonal rough dates, renders with a special visual effect
+ * Made more subtle to complement the cosmic effect
  */
 export const EventDuration: React.FC<EventDurationProps> = ({ 
   startEvent, 
@@ -29,7 +28,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     startEvent, 
     endEvent, 
     startYear, 
-    200,  // Using 200 points for consistently smooth curves regardless of color
+    200,  // Using 200 points for consistently smooth curves
     5 * zoom, 
     1.5 * zoom
   );
@@ -42,12 +41,12 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   
   // For seasonal dates, use different visual properties
   const lineWidth = isRoughDate 
-    ? 3 + startEvent.intensity * 0.5 // Wider line for rough dates
-    : 2 + startEvent.intensity * 0.5;
+    ? 2 + startEvent.intensity * 0.3 // Slightly thinner line
+    : 1.5 + startEvent.intensity * 0.3;
     
   const opacity = isRoughDate
-    ? 0.5 + startEvent.intensity * 0.03 // More transparent for rough dates
-    : 0.6 + startEvent.intensity * 0.04;
+    ? 0.4 + startEvent.intensity * 0.02 // More transparent to let cosmic effect shine
+    : 0.5 + startEvent.intensity * 0.03;
   
   return (
     <Line

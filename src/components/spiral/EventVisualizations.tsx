@@ -1,9 +1,9 @@
-
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
+import { CosmicEventEffect } from "./CosmicEventEffect";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
@@ -37,6 +37,11 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               key={event.id} 
               position={[x, y, z]}
               rotation={[Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]}
+              onClick={() => {
+                const year = event.startDate.getFullYear();
+                const month = event.startDate.getMonth();
+                onEventClick(year, month, x, z);
+              }}
             >
               {event.intensity > 7 ? (
                 <octahedronGeometry args={[0.2 + event.intensity * 0.03, 0]} />
@@ -56,33 +61,38 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Rough dates (seasonal) or events with end dates should render as durations
-        if (isSeasonalEvent(event) || event.endDate) {
-          return (
-            <EventDuration
-              key={event.id}
-              startEvent={event}
-              endEvent={{...event, startDate: event.endDate || event.startDate}}
-              startYear={config.startYear}
-              zoom={config.zoom}
-            />
-          );
-        } else {
-          // Regular events (single point in time)
-          return (
-            <EventPoint
-              key={event.id}
+        // Add the new cosmic effect to all events
+        return (
+          <React.Fragment key={event.id}>
+            {/* Add the dramatic cosmic effect */}
+            <CosmicEventEffect
               event={event}
               startYear={config.startYear}
               zoom={config.zoom}
-              onClick={() => {
-                const year = event.startDate.getFullYear();
-                const month = event.startDate.getMonth();
-                onEventClick(year, month, 0, 0);
-              }}
             />
-          );
-        }
+            
+            {/* Keep the existing event visualization for interaction */}
+            {isSeasonalEvent(event) || event.endDate ? (
+              <EventDuration
+                startEvent={event}
+                endEvent={{...event, startDate: event.endDate || event.startDate}}
+                startYear={config.startYear}
+                zoom={config.zoom}
+              />
+            ) : (
+              <EventPoint
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+                onClick={() => {
+                  const year = event.startDate.getFullYear();
+                  const month = event.startDate.getMonth();
+                  onEventClick(year, month, 0, 0);
+                }}
+              />
+            )}
+          </React.Fragment>
+        );
       })}
     </>
   );

@@ -24,9 +24,15 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           near: 0.1,
           far: 1000 
         }}
-        gl={{ antialias: true }}
+        gl={{ 
+          antialias: true,
+          alpha: true,
+          preserveDrawingBuffer: true  // For better quality effects
+        }}
         linear
+        dpr={[1, 2]} // Better quality on high-DPI displays
       >
+        <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
         <SpiralScene 
           events={events} 
           config={config} 

@@ -13,8 +13,9 @@ interface EventPointProps {
 }
 
 /**
- * Renders a single event as a glowing sphere on the spiral
- * The size, brightness, and glow are all affected by the event's intensity
+ * Renders a single event as a smaller, more subtle marker on the spiral
+ * This serves primarily as an interaction point while the cosmic effect
+ * provides the visual impact
  */
 export const EventPoint: React.FC<EventPointProps> = ({ 
   event, 
@@ -26,10 +27,10 @@ export const EventPoint: React.FC<EventPointProps> = ({
   const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Create rotation animation for the event sphere
+  // Create subtle rotation animation
   useFrame(() => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01; // Constant rotation for visual effect
+      meshRef.current.rotation.y += 0.01;
     }
   });
   
@@ -38,21 +39,15 @@ export const EventPoint: React.FC<EventPointProps> = ({
   
   return (
     <group position={position} onClick={onClick}>
-      {/* Visible sphere */}
+      {/* Interactive marker sphere - smaller and more subtle */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[0.1 + event.intensity * 0.02, 8, 8]} />
+        <sphereGeometry args={[0.07 + event.intensity * 0.01, 8, 8]} />
         <meshBasicMaterial 
           color={colorObj} 
           transparent 
-          opacity={0.7 + event.intensity * 0.03} 
+          opacity={0.5} 
         />
       </mesh>
-      {/* Light source for glow effect */}
-      <pointLight 
-        color={colorObj} 
-        intensity={event.intensity * 0.5} 
-        distance={1} 
-      />
     </group>
   );
 };
