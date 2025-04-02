@@ -100,7 +100,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorY="bottom"
         outlineWidth={0.004}
         outlineColor="#00000080"
-        transparent
         opacity={0.9}
         depthTest={false}
       >
@@ -115,7 +114,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
         anchorY="bottom"
         outlineWidth={0.003}
         outlineColor="#00000080"
-        transparent
         opacity={0.7}
         depthTest={false}
       >
