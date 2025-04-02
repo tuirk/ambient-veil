@@ -3,7 +3,6 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 
 const EVENTS_STORAGE_KEY = "youAreHere_events";
 const CONFIG_STORAGE_KEY = "youAreHere_config";
-const FIRST_TIME_KEY = "youAreHere_firstTime";
 
 export const saveEvents = (events: TimeEvent[]): void => {
   localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
@@ -31,14 +30,20 @@ export const getEvents = (): TimeEvent[] => {
 export const saveConfig = (config: Partial<SpiralConfig>): void => {
   // Get existing config to merge with new values
   const existingConfig = getConfig();
-  const updatedConfig = { ...existingConfig, ...config };
+  // Always ensure startYear is fixed to 5 years before current year
+  const currentYear = new Date().getFullYear();
+  const updatedConfig = { 
+    ...existingConfig, 
+    ...config,
+    startYear: currentYear - 5 // Always enforce this constraint
+  };
   localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(updatedConfig));
 };
 
 export const getConfig = (): SpiralConfig => {
   const currentYear = new Date().getFullYear();
   const defaultConfig: SpiralConfig = {
-    startYear: currentYear - 5,
+    startYear: currentYear - 5, // Always 5 years before current year
     currentYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
@@ -49,18 +54,15 @@ export const getConfig = (): SpiralConfig => {
   if (!storedConfig) return defaultConfig;
   
   try {
-    return { ...defaultConfig, ...JSON.parse(storedConfig) };
+    // Ensure startYear is always enforced
+    const parsedConfig = JSON.parse(storedConfig);
+    return { 
+      ...defaultConfig, 
+      ...parsedConfig,
+      startYear: currentYear - 5 // Always enforce this constraint
+    };
   } catch (e) {
     console.error("Failed to parse stored config:", e);
     return defaultConfig;
   }
 };
-
-export const isFirstTimeUser = (): boolean => {
-  return localStorage.getItem(FIRST_TIME_KEY) !== "false";
-};
-
-export const setFirstTimeStatus = (isFirstTime: boolean): void => {
-  localStorage.setItem(FIRST_TIME_KEY, isFirstTime ? "true" : "false");
-};
-

@@ -3,13 +3,12 @@ import React, { useState, useEffect } from "react";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { saveEvents, getEvents, saveConfig, getConfig, isFirstTimeUser, setFirstTimeStatus } from "@/utils/storage";
+import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info, ListIcon, Clock } from "lucide-react";
+import { Info, ListIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Slider } from "@/components/ui/slider";
 
 const Spiral: React.FC = () => {
   const { toast } = useToast();
@@ -17,7 +16,7 @@ const Spiral: React.FC = () => {
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: currentYear - 5, // Set startYear to current year - 5 by default
+    startYear: currentYear - 5, // Fixed to current year - 5
     currentYear: currentYear,
     zoom: 1,
     centerX: window.innerWidth / 2,
@@ -28,8 +27,6 @@ const Spiral: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
   const [showMemoryList, setShowMemoryList] = useState(false);
-  const [showYearSelect, setShowYearSelect] = useState(false);
-  const [selectedStartYear, setSelectedStartYear] = useState(currentYear - 5);
   
   // Load events and config from localStorage
   useEffect(() => {
@@ -38,27 +35,14 @@ const Spiral: React.FC = () => {
     
     const savedConfig = getConfig();
     
-    // Ensure the startYear is no more than 5 years before current year
-    const minStartYear = currentYear - 5;
-    const adjustedConfig = {
+    // Always set startYear to 5 years before current year
+    const fixedConfig = {
       ...savedConfig,
-      startYear: Math.max(savedConfig.startYear, minStartYear)
+      startYear: currentYear - 5
     };
     
-    setConfig(adjustedConfig);
-    
-    // If the config needed adjustment, save it back
-    if (adjustedConfig.startYear !== savedConfig.startYear) {
-      saveConfig(adjustedConfig);
-    }
-    
-    // Also update the selectedStartYear state
-    setSelectedStartYear(Math.max(savedConfig.startYear, minStartYear));
-    
-    // Check if this is the first time usage
-    if (isFirstTimeUser()) {
-      setShowYearSelect(true);
-    }
+    setConfig(fixedConfig);
+    saveConfig(fixedConfig); // Save the fixed config
   }, []);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
@@ -92,28 +76,6 @@ const Spiral: React.FC = () => {
     saveEvents(updatedEvents);
   };
   
-  const handleStartYearSelection = () => {
-    // Ensure startYear is not earlier than current year - 5
-    const minStartYear = currentYear - 5;
-    const validStartYear = Math.max(selectedStartYear, minStartYear);
-    
-    // Update config with the selected start year
-    const updatedConfig = {
-      ...config,
-      startYear: validStartYear
-    };
-    
-    setConfig(updatedConfig);
-    saveConfig(updatedConfig);
-    setFirstTimeStatus(false);
-    setShowYearSelect(false);
-    
-    toast({
-      title: "Timeline Start Year Set",
-      description: `Your timeline will begin from ${validStartYear}`,
-    });
-  };
-  
   return (
     <div className="w-full h-screen">
       {/* Spiral visualization */}
@@ -135,14 +97,6 @@ const Spiral: React.FC = () => {
         >
           <ListIcon className="mr-2 h-4 w-4" />
           View Memories
-        </Button>
-        <Button 
-          variant="outline" 
-          className="border-white/20 text-white hover:bg-white/10"
-          onClick={() => setShowYearSelect(true)}
-        >
-          <Clock className="mr-2 h-4 w-4" />
-          Timeline Settings
         </Button>
       </div>
       
@@ -226,53 +180,6 @@ const Spiral: React.FC = () => {
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Start Year Selection Dialog */}
-      <Dialog open={showYearSelect} onOpenChange={(open) => {
-        if (!isFirstTimeUser()) {
-          setShowYearSelect(open);
-        }
-      }}>
-        <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Timeline Settings</DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Choose where your personal timeline should begin.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-6 space-y-8">
-            <div className="space-y-4">
-              <h3 className="font-medium">Start Year: {selectedStartYear}</h3>
-              <Slider
-                value={[selectedStartYear]}
-                min={currentYear - 5} // Min is now 5 years ago
-                max={currentYear}
-                step={1}
-                onValueChange={(value) => setSelectedStartYear(value[0])}
-                className="w-full"
-              />
-              <div className="flex justify-between text-sm text-gray-400">
-                <span>{currentYear - 5}</span>
-                <span>{currentYear}</span>
-              </div>
-              <p className="text-sm text-gray-300 mt-4">
-                This defines the earliest year shown on your timeline spiral.
-                You can only add memories from {currentYear - 5} onwards.
-              </p>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button
-              onClick={handleStartYearSelection}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              Set Start Year
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
       
