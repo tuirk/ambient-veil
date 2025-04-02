@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -156,11 +155,11 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
   // Create a tint color for the glow based on event color
   const glowColor = new THREE.Color(event.color);
   
-  // Size of core elements - larger for one-time events
-  const ringSize = isProcessEvent ? 0.25 : 0.35;
+  // Size of core elements - decreased for one-time events by 25%
+  const ringSize = isProcessEvent ? 0.25 : 0.26; // Reduced from 0.35 (25% smaller)
   const lightIntensity = isProcessEvent 
     ? 0.4 + event.intensity * 0.15
-    : 0.6 + event.intensity * 0.25;
+    : 0.45 + event.intensity * 0.19; // Reduced from 0.6/0.25 (25% smaller)
   
   return (
     <group position={position}>

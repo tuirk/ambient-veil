@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -43,7 +42,8 @@ export const EventPoint: React.FC<EventPointProps> = ({
   });
   
   // Calculate size based on event intensity (1-10)
-  const size = 0.05 + (event.intensity / 10) * 0.1;
+  // Reduced by 25% for all event points
+  const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
   
   // Create a texture for the glow effect - creating the canvas element first
   const canvas = document.createElement("canvas");
@@ -76,7 +76,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
       </mesh>
       
       {/* Glow effect for one-time events */}
-      <sprite ref={glowRef} scale={[0.6 + event.intensity * 0.08, 0.6 + event.intensity * 0.08, 1]}>
+      <sprite ref={glowRef} scale={[0.45 + event.intensity * 0.06, 0.45 + event.intensity * 0.06, 1]}>
         <spriteMaterial 
           map={glowTexture} 
           color={event.color} 

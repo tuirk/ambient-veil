@@ -105,11 +105,11 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Number of particles based on event intensity and span length - ENHANCED VALUES
   const particleCount = useMemo(() => {
     // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 150× spanLength (increased from 50)
-    // Intensity 5 → 300× spanLength (increased from 100)
-    // Intensity 10 → 450× spanLength (increased from 200)
-    const intensityFactor = 1.5 + startEvent.intensity * 0.3; // Increased from 0.5 + 0.15
-    const baseMultiplier = 150; // Increased from 100
+    // Intensity 1 → 200× spanLength (increased from 150)
+    // Intensity 5 → 400× spanLength (increased from 300)
+    // Intensity 10 → 600× spanLength (increased from 450)
+    const intensityFactor = 1.5 + startEvent.intensity * 0.4; // Increased from 0.3
+    const baseMultiplier = 200; // Increased from 150
     
     // For minimal duration, use a fixed count to ensure visibility
     if (isMinimalDuration) {
@@ -117,13 +117,13 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     }
     
     // For actual spans, scale by length but cap for performance
-    const lengthFactor = Math.min(1.2, Math.log10(spanLengthInDays) / 3 + 0.6); // Increased from 1.0
+    const lengthFactor = Math.min(1.2, Math.log10(spanLengthInDays) / 3 + 0.6);
     return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
   }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
   
   // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.8); // Increased from 0.7
-  const tertiaryParticleCount = Math.floor(particleCount * 0.5); // Increased from 0.4
+  const backgroundParticleCount = Math.floor(particleCount * 0.8);
+  const tertiaryParticleCount = Math.floor(particleCount * 0.5);
   
   // Helper function to create color variations
   const getColorVariation = (baseColor: THREE.Color, strength: number = 0.05) => {
@@ -233,8 +233,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       positions[i3 + 2] = point.z + randomOffset.z;
       
       // Vary the size of particles with intensity scaling and 20% random variation
-      // Base size enhanced from 0.15 to 0.30
-      const baseSize = 0.30 * baseSizeFactor;
+      // Base size enhanced to 0.35 (from 0.30)
+      const baseSize = 0.35 * baseSizeFactor;
       const sizeVariation = 0.2; // 20% variation
       sizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
@@ -278,7 +278,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       bgPositions[i3 + 2] = point.z + randomOffset.z;
       
       // Larger but more transparent - ENHANCED SIZE
-      const baseSize = 0.40 * baseSizeFactor; // Increased from 0.25
+      const baseSize = 0.45 * baseSizeFactor; // Increased from 0.40
       const sizeVariation = 0.3; // 30% variation
       bgSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
@@ -315,7 +315,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       terPositions[i3 + 2] = point.z + randomOffset.z;
       
       // Medium-sized particles - ENHANCED SIZE
-      const baseSize = 0.35 * baseSizeFactor; // Increased from 0.18
+      const baseSize = 0.40 * baseSizeFactor; // Increased from 0.35
       const sizeVariation = 0.25; // 25% variation
       terSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
       
@@ -418,9 +418,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
         <Line
           points={points}
           color={colorObj}
-          lineWidth={0.6 + startEvent.intensity * 0.08} // Increased from 0.4/0.04
+          lineWidth={0.6 + startEvent.intensity * 0.08}
           transparent
-          opacity={0.15} // Increased from 0.1
+          opacity={0.15}
           blending={THREE.AdditiveBlending}
           dashed={isRoughDate}
           dashSize={isRoughDate ? 0.1 : 0}
@@ -452,10 +452,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.30} // Increased from 0.15
+          size={0.35}
           vertexColors
           transparent
-          opacity={0.9} // Increased from 0.8
+          opacity={0.9}
           depthWrite={false}
           map={particleTexture}
           blending={THREE.AdditiveBlending}
@@ -486,10 +486,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.40} // Increased from 0.25
+          size={0.45}
           vertexColors
           transparent
-          opacity={0.7} // Increased from 0.6
+          opacity={0.7}
           depthWrite={false}
           map={glowTexture}
           blending={THREE.AdditiveBlending}
@@ -520,10 +520,10 @@ export const EventDuration: React.FC<EventDurationProps> = ({
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.35} // Increased from 0.18
+          size={0.40}
           vertexColors
           transparent
-          opacity={0.8} // Increased from 0.7
+          opacity={0.8}
           depthWrite={false}
           map={particleTexture}
           blending={THREE.AdditiveBlending}
