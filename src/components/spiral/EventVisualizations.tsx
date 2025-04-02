@@ -5,7 +5,6 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
-import { isSeasonalEvent } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -62,8 +61,8 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Is this a process/duration event (has end date or is seasonal)?
-        const isProcessEvent = isSeasonalEvent(event) || !!event.endDate;
+        // Is this a process event or a one-time event?
+        const isProcessEvent = event.eventType === "process";
         
         // Add the cosmic effect and appropriate visualization based on event type
         return (
@@ -77,10 +76,20 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
             />
             
             {/* For process events: render dust trail along spiral */}
-            {isProcessEvent && (
+            {isProcessEvent && event.endDate && (
               <EventDuration
                 startEvent={event}
-                endEvent={{...event, startDate: event.endDate || event.startDate}}
+                endEvent={{...event, startDate: event.endDate}}
+                startYear={config.startYear}
+                zoom={config.zoom}
+              />
+            )}
+            
+            {/* For process events with no end date: render minimal dust */}
+            {isProcessEvent && !event.endDate && (
+              <EventDuration
+                startEvent={event}
+                endEvent={event} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
               />
