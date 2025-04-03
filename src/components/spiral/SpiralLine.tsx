@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { generateSpiralPoints } from "@/utils/spiralUtils";
@@ -15,33 +15,54 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   currentYear,
   zoom
 }) => {
-  // Generate spiral data only once when props change
-  const { positions } = useMemo(() => {
-    // Generate points for the full spiral
-    const spiralPoints = generateSpiralPoints(
-      startYear, 
-      currentYear, 
-      360, 
-      5 * zoom, 
-      1.5 * zoom
-    );
+  const minAllowedYear = new Date().getFullYear() - 5;
+  const maxAllowedYear = new Date().getFullYear() + 1;
+  
+  // Generate points for the full spiral
+  const spiralPoints = generateSpiralPoints(
+    startYear, 
+    currentYear, 
+    360, 
+    5 * zoom, 
+    1.5 * zoom
+  );
+  
+  // Extract positions for the spiral line
+  const positions = spiralPoints.map(point => point.position);
+  
+  // Instead of using Float32Array, create an array of THREE.Color objects
+  // that the Line component can handle properly
+  const colors = [];
+  
+  spiralPoints.forEach((point) => {
+    const baseColor = new THREE.Color(0xffffff);
     
-    // Extract positions for the spiral line
-    const positionsArray = spiralPoints.map(point => point.position);
+    // Apply fading to years older than minAllowedYear
+    if (point.year < minAllowedYear) {
+      // Calculate how far back this year is from the minimum allowed
+      const yearsBeyondMin = minAllowedYear - point.year;
+      // 0.3 is minimum opacity, fade more for older years
+      const opacity = Math.max(0.3, 1 - (yearsBeyondMin * 0.15));
+      
+      // Create a silver-gray color for older years
+      const silverGray = new THREE.Color(0x9F9EA1);
+      // Blend with white based on how old the year is
+      baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
+    }
     
-    return { positions: positionsArray };
-  }, [startYear, currentYear, zoom]);
+    // Push the color to our array
+    colors.push(baseColor);
+  });
   
   return (
     <Line
       points={positions}
-      color="#f0f0f0"
-      lineWidth={0.5}
+      color="white"
+      vertexColors={colors}
+      lineWidth={0.75} // Reduced from 1 to make it less dominant
       transparent
-      opacity={0.15}
-      blending={THREE.AdditiveBlending}
-      depthWrite={false}
-      renderOrder={10}
+      opacity={0.2} // Reduced from 0.3 to make it more subtle
+      blending={THREE.AdditiveBlending} // Softer blending mode
     />
   );
 };

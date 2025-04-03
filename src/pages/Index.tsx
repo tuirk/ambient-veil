@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { StaticSpaceBackground } from '@/components/spiral/StaticSpaceBackground';
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
@@ -31,11 +30,8 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen relative">
-      <div className="w-full h-full bg-black absolute">
-        <StaticSpaceBackground />
-      </div>
-      <div className={`text-center text-white transition-opacity duration-1000 ease-in-out ${visible ? 'opacity-90' : 'opacity-0'} z-10 relative`}>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <div className={`text-center text-white transition-opacity duration-1000 ease-in-out ${visible ? 'opacity-90' : 'opacity-0'}`}>
         <h1 className="text-4xl font-light tracking-wider mb-2">You Are Here</h1>
         <p className="text-xl font-thin tracking-wide opacity-70 mb-8">a moment for reflection</p>
         

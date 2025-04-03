@@ -1,13 +1,11 @@
 
 import React, { useRef, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Stars } from "@react-three/drei";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { SpiralLine } from "./SpiralLine";
 import { MonthMarkers } from "./MonthMarkers";
 import { EventVisualizations } from "./EventVisualizations";
-import { SpaceBackground } from "./SpaceBackground";
-import { CosmicDust } from "./CosmicDust";
 
 interface SpiralSceneProps {
   events: TimeEvent[];
@@ -20,17 +18,8 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   config, 
   onEventClick 
 }) => {
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const controlsRef = useRef<any>(null);
-  
-  // Set up optimal rendering settings on scene initialization
-  useEffect(() => {
-    if (gl) {
-      // Ensure renderer settings are optimized
-      gl.setClearColor(0x000000, 1);
-      gl.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit to prevent performance issues
-    }
-  }, [gl]);
   
   // Update camera position based on zoom
   useEffect(() => {
@@ -50,13 +39,17 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         enableZoom={true}
         minDistance={5}
         maxDistance={30}
-        makeDefault
       />
       
-      {/* Add space background with stars and cosmic dust */}
-      {/* Render background elements with lower renderOrder */}
-      <SpaceBackground />
-      <CosmicDust />
+      {/* Enhanced space background */}
+      <color attach="background" args={["#010206"]} /> {/* Slightly bluer black */}
+      
+      {/* Stars in the background */}
+      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0.5} fade speed={1} />
+      
+      {/* Ambient and directional lighting */}
+      <ambientLight intensity={0.2} /> {/* Reduce ambient light for more dramatic contrast */}
+      <directionalLight position={[10, 10, 5]} intensity={0.4} />
       
       {/* Render the main spiral */}
       <SpiralLine 
