@@ -55,9 +55,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Load high-quality textures
   const { particleTexture, glowTexture } = useParticleTextures();
   
-  // RESTORED: Number of particles based on event intensity and span length
+  // Number of particles based on event intensity and span length
   const particleCount = useMemo(() => {
-    // FIXED: Restored intensity scaling for particle count
     // Base count depends on intensity (1-10 scale)
     // Intensity 1 → 200× spanLength
     // Intensity 5 → 400× spanLength
@@ -66,7 +65,6 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     const baseMultiplier = 200;
     
     // For minimal duration, use a fixed count to ensure visibility
-    // RESTORED: Intensity affects minimal duration particle count
     if (isMinimalDuration) {
       return Math.floor(baseMultiplier * intensityFactor);
     }
@@ -76,7 +74,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
   }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
   
-  // RESTORED: Intensity impacts background particle ratios
+  // Intensity impacts background particle ratios
   // Higher intensity = more background particles for volume
   const intensityRatio = 0.5 + (startEvent.intensity / 10) * 0.7;
   const backgroundParticleCount = Math.floor(particleCount * intensityRatio);

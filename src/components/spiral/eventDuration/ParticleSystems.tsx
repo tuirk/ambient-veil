@@ -128,7 +128,7 @@ export const ParticleSystemGroup: React.FC<{
   };
   intensity: number;
 }> = ({ data, textures, intensity }) => {
-  // RESTORED: Animation factors linked to intensity
+  // Animation factors linked to intensity
   // Higher intensity = more movement and pulsing
   const baseAnimationSpeed = 0.003;
   const baseAnimationAmplitude = 0.01;
