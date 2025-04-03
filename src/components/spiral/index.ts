@@ -16,3 +16,4 @@ export { ParticleCloud } from './effects/ParticleCloud';
 export { GlowEffect } from './effects/GlowEffect';
 export { EventRing } from './effects/EventRing';
 export { EventLight } from './effects/EventLight';
+export { EventParticleCloud } from './effects/EventParticleCloud';

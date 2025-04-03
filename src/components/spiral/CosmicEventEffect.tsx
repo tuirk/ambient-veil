@@ -6,6 +6,7 @@ import { ParticleCloud } from "./effects/ParticleCloud";
 import { GlowEffect } from "./effects/GlowEffect";
 import { EventRing } from "./effects/EventRing";
 import { EventLight } from "./effects/EventLight";
+import { EventParticleCloud } from "./effects/EventParticleCloud";
 
 interface CosmicEventEffectProps {
   event: TimeEvent;
@@ -29,7 +30,7 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
   return (
     <group position={position}>
       {/* Particle cloud for nebula effect */}
-      <ParticleCloud 
+      <EventParticleCloud 
         color={eventColor} 
         intensity={event.intensity} 
         isProcessEvent={isProcessEvent} 
