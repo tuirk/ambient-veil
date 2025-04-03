@@ -30,8 +30,7 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   // Extract positions for the spiral line
   const positions = spiralPoints.map(point => point.position);
   
-  // Instead of using Float32Array, create an array of THREE.Color objects
-  // that the Line component can handle properly
+  // Create an array of THREE.Color objects that the Line component can handle
   const colors = [];
   
   spiralPoints.forEach((point) => {
@@ -44,10 +43,10 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       // 0.3 is minimum opacity, fade more for older years
       const opacity = Math.max(0.3, 1 - (yearsBeyondMin * 0.15));
       
-      // Create a silver-gray color for older years
-      const silverGray = new THREE.Color(0x9F9EA1);
+      // Create a gold color for older years instead of silver-gray
+      const goldColor = new THREE.Color(0xE6C200);
       // Blend with white based on how old the year is
-      baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
+      baseColor.lerp(goldColor, 0.5 + (yearsBeyondMin * 0.1));
     }
     
     // Push the color to our array
@@ -59,10 +58,11 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={0.4} // Reduced from 0.5 to make it less dominant
+      lineWidth={0.5} // Slightly increased from 0.4 for better visibility
       transparent
-      opacity={0.12} // Reduced from 0.15 to make it more subtle
-      blending={THREE.AdditiveBlending} // Softer blending mode
+      opacity={0.15} // Slightly increased from 0.12 for better visibility
+      blending={THREE.AdditiveBlending} // Keep softer blending mode
+      depthWrite={false} // Prevent depth writing to avoid black shadow
     />
   );
 };

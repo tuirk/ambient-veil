@@ -33,7 +33,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         linear
         dpr={[1, 2]} // Better resolution handling
       >
-        <fog attach="fog" args={['#000', 15, 50]} />
+        {/* Removed the fog that was causing black shadows */}
         <SpiralScene 
           events={events} 
           config={config} 

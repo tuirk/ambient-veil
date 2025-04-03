@@ -22,10 +22,10 @@ export const StaticSpaceBackground: React.FC = () => {
         dpr={[1, 2]}
       >
         <color attach="background" args={["#010203"]} />
-        <fogExp2 attach="fog" args={[0x000000, 0.001]} />
+        {/* Removed fogExp2 that was contributing to black shadow */}
         <Stars radius={100} depth={50} count={7000} factor={4} saturation={0.5} fade speed={1} />
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[10, 10, 5]} intensity={0.5} />
+        <ambientLight intensity={0.4} /> {/* Increased slightly from 0.3 */}
+        <directionalLight position={[10, 10, 5]} intensity={0.6} /> {/* Increased slightly from 0.5 */}
       </Canvas>
     </div>
   );
