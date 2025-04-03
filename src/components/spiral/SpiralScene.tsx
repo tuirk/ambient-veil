@@ -1,11 +1,12 @@
 
 import React, { useRef, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { SpiralLine } from "./SpiralLine";
 import { MonthMarkers } from "./MonthMarkers";
 import { EventVisualizations } from "./EventVisualizations";
+import { SpaceBackground } from "./SpaceBackground";
 
 interface SpiralSceneProps {
   events: TimeEvent[];
@@ -41,15 +42,8 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         maxDistance={30}
       />
       
-      {/* Enhanced space background */}
-      <color attach="background" args={["#010206"]} /> {/* Slightly bluer black */}
-      
-      {/* Stars in the background */}
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0.5} fade speed={1} />
-      
-      {/* Ambient and directional lighting */}
-      <ambientLight intensity={0.2} /> {/* Reduce ambient light for more dramatic contrast */}
-      <directionalLight position={[10, 10, 5]} intensity={0.4} />
+      {/* Add space background with stars, nebula, and cosmic dust */}
+      <SpaceBackground />
       
       {/* Render the main spiral */}
       <SpiralLine 
