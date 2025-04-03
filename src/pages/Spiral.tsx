@@ -6,6 +6,7 @@ import { SpiralControls } from "@/components/spiral/controls/SpiralControls";
 import { SpiralHelpButton } from "@/components/spiral/controls/SpiralHelpButton";
 import { MemoryList } from "@/components/spiral/memories/MemoryList";
 import { useSpiral } from "@/hooks/use-spiral";
+import { SpaceBackground } from "@/components/spiral/SpaceBackground";
 
 const Spiral: React.FC = () => {
   const {

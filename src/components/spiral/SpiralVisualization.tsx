@@ -16,7 +16,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   onSpiralClick,
 }) => {
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-black">
       <Canvas 
         camera={{ 
           position: [15, 15, 15], 
