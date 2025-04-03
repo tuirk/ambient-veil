@@ -54,9 +54,9 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
       );
       
       // Additional subtle noise movement along all axes
-      const noiseX = Math.sin(time * 0.3) * animationAmplitude;
-      const noiseY = Math.cos(time * 0.3) * animationAmplitude;
-      const noiseZ = Math.sin(time * 0.4) * animationAmplitude;
+      const noiseX = Math.sin(time * 0.3) * 0.001;
+      const noiseY = Math.cos(time * 0.3) * 0.001;
+      const noiseZ = Math.sin(time * 0.4) * 0.001;
       
       ref.current.position.x += noiseX;
       ref.current.position.y += noiseY;
@@ -129,23 +129,8 @@ export const ParticleSystemGroup: React.FC<{
   intensity: number;
 }> = ({ data, textures, intensity }) => {
   // Animation factors linked to intensity
-  // Higher intensity = more movement and pulsing
-  const baseAnimationSpeed = 0.003;
-  const baseAnimationAmplitude = 0.01;
-  const basePulseSpeed = 0.2;
-  const basePulseIntensity = 0.05;
-  
-  // Calculate intensity-scaled animation parameters
-  const intensityFactor = 0.7 + (intensity / 10) * 0.7;
-  const animationSpeed = baseAnimationSpeed * intensityFactor;
-  const animationAmplitude = baseAnimationAmplitude * intensityFactor;
-  const pulseSpeed = basePulseSpeed * intensityFactor;
-  const pulseIntensity = basePulseIntensity * intensityFactor;
-
-  // Get average opacity for each particle system from the data
-  const avgPrimaryOpacity = Array.from(data.particleOpacities).reduce((sum, val) => sum + val, 0) / data.particleOpacities.length;
-  const avgBgOpacity = Array.from(data.bgParticleOpacities).reduce((sum, val) => sum + val, 0) / data.bgParticleOpacities.length;
-  const avgTerOpacity = Array.from(data.tertiaryParticleOpacities).reduce((sum, val) => sum + val, 0) / data.tertiaryParticleOpacities.length;
+  const animationSpeed = 0.003 * (0.7 + intensity * 0.05);
+  const animationAmplitude = 0.01 * (0.7 + intensity * 0.05);
 
   return (
     <group>
@@ -156,11 +141,11 @@ export const ParticleSystemGroup: React.FC<{
         particleColors={data.particleColors}
         texture={textures.particleTexture}
         size={0.25}
-        opacity={avgPrimaryOpacity}
+        opacity={0.9}
         animationSpeed={animationSpeed}
         animationAmplitude={animationAmplitude}
-        pulseSpeed={pulseSpeed}
-        pulseIntensity={pulseIntensity}
+        pulseSpeed={0.2}
+        pulseIntensity={animationAmplitude}
       />
       
       {/* Secondary particle layer - more diffuse background glow */}
@@ -170,11 +155,11 @@ export const ParticleSystemGroup: React.FC<{
         particleColors={data.bgParticleColors}
         texture={textures.glowTexture}
         size={0.35}
-        opacity={avgBgOpacity}
+        opacity={0.7}
         animationSpeed={animationSpeed * 0.7}
         animationAmplitude={animationAmplitude * 1.2}
-        pulseSpeed={pulseSpeed * 0.75}
-        pulseIntensity={pulseIntensity * 1.2}
+        pulseSpeed={0.15}
+        pulseIntensity={animationAmplitude * 1.2}
       />
       
       {/* Tertiary particle layer - intermediate size and opacity */}
@@ -184,11 +169,11 @@ export const ParticleSystemGroup: React.FC<{
         particleColors={data.tertiaryParticleColors}
         texture={textures.particleTexture}
         size={0.30}
-        opacity={avgTerOpacity}
+        opacity={0.8}
         animationSpeed={animationSpeed * 0.4 * -1} // Negative to go in opposite direction
         animationAmplitude={animationAmplitude * 1.5}
-        pulseSpeed={pulseSpeed * 0.5}
-        pulseIntensity={pulseIntensity * 1.5}
+        pulseSpeed={0.1}
+        pulseIntensity={animationAmplitude * 1.5}
       />
     </group>
   );
