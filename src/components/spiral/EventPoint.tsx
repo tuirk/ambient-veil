@@ -25,6 +25,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Sprite>(null);
+  const textGroupRef = useRef<THREE.Group>(null);
   
   // Create a pulsing animation for the point
   useFrame((state) => {
@@ -40,6 +41,11 @@ export const EventPoint: React.FC<EventPointProps> = ({
       // Independent pulse for the glow
       const glowScale = 1 + Math.sin(time * 2.2) * 0.15;
       glowRef.current.scale.set(glowScale, glowScale, 1);
+    }
+    
+    // Make text always face the camera
+    if (textGroupRef.current && state.camera) {
+      textGroupRef.current.lookAt(state.camera.position);
     }
   });
   
@@ -66,16 +72,19 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Format date for display
   const year = event.startDate.getFullYear();
   
+  // Get mood color if available, otherwise use event color
+  const eventColor = event.mood?.color || event.color;
+  
   return (
     <group position={position} onClick={onClick}>
       {/* Core particle - small but visible */}
       <mesh ref={meshRef}>
         <sphereGeometry args={[size, 8, 8]} />
         <meshStandardMaterial 
-          color={event.color} 
+          color={eventColor} 
           transparent 
           opacity={0.9}
-          emissive={event.color}
+          emissive={eventColor}
           emissiveIntensity={1.1} // Reduced from 1.5
         />
       </mesh>
@@ -84,37 +93,49 @@ export const EventPoint: React.FC<EventPointProps> = ({
       <sprite ref={glowRef} scale={[0.34 + event.intensity * 0.045, 0.34 + event.intensity * 0.045, 1]}>
         <spriteMaterial 
           map={glowTexture} 
-          color={event.color} 
+          color={eventColor} 
           transparent 
           opacity={0.6} // Reduced from 0.7
           blending={THREE.AdditiveBlending}
         />
       </sprite>
       
-      {/* Event label (title and year) - removed depthTest prop */}
-      <Text
-        position={[0, size * 2 + 0.12, 0]}
-        color="white"
-        fontSize={0.10}
-        anchorX="center"
-        anchorY="bottom"
-        outlineWidth={0.004}
-        outlineColor="#00000080"
-      >
-        {event.title}
-      </Text>
-      
-      <Text
-        position={[0, size * 2 + 0.02, 0]}
-        color="white"
-        fontSize={0.08}
-        anchorX="center"
-        anchorY="bottom"
-        outlineWidth={0.003}
-        outlineColor="#00000080"
-      >
-        {year}
-      </Text>
+      {/* Improved event label group that always faces camera */}
+      <group ref={textGroupRef} position={[0, size * 2 + 0.05, 0]}>
+        {/* Title text with improved visibility */}
+        <Text
+          position={[0, 0.12, 0]}
+          color="white"
+          fontSize={0.10}
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.004}
+          outlineColor="#000000"
+        >
+          {event.title}
+        </Text>
+        
+        {/* Year text */}
+        <Text
+          position={[0, 0.02, 0]}
+          color="white"
+          fontSize={0.08}
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.003}
+          outlineColor="#000000"
+        >
+          {year}
+        </Text>
+        
+        {/* Optional mood indicator if mood is present */}
+        {event.mood && (
+          <mesh position={[0, -0.05, 0]} scale={[0.05, 0.05, 0.01]}>
+            <planeGeometry />
+            <meshBasicMaterial color={event.mood.color} />
+          </mesh>
+        )}
+      </group>
     </group>
   );
 };
