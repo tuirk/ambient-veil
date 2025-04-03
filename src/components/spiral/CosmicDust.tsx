@@ -68,7 +68,7 @@ export const CosmicDust: React.FC = () => {
   
   // Create a dust particle texture
   const particleTexture = useMemo(() => {
-    return new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png');
+    return new THREE.TextureLoader().load('/lovable-uploads/58209b29-0c30-498e-b1e1-89b5cbef3bf1.png');
   }, []);
   
   useFrame((state) => {
@@ -80,7 +80,7 @@ export const CosmicDust: React.FC = () => {
   });
   
   return (
-    <points ref={particles} renderOrder={-1}>
+    <points ref={particles}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -108,8 +108,8 @@ export const CosmicDust: React.FC = () => {
         opacity={0.7}
         alphaMap={particleTexture}
         blending={THREE.AdditiveBlending}
-        depthWrite={false} // Critical fix: prevent depth writing to avoid black shadow
-        depthTest={true}   // Still perform depth testing
+        depthWrite={false}
+        depthTest={true}
       />
     </points>
   );
