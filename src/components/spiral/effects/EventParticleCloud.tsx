@@ -45,7 +45,7 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
       1 - baseColor.b
     ).lerp(baseColor, 0.7); // Mix with original for subtlety
     
-    // Intensity affects spread and size (using standardized scaling)
+    // Intensity affects spread and size
     const spread = isProcessEvent
       ? 0.3 + intensity * 0.1 * intensityScaling.spreadFactor // More contained for process events
       : 0.6 + intensity * 0.2 * intensityScaling.spreadFactor; // More expansive for one-time events

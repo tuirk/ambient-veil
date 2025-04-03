@@ -1,3 +1,4 @@
+
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -107,7 +108,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         // Determine if this should be visualized as a one-time or process event
         const actuallyOneTimeEvent = isOneTimeEvent(event);
         
-        // Each event gets a unique key, don't use Fragment with data attributes
+        // Group all related event visualizations with a key
         return (
           <group key={event.id}>
             {/* ONLY add cosmic effect for actual one-time events */}

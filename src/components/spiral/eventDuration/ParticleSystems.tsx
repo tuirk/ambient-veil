@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -46,7 +47,6 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
       const time = state.clock.getElapsedTime();
       
       // Very slow subtle drift - scaled by intensity
-      // Use a much smaller value to keep particles more clustered
       ref.current.rotation.y += delta * animationSpeed * 0.5 * intensityScaling.animationFactor;
       
       // Subtle breathing effect - scaled by intensity
@@ -62,7 +62,6 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
       );
       
       // Additional subtle noise movement along all axes - scaled by intensity
-      // Reduced by 70% to keep particles more tightly clustered
       const noiseScale = animationAmplitude * 0.3 * intensityScaling.animationFactor;
       const noiseX = Math.sin(time * 0.3) * noiseScale;
       const noiseY = Math.cos(time * 0.3) * noiseScale;
@@ -142,7 +141,7 @@ export const ParticleSystemGroup: React.FC<{
   // Get standard intensity scaling
   const intensityScaling = getIntensityScaling(intensity);
   
-  // Base animation values scaled by intensity, but reduced for less random movement
+  // Base animation values scaled by intensity
   const animationSpeed = 0.001 * intensityScaling.animationFactor;
   const pulseSpeed = 0.1 * intensityScaling.animationFactor;
   const pulseIntensity = 0.03 * intensityScaling.pulseFactor;
@@ -155,7 +154,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.particleSizes}
         particleColors={data.particleColors}
         texture={textures.coreTexture}
-        size={0.2 * intensityScaling.sizeFactor}
+        size={0.15 * intensityScaling.sizeFactor}
         opacity={0.9 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed}
@@ -170,7 +169,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.bgParticleSizes}
         particleColors={data.bgParticleColors}
         texture={textures.glowTexture}
-        size={0.3 * intensityScaling.sizeFactor}
+        size={0.25 * intensityScaling.sizeFactor}
         opacity={0.6 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed * 0.7}
@@ -185,7 +184,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.tertiaryParticleSizes}
         particleColors={data.tertiaryParticleColors}
         texture={textures.particleTexture}
-        size={0.25 * intensityScaling.sizeFactor}
+        size={0.18 * intensityScaling.sizeFactor}
         opacity={0.7 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed * 0.4 * -1} // Negative to go in opposite direction

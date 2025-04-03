@@ -2,6 +2,7 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { createParticleTexture, getIntensityScaling } from "../eventDuration/ParticleTextures";
 
 interface ParticleCloudProps {
   color: string;
@@ -21,9 +22,10 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
   const particlesRef = useRef<THREE.Points>(null);
   
   // Use the high-quality particle texture
-  const particleTexture = useMemo(() => {
-    return new THREE.TextureLoader().load('/lovable-uploads/aa0fbf13-30c5-4939-8a62-bf7b1f024055.png');
-  }, []);
+  const particleTexture = useMemo(() => createParticleTexture(), []);
+  
+  // Get standardized intensity scaling
+  const intensityScaling = getIntensityScaling(intensity);
   
   // Generate particles for nebula effect
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
@@ -48,8 +50,8 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
     
     // Intensity affects spread and size
     const spread = isProcessEvent
-      ? 0.3 + intensity * 0.07 // More contained for process events
-      : 0.4 + intensity * 0.1; // More expansive for one-time events
+      ? 0.3 + intensity * 0.07 * intensityScaling.spreadFactor // More contained for process events
+      : 0.4 + intensity * 0.1 * intensityScaling.spreadFactor; // More expansive for one-time events
     
     // Create a more clustered distribution for better visual effect
     for (let i = 0; i < count; i++) {
@@ -87,20 +89,23 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
       colors[i3 + 2] = baseColor.b * (1 - colorMix * 0.2) + complementaryColor.b * colorMix * 0.2;
       
       // Size varies based on distance from center and intensity
-      // Reduced size for more crisp particles
       const sizeMultiplier = isProcessEvent ? 0.5 : 0.8; 
-      sizes[i] = (0.07 + Math.random() * 0.12) * (0.5 + intensity * 0.08) * sizeMultiplier;
+      sizes[i] = (0.07 + Math.random() * 0.12) * 
+                (0.5 + intensity * 0.08) * 
+                sizeMultiplier *
+                intensityScaling.sizeFactor;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
-  }, [color, intensity, isProcessEvent]);
+  }, [color, intensity, isProcessEvent, intensityScaling]);
   
   // Animation for the particle cloud
   useFrame((state, delta) => {
     if (particlesRef.current) {
       // One-time events: slower, gentler rotation
       // Process events: even slower rotation
-      const rotationSpeed = isProcessEvent ? 0.03 : 0.08;
+      const baseRotationSpeed = isProcessEvent ? 0.03 : 0.08;
+      const rotationSpeed = baseRotationSpeed * intensityScaling.animationFactor;
       
       // Rotate the particle system
       particlesRef.current.rotation.y += delta * rotationSpeed;
@@ -108,8 +113,10 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
       
       // Pulsate the particles - gentler for both event types
       const time = state.clock.getElapsedTime();
-      const pulseIntensity = isProcessEvent ? 0.02 : 0.04;
-      const pulseSpeed = isProcessEvent ? 0.8 : 1.2;
+      const basePulseIntensity = isProcessEvent ? 0.02 : 0.04;
+      const pulseIntensity = basePulseIntensity * intensityScaling.pulseFactor;
+      const basePulseSpeed = isProcessEvent ? 0.8 : 1.2;
+      const pulseSpeed = basePulseSpeed * intensityScaling.animationFactor;
       const pulseScale = 1 + Math.sin(time * pulseSpeed) * pulseIntensity;
       
       particlesRef.current.scale.set(pulseScale, pulseScale, pulseScale);

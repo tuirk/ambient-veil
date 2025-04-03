@@ -75,7 +75,6 @@ const distributeParticlesAlongPath = (
     // For very short events, cluster particles at the start position
     if (isMinimalDuration) {
       // Keep particles tightly centered on the event point
-      // Use much smaller range for tighter clustering
       pathIndex = Math.floor(Math.random() * Math.min(10, pathLength - 1));
     } else {
       // Distribution weighting logic - emphasize start and end points a bit
@@ -117,11 +116,9 @@ const createParticlePositions = (
     const i3 = i * 3;
     
     // For minimal duration, use smaller spread to keep particles clustered
-    // Reduce the spread substantially for tighter clustering
     const localSpread = isMinimalDuration ? spreadScale * 0.3 : spreadScale;
     
     // Create more natural clustering by varying the spread based on position
-    // Reduce offset distance for tighter clustering
     const offsetDistance = localSpread * (0.2 + Math.random() * 0.5);
     
     // Generate offset direction - slightly biased to create natural clusters
@@ -171,7 +168,6 @@ export const generateParticles = ({
   
   // Calculate spread factors
   // Seasonal events get more spread to indicate approximate timing
-  // Reduce base spread factor for tighter clustering
   const baseSpreadFactor = isRoughDate ? 0.25 : 0.15;
   // Scale spread by intensity for more dramatic high-intensity events
   const spreadScale = baseSpreadFactor * intensityScaling.spreadFactor;
@@ -200,13 +196,11 @@ export const generateParticles = ({
     const pathProgress = primaryIndices[i] / pathLength;
     
     // Primary particles - sharper, more defined
-    // Reduce base size for smaller particles
     const baseSize = 0.12 * intensityScaling.sizeFactor;
     sizes[i] = baseSize * (0.85 + Math.random() * 0.3);
     
     // Opacity with slight variation depending on position
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
-    // Increase opacity for better visibility
     const baseOpacity = isRoughDate ? 0.08 : 0.12;
     opacities[i] = (baseOpacity * intensityScaling.opacityFactor) * 
                    (0.7 + progressFactor * 0.3) * 
