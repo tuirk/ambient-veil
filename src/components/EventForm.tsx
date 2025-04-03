@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { TimeEvent } from "@/types/event";
+import { TimeEvent, PRESET_MOODS, Mood } from "@/types/event";
 import { v4 as uuidv4 } from "uuid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEASONS, getSeasonalDateRange } from "@/utils/seasonalUtils";
@@ -21,15 +22,6 @@ interface EventFormProps {
   startYear: number;
   currentYear: number;
 }
-
-const MOOD_COLORS = [
-  "#9b87f5", // Purple
-  "#D946EF", // Magenta
-  "#F97316", // Orange
-  "#0EA5E9", // Blue
-  "#ea384c", // Red
-  "#16a34a", // Green
-];
 
 const daysInMonth = (month: number, year: number): number => {
   return new Date(year, month + 1, 0).getDate();
@@ -61,7 +53,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
   // Basic event details
   const [title, setTitle] = useState("");
-  const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(PRESET_MOODS[0]);
   const [intensity, setIntensity] = useState(5);
   
   // Date selection logic
@@ -80,7 +72,7 @@ const EventForm: React.FC<EventFormProps> = ({
   // Span - Exact dates
   const [startDay, setStartDay] = useState(1);
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
-  const [spanStartYear, setSpanStartYear] = useState( // Renamed from startYear to spanStartYear
+  const [spanStartYear, setSpanStartYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
@@ -88,7 +80,7 @@ const EventForm: React.FC<EventFormProps> = ({
   const [specifyDays, setSpecifyDays] = useState(false);
   const [endDay, setEndDay] = useState(1);
   const [endMonth, setEndMonth] = useState(startMonth);
-  const [endYear, setEndYear] = useState(spanStartYear); // Updated to use spanStartYear
+  const [endYear, setEndYear] = useState(spanStartYear);
   
   // Span - Seasonal
   const [season, setSeason] = useState<string>("Spring");
@@ -108,7 +100,7 @@ const EventForm: React.FC<EventFormProps> = ({
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
       setSingleYear(constrainedYear);
-      setSpanStartYear(constrainedYear); // Updated to use spanStartYear
+      setSpanStartYear(constrainedYear);
       setEndYear(constrainedYear);
       setSeasonYear(constrainedYear);
     }
@@ -122,13 +114,13 @@ const EventForm: React.FC<EventFormProps> = ({
 
   // Update available days when months/years change
   useEffect(() => {
-    const days = daysInMonth(startMonth, spanStartYear); // Updated to use spanStartYear
+    const days = daysInMonth(startMonth, spanStartYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
     if (startDay > days) {
       setStartDay(1);
     }
-  }, [startMonth, spanStartYear]); // Updated to use spanStartYear
+  }, [startMonth, spanStartYear]);
 
   useEffect(() => {
     const days = daysInMonth(endMonth, endYear);
@@ -150,6 +142,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const handleSave = () => {
     if (!title) return;
+    if (!selectedMood) return;
 
     // Validate date ranges
     if (dateLength === "ONE_DAY") {
@@ -177,7 +170,7 @@ const EventForm: React.FC<EventFormProps> = ({
         }
       } else {
         // Validate exact span dates
-        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1);
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         const minDate = new Date(minYear, 0, 1);
         const maxDate = new Date(maxYear, 11, 31);
@@ -209,10 +202,11 @@ const EventForm: React.FC<EventFormProps> = ({
       newEvent = {
         id: uuidv4(),
         title,
-        color: selectedColor,
+        color: selectedMood.color,
         intensity,
         startDate: new Date(singleYear, singleMonth, singleDay),
-        eventType: "one-time"
+        eventType: "one-time",
+        mood: selectedMood
       };
     } else if (dateLength === "SPAN") {
       if (spanType === "SEASONAL") {
@@ -222,28 +216,30 @@ const EventForm: React.FC<EventFormProps> = ({
         newEvent = {
           id: uuidv4(),
           title,
-          color: selectedColor,
+          color: selectedMood.color,
           intensity,
           startDate,
           endDate,
           isRoughDate: true,
           roughDateSeason: season,
           roughDateYear: seasonYear,
-          eventType: "process"
+          eventType: "process",
+          mood: selectedMood
         };
       } else {
         // Create an exact process event
-        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1);
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         
         newEvent = {
           id: uuidv4(),
           title,
-          color: selectedColor,
+          color: selectedMood.color,
           intensity,
           startDate,
           endDate,
-          eventType: "process"
+          eventType: "process",
+          mood: selectedMood
         };
       }
     }
@@ -255,7 +251,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const resetForm = () => {
     setTitle("");
-    setSelectedColor(MOOD_COLORS[0]);
+    setSelectedMood(PRESET_MOODS[0]);
     setIntensity(5);
     setDateLength("ONE_DAY");
     setSpanType("EXACT");
@@ -287,21 +283,26 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          {/* Color selection */}
+          {/* Mood selection */}
           <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none">Emotional Tone</label>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {MOOD_COLORS.map((color) => (
+            <label className="text-sm font-medium leading-none">How did this make you feel?</label>
+            <div className="grid grid-cols-3 gap-2 mt-1">
+              {PRESET_MOODS.map((mood) => (
                 <button
-                  key={color}
-                  className={`w-8 h-8 rounded-full transition-all ${
-                    selectedColor === color
-                      ? "ring-2 ring-white scale-110"
-                      : "opacity-70 hover:opacity-100"
+                  key={mood.name}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all ${
+                    selectedMood?.name === mood.name
+                      ? "ring-2 ring-white bg-white/10"
+                      : "bg-white/5 hover:bg-white/10"
                   }`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setSelectedColor(color)}
-                />
+                  onClick={() => setSelectedMood(mood)}
+                >
+                  <div
+                    className="w-6 h-6 rounded-full mb-2"
+                    style={{ backgroundColor: mood.color }}
+                  />
+                  <span className="text-xs font-medium">{mood.name}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -551,7 +552,7 @@ const EventForm: React.FC<EventFormProps> = ({
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!title}>
+          <Button onClick={handleSave} disabled={!title || !selectedMood}>
             Add to Spiral
           </Button>
         </DialogFooter>
