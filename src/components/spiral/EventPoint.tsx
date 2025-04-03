@@ -31,15 +31,19 @@ export const EventPoint: React.FC<EventPointProps> = ({
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.getElapsedTime();
-      // Pulse effect based on time and event intensity
+      // RESTORED: Pulse effect based on time and event intensity
+      // Higher intensity = stronger pulse
       const pulseScale = 1 + Math.sin(time * 1.5) * 0.1 * (event.intensity / 10);
       meshRef.current.scale.set(pulseScale, pulseScale, pulseScale);
     }
     
     if (glowRef.current) {
       const time = state.clock.getElapsedTime();
-      // Independent pulse for the glow
-      const glowScale = 1 + Math.sin(time * 2.2) * 0.15;
+      // RESTORED: Independent pulse for the glow based on intensity
+      // Higher intensity = stronger pulse
+      const pulseSpeed = 1.8 + (event.intensity / 10) * 0.8;
+      const pulseStrength = 0.1 + (event.intensity / 10) * 0.1;
+      const glowScale = 1 + Math.sin(time * pulseSpeed) * pulseStrength;
       glowRef.current.scale.set(glowScale, glowScale, 1);
     }
     
@@ -49,9 +53,9 @@ export const EventPoint: React.FC<EventPointProps> = ({
     }
   });
   
-  // Calculate size based on event intensity (1-10)
-  // Further reduced by 25% for all event points (on top of previous reduction)
-  const size = 0.028 + (event.intensity / 10) * 0.056; // Reduced from 0.0375/0.075
+  // RESTORED: Calculate size based on event intensity (1-10)
+  // Properly scale with intensity
+  const size = 0.02 + (event.intensity / 10) * 0.06;
   
   // Create a texture for the glow effect - creating the canvas element first
   const canvas = document.createElement("canvas");
@@ -85,18 +89,20 @@ export const EventPoint: React.FC<EventPointProps> = ({
           transparent 
           opacity={0.9}
           emissive={eventColor}
-          emissiveIntensity={1.1} // Reduced from 1.5
+          // RESTORED: emissiveIntensity scales with event intensity
+          emissiveIntensity={0.8 + event.intensity * 0.08}
           depthWrite={false} // Prevent depth writing to avoid black shadow
         />
       </mesh>
       
-      {/* Glow effect for one-time events */}
-      <sprite ref={glowRef} scale={[0.34 + event.intensity * 0.045, 0.34 + event.intensity * 0.045, 1]}>
+      {/* RESTORED: Glow effect size scales with intensity */}
+      <sprite ref={glowRef} scale={[0.25 + event.intensity * 0.06, 0.25 + event.intensity * 0.06, 1]}>
         <spriteMaterial 
           map={glowTexture} 
           color={eventColor} 
           transparent 
-          opacity={0.6} // Reduced from 0.7
+          // RESTORED: Glow opacity scales with intensity
+          opacity={0.4 + event.intensity * 0.04} 
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />

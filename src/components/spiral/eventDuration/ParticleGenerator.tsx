@@ -86,12 +86,19 @@ export const generateParticles = ({
   const pathLength = points.length;
   
   // Base size calculation - scales with intensity
-  // Intensity 1 → 0.7x, Intensity 5 → 1.1x, Intensity 10 → 1.8x
-  // Reduced base scaling for more crisp particles
-  const baseSizeFactor = 0.7 + startEvent.intensity * 0.11;
+  // RESTORED: Proper intensity scaling
+  // Intensity 1 → 0.6x, Intensity 5 → 1.0x, Intensity 10 → 1.6x
+  const baseSizeFactor = 0.6 + startEvent.intensity * 0.1;
   
   // Color variations to make the nebula more interesting
   const baseColor = new THREE.Color(startEvent.color);
+  
+  // RESTORED: Adjust base color brightness by intensity
+  const hsl = {h: 0, s: 0, l: 0};
+  baseColor.getHSL(hsl);
+  // Intensity affects color brightness - higher intensity = brighter
+  hsl.l = Math.max(0.3, Math.min(0.8, 0.3 + (startEvent.intensity / 10) * 0.5));
+  baseColor.setHSL(hsl.h, hsl.s, hsl.l);
   
   // Primary particles
   for (let i = 0; i < particleCount; i++) {
@@ -119,10 +126,11 @@ export const generateParticles = ({
     const point = points[pathIndex];
     
     // Add some random offset to create volume around the line
+    // RESTORED: Intensity affects spread - higher intensity = more volume
     // Seasonal events get more spread to indicate approximate timing
     const spreadFactor = isRoughDate ? 0.6 : 0.4;
     // Scale spread by intensity for more dramatic high-intensity events
-    const intensitySpreadScale = 0.8 + startEvent.intensity * 0.04;
+    const intensitySpreadScale = 0.6 + startEvent.intensity * 0.08;
     
     const randomOffset = new THREE.Vector3(
       (Math.random() - 0.5) * spreadFactor * intensitySpreadScale,
@@ -135,16 +143,17 @@ export const generateParticles = ({
     positions[i3 + 1] = point.y + randomOffset.y;
     positions[i3 + 2] = point.z + randomOffset.z;
     
-    // Reduce the base particle size for sharper, more defined particles
-    const baseSize = 0.25 * baseSizeFactor;
+    // RESTORED: Intensity affects particle size
+    const baseSize = 0.2 + 0.05 * startEvent.intensity / 10;
     const sizeVariation = 0.2; // 20% variation
-    sizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    sizes[i] = baseSize * baseSizeFactor * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
+    // RESTORED: Intensity affects opacity
     // Vary opacity based on position and intensity
-    // More intense events get slightly higher base opacity
+    // More intense events get significantly higher opacity
     const pathProgress = pathIndex / pathLength;
-    const baseOpacity = isRoughDate ? 0.08 : 0.12;
-    const intensityOpacityBoost = 0.08 * (startEvent.intensity / 10);
+    const baseOpacity = isRoughDate ? 0.05 : 0.08;
+    const intensityOpacityBoost = 0.15 * (startEvent.intensity / 10);
     
     // Opacity curve - slightly stronger in the middle of the path
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
@@ -164,9 +173,10 @@ export const generateParticles = ({
     const pathIndex = Math.floor(Math.random() * (pathLength - 1));
     const point = points[pathIndex];
     
+    // RESTORED: Intensity affects spread for background particles
     // Wider spread for background particles
     const spreadFactor = isRoughDate ? 0.9 : 0.65;
-    const intensitySpreadScale = 0.8 + startEvent.intensity * 0.05;
+    const intensitySpreadScale = 0.7 + startEvent.intensity * 0.07;
     
     const randomOffset = new THREE.Vector3(
       (Math.random() - 0.5) * spreadFactor * intensitySpreadScale,
@@ -179,15 +189,16 @@ export const generateParticles = ({
     bgPositions[i3 + 1] = point.y + randomOffset.y;
     bgPositions[i3 + 2] = point.z + randomOffset.z;
     
+    // RESTORED: Intensity affects background particle size
     // Larger but more transparent
-    // Reduced from previous values for crisper particles
-    const baseSize = 0.35 * baseSizeFactor;
+    const baseSize = 0.3 + 0.06 * startEvent.intensity / 10;
     const sizeVariation = 0.3; // 30% variation
-    bgSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    bgSizes[i] = baseSize * baseSizeFactor * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
+    // RESTORED: Intensity affects background opacity
     // Higher opacity for diffuse background glow
-    const baseOpacity = 0.06;
-    const intensityOpacityBoost = 0.04 * (startEvent.intensity / 10);
+    const baseOpacity = 0.04;
+    const intensityOpacityBoost = 0.08 * (startEvent.intensity / 10);
     bgOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.6 + Math.random() * 0.6);
     
     // Slightly varied colors for background
@@ -202,9 +213,10 @@ export const generateParticles = ({
     const pathIndex = Math.floor(Math.random() * (pathLength - 1));
     const point = points[pathIndex];
     
+    // RESTORED: Intensity affects tertiary particles spread
     // Medium spread for tertiary particles
     const spreadFactor = isRoughDate ? 0.75 : 0.5;
-    const intensitySpreadScale = 0.8 + startEvent.intensity * 0.04;
+    const intensitySpreadScale = 0.7 + startEvent.intensity * 0.06;
     
     const randomOffset = new THREE.Vector3(
       (Math.random() - 0.5) * spreadFactor * intensitySpreadScale,
@@ -217,15 +229,16 @@ export const generateParticles = ({
     terPositions[i3 + 1] = point.y + randomOffset.y;
     terPositions[i3 + 2] = point.z + randomOffset.z;
     
+    // RESTORED: Intensity affects tertiary particle size
     // Medium-sized particles
-    // Reduced from previous values for crisper particles
-    const baseSize = 0.30 * baseSizeFactor;
+    const baseSize = 0.25 + 0.055 * startEvent.intensity / 10;
     const sizeVariation = 0.25; // 25% variation
-    terSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    terSizes[i] = baseSize * baseSizeFactor * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
+    // RESTORED: Intensity affects tertiary opacity
     // Medium opacity
-    const baseOpacity = 0.09;
-    const intensityOpacityBoost = 0.05 * (startEvent.intensity / 10);
+    const baseOpacity = 0.06;
+    const intensityOpacityBoost = 0.1 * (startEvent.intensity / 10);
     terOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.7 + Math.random() * 0.5);
     
     // Some color variation

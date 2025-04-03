@@ -55,16 +55,18 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Load high-quality textures
   const { particleTexture, glowTexture } = useParticleTextures();
   
-  // Number of particles based on event intensity and span length - ENHANCED VALUES
+  // RESTORED: Number of particles based on event intensity and span length
   const particleCount = useMemo(() => {
+    // FIXED: Restored intensity scaling for particle count
     // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 400× spanLength (increased from 200)
-    // Intensity 5 → 600× spanLength (increased from 400)
-    // Intensity 10 → 800× spanLength (increased from 600)
-    const intensityFactor = 2 + startEvent.intensity * 0.4; // Increased for better visibility
-    const baseMultiplier = 400; // Doubled from 200
+    // Intensity 1 → 200× spanLength
+    // Intensity 5 → 400× spanLength
+    // Intensity 10 → 600× spanLength
+    const intensityFactor = 1 + startEvent.intensity * 0.5; // Linear scaling with intensity
+    const baseMultiplier = 200;
     
     // For minimal duration, use a fixed count to ensure visibility
+    // RESTORED: Intensity affects minimal duration particle count
     if (isMinimalDuration) {
       return Math.floor(baseMultiplier * intensityFactor);
     }
@@ -74,9 +76,11 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
   }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
   
-  // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.8);
-  const tertiaryParticleCount = Math.floor(particleCount * 0.5);
+  // RESTORED: Intensity impacts background particle ratios
+  // Higher intensity = more background particles for volume
+  const intensityRatio = 0.5 + (startEvent.intensity / 10) * 0.7;
+  const backgroundParticleCount = Math.floor(particleCount * intensityRatio);
+  const tertiaryParticleCount = Math.floor(particleCount * intensityRatio * 0.7);
   
   // Generate all particle data
   const particleData = useMemo(() => generateParticles({
