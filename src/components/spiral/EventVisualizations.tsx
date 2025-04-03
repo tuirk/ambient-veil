@@ -1,4 +1,3 @@
-
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -99,7 +98,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 opacity={0.7} 
                 emissive={eventColor}
                 emissiveIntensity={0.5}
-                depthWrite={false} // Prevent depth writing to avoid black shadow
+                depthWrite={false}
               />
             </mesh>
           );
@@ -108,8 +107,9 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         // Determine if this should be visualized as a one-time or process event
         const actuallyOneTimeEvent = isOneTimeEvent(event);
         
+        // Each event gets a unique key, don't use Fragment with data attributes
         return (
-          <React.Fragment key={event.id}>
+          <group key={event.id}>
             {/* ONLY add cosmic effect for actual one-time events */}
             {actuallyOneTimeEvent && (
               <CosmicEventEffect
@@ -153,7 +153,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 zoom={config.zoom}
               />
             )}
-          </React.Fragment>
+          </group>
         );
       })}
     </>

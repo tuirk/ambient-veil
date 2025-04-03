@@ -61,9 +61,11 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Number of particles based on event intensity and span length
   const particleCount = useMemo(() => {
     // Base particle count that scales with intensity
-    const baseCount = 250 + Math.floor(startEvent.intensity * 40);
+    const baseCount = isMinimalDuration ? 
+      350 + Math.floor(startEvent.intensity * 50) :  // More particles for minimal duration to ensure visibility
+      250 + Math.floor(startEvent.intensity * 40);   // Fewer for spans since they're spread out
     
-    // For minimal duration, use a fixed count to ensure visibility
+    // For minimal duration, use a higher count to ensure visibility
     if (isMinimalDuration) {
       return Math.floor(baseCount * intensityScaling.particleCountFactor);
     }
@@ -74,8 +76,8 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   }, [startEvent.intensity, isMinimalDuration, spanLengthInDays, intensityScaling.particleCountFactor]);
   
   // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.7); 
-  const tertiaryParticleCount = Math.floor(particleCount * 0.4);
+  const backgroundParticleCount = Math.floor(particleCount * 0.8); 
+  const tertiaryParticleCount = Math.floor(particleCount * 0.5);
   
   // Generate all particle data
   const particleData = useMemo(() => generateParticles({

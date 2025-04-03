@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -47,11 +46,12 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
       const time = state.clock.getElapsedTime();
       
       // Very slow subtle drift - scaled by intensity
-      ref.current.rotation.y += delta * animationSpeed * intensityScaling.animationFactor;
+      // Use a much smaller value to keep particles more clustered
+      ref.current.rotation.y += delta * animationSpeed * 0.5 * intensityScaling.animationFactor;
       
       // Subtle breathing effect - scaled by intensity
-      const pulse = Math.sin(time * pulseSpeed) * 
-                    pulseIntensity * 
+      const pulse = Math.sin(time * pulseSpeed * 0.5) * 
+                    pulseIntensity * 0.7 * 
                     intensityScaling.pulseFactor;
       
       // Scale pulse to create a breathing effect
@@ -62,7 +62,8 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
       );
       
       // Additional subtle noise movement along all axes - scaled by intensity
-      const noiseScale = animationAmplitude * intensityScaling.animationFactor;
+      // Reduced by 70% to keep particles more tightly clustered
+      const noiseScale = animationAmplitude * 0.3 * intensityScaling.animationFactor;
       const noiseX = Math.sin(time * 0.3) * noiseScale;
       const noiseY = Math.cos(time * 0.3) * noiseScale;
       const noiseZ = Math.sin(time * 0.4) * noiseScale;
@@ -141,10 +142,10 @@ export const ParticleSystemGroup: React.FC<{
   // Get standard intensity scaling
   const intensityScaling = getIntensityScaling(intensity);
   
-  // Base animation values scaled by intensity
-  const animationSpeed = 0.003 * intensityScaling.animationFactor;
-  const pulseSpeed = 0.2 * intensityScaling.animationFactor;
-  const pulseIntensity = 0.05 * intensityScaling.pulseFactor;
+  // Base animation values scaled by intensity, but reduced for less random movement
+  const animationSpeed = 0.001 * intensityScaling.animationFactor;
+  const pulseSpeed = 0.1 * intensityScaling.animationFactor;
+  const pulseIntensity = 0.03 * intensityScaling.pulseFactor;
 
   return (
     <group>
@@ -158,7 +159,7 @@ export const ParticleSystemGroup: React.FC<{
         opacity={0.9 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed}
-        animationAmplitude={0.01 * intensityScaling.animationFactor}
+        animationAmplitude={0.005 * intensityScaling.animationFactor}
         pulseSpeed={pulseSpeed}
         pulseIntensity={pulseIntensity}
       />
@@ -173,9 +174,9 @@ export const ParticleSystemGroup: React.FC<{
         opacity={0.6 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed * 0.7}
-        animationAmplitude={0.01 * intensityScaling.animationFactor * 1.2}
+        animationAmplitude={0.005 * intensityScaling.animationFactor}
         pulseSpeed={pulseSpeed * 0.75}
-        pulseIntensity={pulseIntensity * 1.2}
+        pulseIntensity={pulseIntensity}
       />
       
       {/* Tertiary particle layer - intermediate size and opacity */}
@@ -188,9 +189,9 @@ export const ParticleSystemGroup: React.FC<{
         opacity={0.7 * intensityScaling.opacityFactor}
         intensity={intensity}
         animationSpeed={animationSpeed * 0.4 * -1} // Negative to go in opposite direction
-        animationAmplitude={0.01 * intensityScaling.animationFactor * 1.5}
+        animationAmplitude={0.005 * intensityScaling.animationFactor}
         pulseSpeed={pulseSpeed * 0.5}
-        pulseIntensity={pulseIntensity * 1.5}
+        pulseIntensity={pulseIntensity}
       />
     </group>
   );

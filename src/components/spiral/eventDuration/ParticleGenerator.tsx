@@ -75,7 +75,8 @@ const distributeParticlesAlongPath = (
     // For very short events, cluster particles at the start position
     if (isMinimalDuration) {
       // Keep particles tightly centered on the event point
-      pathIndex = Math.floor(Math.random() * Math.min(20, pathLength - 1));
+      // Use much smaller range for tighter clustering
+      pathIndex = Math.floor(Math.random() * Math.min(10, pathLength - 1));
     } else {
       // Distribution weighting logic - emphasize start and end points a bit
       const rand = Math.random();
@@ -116,10 +117,12 @@ const createParticlePositions = (
     const i3 = i * 3;
     
     // For minimal duration, use smaller spread to keep particles clustered
-    const localSpread = isMinimalDuration ? spreadScale * 0.6 : spreadScale;
+    // Reduce the spread substantially for tighter clustering
+    const localSpread = isMinimalDuration ? spreadScale * 0.3 : spreadScale;
     
     // Create more natural clustering by varying the spread based on position
-    const offsetDistance = localSpread * (0.3 + Math.random() * 0.7);
+    // Reduce offset distance for tighter clustering
+    const offsetDistance = localSpread * (0.2 + Math.random() * 0.5);
     
     // Generate offset direction - slightly biased to create natural clusters
     let offsetX = (Math.random() - 0.5) * 2;
@@ -168,14 +171,15 @@ export const generateParticles = ({
   
   // Calculate spread factors
   // Seasonal events get more spread to indicate approximate timing
-  const baseSpreadFactor = isRoughDate ? 0.5 : 0.3;
+  // Reduce base spread factor for tighter clustering
+  const baseSpreadFactor = isRoughDate ? 0.25 : 0.15;
   // Scale spread by intensity for more dramatic high-intensity events
   const spreadScale = baseSpreadFactor * intensityScaling.spreadFactor;
   
   // Create particle positions with clustering
   const positions = createParticlePositions(points, primaryIndices, spreadScale, isMinimalDuration);
-  const bgPositions = createParticlePositions(points, bgIndices, spreadScale * 1.4, isMinimalDuration);
-  const terPositions = createParticlePositions(points, terIndices, spreadScale * 1.2, isMinimalDuration);
+  const bgPositions = createParticlePositions(points, bgIndices, spreadScale * 1.2, isMinimalDuration);
+  const terPositions = createParticlePositions(points, terIndices, spreadScale * 1.1, isMinimalDuration);
   
   // Create arrays for other particle attributes
   const sizes = new Float32Array(particleCount);
@@ -196,18 +200,20 @@ export const generateParticles = ({
     const pathProgress = primaryIndices[i] / pathLength;
     
     // Primary particles - sharper, more defined
-    const baseSize = 0.14 * intensityScaling.sizeFactor;
+    // Reduce base size for smaller particles
+    const baseSize = 0.12 * intensityScaling.sizeFactor;
     sizes[i] = baseSize * (0.85 + Math.random() * 0.3);
     
     // Opacity with slight variation depending on position
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
-    const baseOpacity = isRoughDate ? 0.06 : 0.1;
+    // Increase opacity for better visibility
+    const baseOpacity = isRoughDate ? 0.08 : 0.12;
     opacities[i] = (baseOpacity * intensityScaling.opacityFactor) * 
                    (0.7 + progressFactor * 0.3) * 
                    (0.8 + Math.random() * 0.4);
                    
     // Subtle color variation
-    const variedColor = getColorVariation(baseColor);
+    const variedColor = getColorVariation(baseColor, 0.05);
     colors[i3] = variedColor.r;
     colors[i3 + 1] = variedColor.g;
     colors[i3 + 2] = variedColor.b;
@@ -218,11 +224,11 @@ export const generateParticles = ({
     const i3 = i * 3;
     
     // Larger but more transparent
-    const baseSize = 0.25 * intensityScaling.sizeFactor;
+    const baseSize = 0.22 * intensityScaling.sizeFactor;
     bgSizes[i] = baseSize * (0.8 + Math.random() * 0.4);
     
     // Lower opacity for diffuse background glow
-    const baseOpacity = 0.04;
+    const baseOpacity = 0.05;
     bgOpacities[i] = (baseOpacity * intensityScaling.opacityFactor) * (0.6 + Math.random() * 0.6);
     
     // Slightly varied colors for background
@@ -237,15 +243,15 @@ export const generateParticles = ({
     const i3 = i * 3;
     
     // Medium-sized particles
-    const baseSize = 0.19 * intensityScaling.sizeFactor;
+    const baseSize = 0.17 * intensityScaling.sizeFactor;
     terSizes[i] = baseSize * (0.75 + Math.random() * 0.5);
     
     // Medium opacity
-    const baseOpacity = 0.07;
+    const baseOpacity = 0.08;
     terOpacities[i] = (baseOpacity * intensityScaling.opacityFactor) * (0.7 + Math.random() * 0.5);
     
     // Some color variation
-    const variedColor = getColorVariation(baseColor, 0.1);
+    const variedColor = getColorVariation(baseColor, 0.08);
     terColors[i3] = variedColor.r;
     terColors[i3 + 1] = variedColor.g;
     terColors[i3 + 2] = variedColor.b;
