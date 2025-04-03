@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { getIntensityScaling } from "./ParticleTextures";
 
 interface ParticleSystemProps {
   particlePositions: Float32Array;
@@ -10,6 +11,7 @@ interface ParticleSystemProps {
   texture: THREE.Texture;
   size: number;
   opacity: number;
+  intensity: number;
   pulseIntensity?: number;
   pulseSpeed?: number;
   animationSpeed?: number;
@@ -27,6 +29,7 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
   texture,
   size,
   opacity,
+  intensity,
   pulseIntensity = 0.05,
   pulseSpeed = 0.2,
   animationSpeed = 0.003,
@@ -34,17 +37,22 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
 }) => {
   const ref = useRef<THREE.Points>(null);
   
+  // Get standard intensity scaling
+  const intensityScaling = getIntensityScaling(intensity);
+  
   // Subtle animation for the dust trail
   useFrame((state, delta) => {
     if (ref.current) {
       // Time-based animation
       const time = state.clock.getElapsedTime();
       
-      // Very slow subtle drift
-      ref.current.rotation.y += delta * animationSpeed;
+      // Very slow subtle drift - scaled by intensity
+      ref.current.rotation.y += delta * animationSpeed * intensityScaling.animationFactor;
       
-      // Subtle breathing effect
-      const pulse = Math.sin(time * pulseSpeed) * pulseIntensity;
+      // Subtle breathing effect - scaled by intensity
+      const pulse = Math.sin(time * pulseSpeed) * 
+                    pulseIntensity * 
+                    intensityScaling.pulseFactor;
       
       // Scale pulse to create a breathing effect
       ref.current.scale.set(
@@ -53,10 +61,11 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
         1 + pulse
       );
       
-      // Additional subtle noise movement along all axes
-      const noiseX = Math.sin(time * 0.3) * 0.001;
-      const noiseY = Math.cos(time * 0.3) * 0.001;
-      const noiseZ = Math.sin(time * 0.4) * 0.001;
+      // Additional subtle noise movement along all axes - scaled by intensity
+      const noiseScale = animationAmplitude * intensityScaling.animationFactor;
+      const noiseX = Math.sin(time * 0.3) * noiseScale;
+      const noiseY = Math.cos(time * 0.3) * noiseScale;
+      const noiseZ = Math.sin(time * 0.4) * noiseScale;
       
       ref.current.position.x += noiseX;
       ref.current.position.y += noiseY;
@@ -125,12 +134,17 @@ export const ParticleSystemGroup: React.FC<{
   textures: {
     particleTexture: THREE.Texture;
     glowTexture: THREE.Texture;
+    coreTexture: THREE.Texture;
   };
   intensity: number;
 }> = ({ data, textures, intensity }) => {
-  // Animation factors linked to intensity
-  const animationSpeed = 0.003 * (0.7 + intensity * 0.05);
-  const animationAmplitude = 0.01 * (0.7 + intensity * 0.05);
+  // Get standard intensity scaling
+  const intensityScaling = getIntensityScaling(intensity);
+  
+  // Base animation values scaled by intensity
+  const animationSpeed = 0.003 * intensityScaling.animationFactor;
+  const pulseSpeed = 0.2 * intensityScaling.animationFactor;
+  const pulseIntensity = 0.05 * intensityScaling.pulseFactor;
 
   return (
     <group>
@@ -139,13 +153,14 @@ export const ParticleSystemGroup: React.FC<{
         particlePositions={data.particlePositions}
         particleSizes={data.particleSizes}
         particleColors={data.particleColors}
-        texture={textures.particleTexture}
-        size={0.25}
-        opacity={0.9}
+        texture={textures.coreTexture}
+        size={0.2 * intensityScaling.sizeFactor}
+        opacity={0.9 * intensityScaling.opacityFactor}
+        intensity={intensity}
         animationSpeed={animationSpeed}
-        animationAmplitude={animationAmplitude}
-        pulseSpeed={0.2}
-        pulseIntensity={animationAmplitude}
+        animationAmplitude={0.01 * intensityScaling.animationFactor}
+        pulseSpeed={pulseSpeed}
+        pulseIntensity={pulseIntensity}
       />
       
       {/* Secondary particle layer - more diffuse background glow */}
@@ -154,12 +169,13 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.bgParticleSizes}
         particleColors={data.bgParticleColors}
         texture={textures.glowTexture}
-        size={0.35}
-        opacity={0.7}
+        size={0.3 * intensityScaling.sizeFactor}
+        opacity={0.6 * intensityScaling.opacityFactor}
+        intensity={intensity}
         animationSpeed={animationSpeed * 0.7}
-        animationAmplitude={animationAmplitude * 1.2}
-        pulseSpeed={0.15}
-        pulseIntensity={animationAmplitude * 1.2}
+        animationAmplitude={0.01 * intensityScaling.animationFactor * 1.2}
+        pulseSpeed={pulseSpeed * 0.75}
+        pulseIntensity={pulseIntensity * 1.2}
       />
       
       {/* Tertiary particle layer - intermediate size and opacity */}
@@ -168,12 +184,13 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.tertiaryParticleSizes}
         particleColors={data.tertiaryParticleColors}
         texture={textures.particleTexture}
-        size={0.30}
-        opacity={0.8}
+        size={0.25 * intensityScaling.sizeFactor}
+        opacity={0.7 * intensityScaling.opacityFactor}
+        intensity={intensity}
         animationSpeed={animationSpeed * 0.4 * -1} // Negative to go in opposite direction
-        animationAmplitude={animationAmplitude * 1.5}
-        pulseSpeed={0.1}
-        pulseIntensity={animationAmplitude * 1.5}
+        animationAmplitude={0.01 * intensityScaling.animationFactor * 1.5}
+        pulseSpeed={pulseSpeed * 0.5}
+        pulseIntensity={pulseIntensity * 1.5}
       />
     </group>
   );

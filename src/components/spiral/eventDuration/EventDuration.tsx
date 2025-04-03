@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { calculateSpiralSegment } from "@/utils/spiralUtils";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
-import { useParticleTextures } from "./ParticleTextures";
+import { useParticleTextures, getIntensityScaling } from "./ParticleTextures";
 import { generateParticles } from "./ParticleGenerator";
 import { ParticleSystemGroup } from "./ParticleSystems";
 import { PathLine } from "./PathLine";
@@ -34,6 +34,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const spanLengthInDays = isMinimalDuration ? 1 : 
     Math.max(1, Math.floor((endEvent.startDate.getTime() - startEvent.startDate.getTime()) / (1000 * 60 * 60 * 24)));
   
+  // Get standard intensity scaling factors
+  const intensityScaling = getIntensityScaling(startEvent.intensity);
+  
   // Generate points for a smooth curve between the two events
   // More points for longer spans to ensure smooth curves
   const points = calculateSpiralSegment(
@@ -53,30 +56,26 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const isRoughDate = isSeasonalEvent(startEvent);
 
   // Load high-quality textures
-  const { particleTexture, glowTexture } = useParticleTextures();
+  const { particleTexture, glowTexture, coreTexture } = useParticleTextures();
   
-  // Number of particles based on event intensity and span length - ENHANCED VALUES
+  // Number of particles based on event intensity and span length
   const particleCount = useMemo(() => {
-    // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 400× spanLength (increased from 200)
-    // Intensity 5 → 600× spanLength (increased from 400)
-    // Intensity 10 → 800× spanLength (increased from 600)
-    const intensityFactor = 2 + startEvent.intensity * 0.4; // Increased for better visibility
-    const baseMultiplier = 400; // Doubled from 200
+    // Base particle count that scales with intensity
+    const baseCount = 250 + Math.floor(startEvent.intensity * 40);
     
     // For minimal duration, use a fixed count to ensure visibility
     if (isMinimalDuration) {
-      return Math.floor(baseMultiplier * intensityFactor);
+      return Math.floor(baseCount * intensityScaling.particleCountFactor);
     }
     
     // For actual spans, scale by length but cap for performance
     const lengthFactor = Math.min(1.2, Math.log10(spanLengthInDays) / 3 + 0.6);
-    return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
-  }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
+    return Math.floor(baseCount * intensityScaling.particleCountFactor * lengthFactor);
+  }, [startEvent.intensity, isMinimalDuration, spanLengthInDays, intensityScaling.particleCountFactor]);
   
   // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.8);
-  const tertiaryParticleCount = Math.floor(particleCount * 0.5);
+  const backgroundParticleCount = Math.floor(particleCount * 0.7); 
+  const tertiaryParticleCount = Math.floor(particleCount * 0.4);
   
   // Generate all particle data
   const particleData = useMemo(() => generateParticles({
@@ -86,8 +85,9 @@ export const EventDuration: React.FC<EventDurationProps> = ({
     tertiaryParticleCount,
     startEvent,
     isRoughDate,
-    isMinimalDuration
-  }), [points, particleCount, backgroundParticleCount, tertiaryParticleCount, startEvent, isRoughDate, isMinimalDuration]);
+    isMinimalDuration,
+    intensityScaling
+  }), [points, particleCount, backgroundParticleCount, tertiaryParticleCount, startEvent, isRoughDate, isMinimalDuration, intensityScaling]);
   
   // For all durations, show layered particle systems
   return (
@@ -105,7 +105,7 @@ export const EventDuration: React.FC<EventDurationProps> = ({
       {/* All particle systems */}
       <ParticleSystemGroup 
         data={particleData}
-        textures={{ particleTexture, glowTexture }}
+        textures={{ particleTexture, glowTexture, coreTexture }}
         intensity={startEvent.intensity}
       />
     </group>

@@ -2,6 +2,7 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { getIntensityScaling, createParticleTexture } from "../eventDuration/ParticleTextures";
 
 interface EventParticleCloudProps {
   color: string;
@@ -17,23 +18,11 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
   // Reference for animation
   const particlesRef = useRef<THREE.Points>(null);
   
-  // Create texture for particles
-  const particleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 32, 32);
-    }
-    return new THREE.CanvasTexture(canvas);
-  }, []);
+  // Get standardized intensity scaling
+  const intensityScaling = getIntensityScaling(intensity);
+  
+  // Use consistent shared texture
+  const particleTexture = useMemo(() => createParticleTexture(), []);
   
   // Generate particles for nebula effect
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
@@ -56,10 +45,10 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
       1 - baseColor.b
     ).lerp(baseColor, 0.7); // Mix with original for subtlety
     
-    // Intensity affects spread and size
+    // Intensity affects spread and size (using standardized scaling)
     const spread = isProcessEvent
-      ? 0.3 + intensity * 0.1 // More contained for process events
-      : 0.6 + intensity * 0.2; // More expansive for one-time events
+      ? 0.3 + intensity * 0.1 * intensityScaling.spreadFactor // More contained for process events
+      : 0.6 + intensity * 0.2 * intensityScaling.spreadFactor; // More expansive for one-time events
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -84,28 +73,34 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
       colors[i3 + 2] = baseColor.b * (1 - colorMix) + complementaryColor.b * colorMix;
       
       // Size varies based on distance from center and intensity
-      const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;
-      sizes[i] = (0.1 + Math.random() * 0.3) * (0.5 + intensity * 0.1) * sizeMultiplier;
+      const sizeMultiplier = isProcessEvent ? 0.6 : 0.9;
+      sizes[i] = (0.07 + Math.random() * 0.12) * 
+                 (0.5 + intensity * 0.1) * 
+                 sizeMultiplier * 
+                 intensityScaling.sizeFactor;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
-  }, [color, intensity, isProcessEvent]);
+  }, [color, intensity, isProcessEvent, intensityScaling]);
   
-  // Animation for the particle cloud
+  // Animation for the particle cloud - scaled by intensity
   useFrame((state, delta) => {
     if (particlesRef.current) {
       // One-time events: faster rotation, more dynamic
       // Process events: slower, more stable rotation
-      const rotationSpeed = isProcessEvent ? 0.05 : 0.15;
+      const baseRotationSpeed = isProcessEvent ? 0.05 : 0.15;
+      const rotationSpeed = baseRotationSpeed * intensityScaling.animationFactor;
       
       // Rotate the particle system
       particlesRef.current.rotation.y += delta * rotationSpeed;
       particlesRef.current.rotation.z += delta * (rotationSpeed * 0.5);
       
-      // Pulsate the particles - stronger for one-time events
+      // Pulsate the particles - stronger for one-time events, scaled by intensity
       const time = state.clock.getElapsedTime();
-      const pulseIntensity = isProcessEvent ? 0.03 : 0.08;
-      const pulseSpeed = isProcessEvent ? 1.5 : 2.5;
+      const basePulseIntensity = isProcessEvent ? 0.03 : 0.08;
+      const pulseIntensity = basePulseIntensity * intensityScaling.pulseFactor;
+      const basePulseSpeed = isProcessEvent ? 1.5 : 2.5;
+      const pulseSpeed = basePulseSpeed * intensityScaling.animationFactor;
       const pulseScale = 1 + Math.sin(time * pulseSpeed) * pulseIntensity;
       
       particlesRef.current.scale.set(pulseScale, pulseScale, pulseScale);
@@ -135,12 +130,15 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.2}
+        size={0.15}
         vertexColors
         transparent
         alphaMap={particleTexture}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        depthTest={true}
+        sizeAttenuation={true}
+        alphaTest={0.01}
       />
     </points>
   );
