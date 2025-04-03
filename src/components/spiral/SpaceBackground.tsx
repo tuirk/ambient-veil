@@ -10,7 +10,8 @@ import { CosmicDust } from "./CosmicDust";
 export const SpaceBackground: React.FC = () => {
   return (
     <>
-      {/* Transparent background - removed the black color */}
+      {/* Enhanced space background */}
+      <color attach="background" args={["#010203"]} />
       <fogExp2 attach="fog" args={[0x000000, 0.001]} />
       
       {/* Create more detailed 3D space environment */}

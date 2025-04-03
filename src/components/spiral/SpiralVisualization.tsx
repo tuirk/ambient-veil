@@ -32,7 +32,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         linear
         dpr={[1, 2]} // Better quality on high-DPI displays
       >
-        {/* Removed fog here */}
+        <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
         <SpiralScene 
           events={events} 
           config={config} 
