@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -11,38 +11,65 @@ export const CosmicDust: React.FC = () => {
   const count = 3000;
   
   // Generate random particles throughout the scene
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  const sizes = new Float32Array(count);
+  const positions = useMemo(() => {
+    const posArray = new Float32Array(count * 3);
+    
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      // Distribute particles in a spherical volume
+      const radius = 50 * Math.random() + 10;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+      
+      posArray[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      posArray[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      posArray[i3 + 2] = radius * Math.cos(phi);
+    }
+    
+    return posArray;
+  }, [count]);
   
-  for (let i = 0; i < count; i++) {
-    const i3 = i * 3;
-    // Distribute particles in a spherical volume
-    const radius = 50 * Math.random() + 10;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos((Math.random() * 2) - 1);
+  // Generate colors for particles
+  const colors = useMemo(() => {
+    const colorArray = new Float32Array(count * 3);
     
-    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-    positions[i3 + 2] = radius * Math.cos(phi);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      
+      // Different colors for cosmic dust
+      const colorChoices = [
+        [0.9, 0.9, 1.0],  // Blue-white
+        [1.0, 0.9, 0.8],  // Yellow-white
+        [1.0, 0.8, 0.8],  // Pink-white
+        [0.8, 1.0, 0.9],  // Green-white
+        [0.9, 0.8, 1.0],  // Purple-white
+      ];
+      
+      const color = colorChoices[Math.floor(Math.random() * colorChoices.length)];
+      colorArray[i3] = color[0];
+      colorArray[i3 + 1] = color[1];
+      colorArray[i3 + 2] = color[2];
+    }
     
-    // Different colors for cosmic dust
-    const colorChoices = [
-      [0.9, 0.9, 1.0],  // Blue-white
-      [1.0, 0.9, 0.8],  // Yellow-white
-      [1.0, 0.8, 0.8],  // Pink-white
-      [0.8, 1.0, 0.9],  // Green-white
-      [0.9, 0.8, 1.0],  // Purple-white
-    ];
+    return colorArray;
+  }, [count]);
+  
+  // Generate sizes for particles
+  const sizes = useMemo(() => {
+    const sizeArray = new Float32Array(count);
     
-    const color = colorChoices[Math.floor(Math.random() * colorChoices.length)];
-    colors[i3] = color[0];
-    colors[i3 + 1] = color[1];
-    colors[i3 + 2] = color[2];
+    for (let i = 0; i < count; i++) {
+      // Vary the size of particles
+      sizeArray[i] = Math.random() * 1.5 + 0.2;
+    }
     
-    // Vary the size of particles
-    sizes[i] = Math.random() * 1.5 + 0.2;
-  }
+    return sizeArray;
+  }, [count]);
+  
+  // Create a dust particle texture
+  const particleTexture = useMemo(() => {
+    return new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png');
+  }, []);
   
   useFrame((state) => {
     if (particles.current) {
@@ -52,11 +79,8 @@ export const CosmicDust: React.FC = () => {
     }
   });
   
-  // Create a dust particle texture
-  const particleTexture = new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png');
-  
   return (
-    <points ref={particles}>
+    <points ref={particles} renderOrder={-1}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -85,6 +109,8 @@ export const CosmicDust: React.FC = () => {
         alphaMap={particleTexture}
         blending={THREE.AdditiveBlending}
         depthWrite={false} // Critical fix: prevent depth writing to avoid black shadow
+        depthTest={true}   // Still perform depth testing
+        renderOrder={-1}   // Render background elements first
       />
     </points>
   );

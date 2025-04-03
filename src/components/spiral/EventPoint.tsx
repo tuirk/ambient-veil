@@ -113,7 +113,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           anchorY="bottom"
           outlineWidth={0.004}
           outlineColor="#000000"
-          depthWrite={false}
+          renderOrder={100} // Ensure text renders on top
         >
           {event.title}
         </Text>
@@ -127,7 +127,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           anchorY="bottom"
           outlineWidth={0.003}
           outlineColor="#000000"
-          depthWrite={false}
+          renderOrder={100} // Ensure text renders on top
         >
           {year}
         </Text>

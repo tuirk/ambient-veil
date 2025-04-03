@@ -28,10 +28,22 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           antialias: true,
           alpha: false,
           preserveDrawingBuffer: true,
-          powerPreference: "high-performance"
+          powerPreference: "high-performance",
+          depth: true,
+          stencil: false, // Optimize memory usage
+          logarithmicDepthBuffer: true // Help with z-fighting
         }}
         linear
         dpr={[1, 2]} // Better resolution handling
+        shadows={false} // Explicitly disable shadows which can cause issues
+        onCreated={({ gl }) => {
+          // Add explicit renderer settings to prevent context loss
+          gl.setClearColor(new THREE.Color("#000000"), 0);
+          gl.physicallyCorrectLights = true;
+          gl.outputEncoding = THREE.sRGBEncoding;
+          gl.shadowMap.enabled = false;
+          gl.info.autoReset = true; // Auto reset memory stats to prevent leaks
+        }}
       >
         {/* Removed the fog that was causing black shadows */}
         <SpiralScene 

@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -9,6 +9,19 @@ import * as THREE from "three";
 export const SpaceNebula: React.FC = () => {
   const mesh = useRef<THREE.Mesh>(null);
   
+  // Create the nebula material once to prevent recreation
+  const material = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: new THREE.Color(0x2a004c),
+      transparent: true,
+      opacity: 0.2,
+      side: THREE.BackSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      fog: false
+    });
+  }, []);
+  
   useFrame((state) => {
     if (mesh.current) {
       // Very slow rotation for the nebula
@@ -17,14 +30,9 @@ export const SpaceNebula: React.FC = () => {
   });
   
   return (
-    <mesh ref={mesh} position={[0, 0, -80]}>
+    <mesh ref={mesh} position={[0, 0, -80]} renderOrder={-2}>
       <sphereGeometry args={[70, 32, 32]} />
-      <meshBasicMaterial
-        color={new THREE.Color(0x2a004c)}
-        transparent
-        opacity={0.2}
-        side={THREE.BackSide}
-      />
+      {material}
     </mesh>
   );
 };

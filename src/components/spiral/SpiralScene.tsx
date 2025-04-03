@@ -21,8 +21,17 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   config, 
   onEventClick 
 }) => {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const controlsRef = useRef<any>(null);
+  
+  // Set up optimal rendering settings on scene initialization
+  useEffect(() => {
+    if (gl) {
+      // Ensure renderer settings are optimized
+      gl.setClearColor(0x000000, 1);
+      gl.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit to prevent performance issues
+    }
+  }, [gl]);
   
   // Update camera position based on zoom
   useEffect(() => {
@@ -42,9 +51,11 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         enableZoom={true}
         minDistance={5}
         maxDistance={30}
+        makeDefault
       />
       
       {/* Add space background with stars, nebula, and cosmic dust */}
+      {/* Render background elements with lower renderOrder */}
       <SpaceBackground />
       <SpaceNebula />
       <CosmicDust />
