@@ -1,9 +1,8 @@
-
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
-import { EventDuration } from "./eventDuration/EventDuration";
+import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
 
 interface EventVisualizationsProps {

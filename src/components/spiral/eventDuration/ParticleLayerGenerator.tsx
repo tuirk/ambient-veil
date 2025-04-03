@@ -1,3 +1,4 @@
+
 import * as THREE from "three";
 import { getWarmColorVariation } from "./ColorUtils";
 
@@ -27,37 +28,37 @@ export const generateParticleLayer = (
   const pathLength = points.length;
   
   for (let i = 0; i < config.count; i++) {
-    // Distribution weighting logic - emphasize start and end points
+    // Distribute particles along the path with slight weighting toward ends
     let pathIndex: number;
     
+    // For very short events, cluster particles at the start position
     if (isMinimalDuration) {
-      // For minimal durations, cluster near start
-      pathIndex = Math.floor(Math.random() * Math.min(20, pathLength - 1));
+      pathIndex = Math.floor(Math.random() * Math.min(30, pathLength - 1));
     } else {
+      // Distribution weighting logic - emphasize start and end points a bit
       const rand = Math.random();
-      if (rand < 0.15) {
-        // Near start point (15% chance)
-        pathIndex = Math.floor(Math.random() * Math.min(20, pathLength * 0.2));
-      } else if (rand > 0.85) {
-        // Near end point (15% chance)
-        pathIndex = Math.floor(Math.max(pathLength * 0.8, pathLength - 20) + Math.random() * Math.min(20, pathLength * 0.2));
+      if (rand < 0.1) {
+        // Near start point
+        pathIndex = Math.floor(Math.random() * Math.min(30, pathLength * 0.2));
+      } else if (rand > 0.9) {
+        // Near end point
+        pathIndex = Math.floor(Math.max(pathLength * 0.8, pathLength - 30) + Math.random() * Math.min(30, pathLength * 0.2));
       } else {
-        // Distributed throughout middle (70% chance)
+        // Distributed throughout middle
         pathIndex = Math.floor(Math.random() * (pathLength - 1));
       }
     }
     
     const point = points[pathIndex];
     
-    // Adjust spread based on event type and intensity
-    const spreadFactor = isRoughDate 
-      ? config.spreadFactor * 2.0  // More spread for rough dates
-      : config.spreadFactor * intensitySpreadScale; // Normal spread scaled by intensity
+    // Add some random offset to create volume around the line
+    // Seasonal events get more spread to indicate approximate timing
+    const spreadFactor = isRoughDate ? config.spreadFactor * 1.5 : config.spreadFactor;
     
     const randomOffset = new THREE.Vector3(
-      (Math.random() - 0.5) * spreadFactor,
-      (Math.random() - 0.5) * spreadFactor,
-      (Math.random() - 0.5) * spreadFactor
+      (Math.random() - 0.5) * spreadFactor * intensitySpreadScale,
+      (Math.random() - 0.5) * spreadFactor * intensitySpreadScale,
+      (Math.random() - 0.5) * spreadFactor * intensitySpreadScale
     );
     
     const i3 = i * 3;
@@ -65,19 +66,19 @@ export const generateParticleLayer = (
     config.positions[i3 + 1] = point.y + randomOffset.y;
     config.positions[i3 + 2] = point.z + randomOffset.z;
     
-    // Increase base size for better visibility
-    config.sizes[i] = config.baseSize * 
-                     (1 + Math.random() * config.sizeVariation) * 
-                     intensitySpreadScale;
+    // Vary the size of particles
+    config.sizes[i] = config.baseSize * (1 - config.sizeVariation/2 + Math.random() * config.sizeVariation);
     
-    // Enhanced opacity curve
+    // Vary opacity based on position and intensity
     const pathProgress = pathIndex / pathLength;
+    
+    // Opacity curve - slightly stronger in the middle of the path
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
     config.opacities[i] = config.baseOpacity * 
-                         (0.8 + progressFactor * 0.4) * // More opacity variation
-                         (0.9 + Math.random() * 0.2); // Slight random variation
+                   (0.7 + progressFactor * 0.3) * 
+                   (0.8 + Math.random() * 0.4); // Add some random variation
     
-    // Apply warm color variation
+    // Apply warm color variation - this is the key change to restore the old look
     const variedColor = getWarmColorVariation(baseColor, config.colorVariation);
     config.colors[i3] = variedColor.r;
     config.colors[i3 + 1] = variedColor.g;
