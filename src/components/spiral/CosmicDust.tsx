@@ -79,7 +79,6 @@ export const CosmicDust: React.FC = () => {
     }
   });
   
-  // We need to set the renderOrder on the group instead of the pointsMaterial
   return (
     <points ref={particles} renderOrder={-1}>
       <bufferGeometry>

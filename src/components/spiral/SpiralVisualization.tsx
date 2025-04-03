@@ -41,7 +41,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           // Add explicit renderer settings to prevent context loss
           gl.setClearColor(new THREE.Color("#000000"), 0);
           // Replace deprecated properties with newer alternatives
-          gl.useLegacyLights = false; // Modern replacement for physicallyCorrectLights
+          // Note: useLegacyLights was removed, we use the default behavior now
           gl.outputColorSpace = THREE.SRGBColorSpace; // Modern replacement for outputEncoding
           gl.shadowMap.enabled = false;
           gl.info.autoReset = true; // Auto reset memory stats to prevent leaks
