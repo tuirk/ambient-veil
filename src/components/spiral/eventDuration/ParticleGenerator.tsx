@@ -1,4 +1,3 @@
-
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
@@ -60,6 +59,89 @@ export const getColorVariation = (baseColor: THREE.Color, strength: number = 0.0
 };
 
 /**
+ * Distributes particles along a path
+ */
+const distributeParticlesAlongPath = (
+  points: THREE.Vector3[], 
+  count: number, 
+  isMinimalDuration: boolean
+) => {
+  const pathLength = points.length;
+  const indices: number[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    let pathIndex: number;
+    
+    // For very short events, cluster particles at the start position
+    if (isMinimalDuration) {
+      // Keep particles tightly centered on the event point
+      pathIndex = Math.floor(Math.random() * Math.min(20, pathLength - 1));
+    } else {
+      // Distribution weighting logic - emphasize start and end points a bit
+      const rand = Math.random();
+      if (rand < 0.15) {
+        // Near start point - more dense clustering at start
+        pathIndex = Math.floor(Math.random() * Math.min(30, pathLength * 0.2));
+      } else if (rand > 0.85) {
+        // Near end point - more dense clustering at end
+        pathIndex = Math.floor(Math.max(pathLength * 0.8, pathLength - 30) + Math.random() * Math.min(30, pathLength * 0.2));
+      } else {
+        // Distributed throughout middle with slight non-uniformity
+        // This creates more natural-looking clusters
+        const middleWeight = Math.pow(Math.random(), 1.2); // Slight bias toward earlier points
+        pathIndex = Math.floor(middleWeight * (pathLength - 1));
+      }
+    }
+    
+    indices.push(pathIndex);
+  }
+  
+  return indices;
+};
+
+/**
+ * Creates particle positions with natural clustering and appropriate offset
+ */
+const createParticlePositions = (
+  points: THREE.Vector3[],
+  indices: number[],
+  spreadScale: number,
+  isMinimalDuration: boolean
+) => {
+  const positions = new Float32Array(indices.length * 3);
+  
+  for (let i = 0; i < indices.length; i++) {
+    const pathIndex = indices[i];
+    const point = points[pathIndex];
+    const i3 = i * 3;
+    
+    // For minimal duration, use smaller spread to keep particles clustered
+    const localSpread = isMinimalDuration ? spreadScale * 0.6 : spreadScale;
+    
+    // Create more natural clustering by varying the spread based on position
+    const offsetDistance = localSpread * (0.3 + Math.random() * 0.7);
+    
+    // Generate offset direction - slightly biased to create natural clusters
+    let offsetX = (Math.random() - 0.5) * 2;
+    let offsetY = (Math.random() - 0.5) * 2;
+    let offsetZ = (Math.random() - 0.5) * 2;
+    
+    // Normalize the direction vector
+    const length = Math.sqrt(offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ);
+    offsetX /= length;
+    offsetY /= length;
+    offsetZ /= length;
+    
+    // Apply the offset scaled by distance
+    positions[i3] = point.x + offsetX * offsetDistance;
+    positions[i3 + 1] = point.y + offsetY * offsetDistance;
+    positions[i3 + 2] = point.z + offsetZ * offsetDistance;
+  }
+  
+  return positions;
+};
+
+/**
  * Generates particles distributed along a path with optimized settings
  * for high-quality, crisp particle rendering.
  */
@@ -73,91 +155,58 @@ export const generateParticles = ({
   isMinimalDuration,
   intensityScaling
 }: ParticleGeneratorProps): ParticleData => {
-  // Primary particles (sharper, more defined)
-  const positions = new Float32Array(particleCount * 3);
+  // Path length for distribution calculation
+  const pathLength = points.length;
+  
+  // Base color for the event
+  const baseColor = new THREE.Color(startEvent.color);
+  
+  // Get particle distribution indices
+  const primaryIndices = distributeParticlesAlongPath(points, particleCount, isMinimalDuration);
+  const bgIndices = distributeParticlesAlongPath(points, backgroundParticleCount, isMinimalDuration);
+  const terIndices = distributeParticlesAlongPath(points, tertiaryParticleCount, isMinimalDuration);
+  
+  // Calculate spread factors
+  // Seasonal events get more spread to indicate approximate timing
+  const baseSpreadFactor = isRoughDate ? 0.5 : 0.3;
+  // Scale spread by intensity for more dramatic high-intensity events
+  const spreadScale = baseSpreadFactor * intensityScaling.spreadFactor;
+  
+  // Create particle positions with clustering
+  const positions = createParticlePositions(points, primaryIndices, spreadScale, isMinimalDuration);
+  const bgPositions = createParticlePositions(points, bgIndices, spreadScale * 1.4, isMinimalDuration);
+  const terPositions = createParticlePositions(points, terIndices, spreadScale * 1.2, isMinimalDuration);
+  
+  // Create arrays for other particle attributes
   const sizes = new Float32Array(particleCount);
   const opacities = new Float32Array(particleCount);
   const colors = new Float32Array(particleCount * 3);
   
-  // Background particles (more diffuse, larger)
-  const bgPositions = new Float32Array(backgroundParticleCount * 3);
   const bgSizes = new Float32Array(backgroundParticleCount);
   const bgOpacities = new Float32Array(backgroundParticleCount);
   const bgColors = new Float32Array(backgroundParticleCount * 3);
   
-  // Tertiary particles (for additional volume and variety)
-  const terPositions = new Float32Array(tertiaryParticleCount * 3);
   const terSizes = new Float32Array(tertiaryParticleCount);
   const terOpacities = new Float32Array(tertiaryParticleCount);
   const terColors = new Float32Array(tertiaryParticleCount * 3);
   
-  // Path length for distribution calculation
-  const pathLength = points.length;
-  
-  // Base size calculation - scaled with intensity
-  const baseSizeFactor = intensityScaling.sizeFactor;
-  
-  // Color variations to make the nebula more interesting
-  const baseColor = new THREE.Color(startEvent.color);
-  
-  // Primary particles
+  // Set particle sizes, opacities and colors
   for (let i = 0; i < particleCount; i++) {
-    // Distribute particles along the path with slight weighting toward ends
-    let pathIndex: number;
-    
-    // For very short events, cluster particles at the start position
-    if (isMinimalDuration) {
-      pathIndex = Math.floor(Math.random() * Math.min(30, pathLength - 1));
-    } else {
-      // Distribution weighting logic - emphasize start and end points a bit
-      const rand = Math.random();
-      if (rand < 0.1) {
-        // Near start point
-        pathIndex = Math.floor(Math.random() * Math.min(30, pathLength * 0.2));
-      } else if (rand > 0.9) {
-        // Near end point
-        pathIndex = Math.floor(Math.max(pathLength * 0.8, pathLength - 30) + Math.random() * Math.min(30, pathLength * 0.2));
-      } else {
-        // Distributed throughout middle
-        pathIndex = Math.floor(Math.random() * (pathLength - 1));
-      }
-    }
-    
-    const point = points[pathIndex];
-    
-    // Add some random offset to create volume around the line
-    // Seasonal events get more spread to indicate approximate timing
-    const spreadFactor = isRoughDate ? 0.5 : 0.3;
-    // Scale spread by intensity for more dramatic high-intensity events
-    const spreadScale = spreadFactor * intensityScaling.spreadFactor;
-    
-    const randomOffset = new THREE.Vector3(
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale
-    );
-    
     const i3 = i * 3;
-    positions[i3] = point.x + randomOffset.x;
-    positions[i3 + 1] = point.y + randomOffset.y;
-    positions[i3 + 2] = point.z + randomOffset.z;
+    const pathProgress = primaryIndices[i] / pathLength;
     
-    // Particle size that scales with intensity
-    const baseSize = 0.15 * baseSizeFactor;
-    const sizeVariation = 0.15; // 15% variation
-    sizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    // Primary particles - sharper, more defined
+    const baseSize = 0.14 * intensityScaling.sizeFactor;
+    sizes[i] = baseSize * (0.85 + Math.random() * 0.3);
     
-    // Opacity based on position and intensity
-    const pathProgress = pathIndex / pathLength;
-    const baseOpacity = isRoughDate ? 0.06 : 0.1;
-    
-    // Opacity curve - slightly stronger in the middle of the path
+    // Opacity with slight variation depending on position
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
+    const baseOpacity = isRoughDate ? 0.06 : 0.1;
     opacities[i] = (baseOpacity * intensityScaling.opacityFactor) * 
                    (0.7 + progressFactor * 0.3) * 
-                   (0.8 + Math.random() * 0.4); // Add some random variation
-    
-    // Add color variations
+                   (0.8 + Math.random() * 0.4);
+                   
+    // Subtle color variation
     const variedColor = getColorVariation(baseColor);
     colors[i3] = variedColor.r;
     colors[i3 + 1] = variedColor.g;
@@ -166,28 +215,11 @@ export const generateParticles = ({
   
   // Background particles - larger, more diffuse
   for (let i = 0; i < backgroundParticleCount; i++) {
-    const pathIndex = Math.floor(Math.random() * (pathLength - 1));
-    const point = points[pathIndex];
-    
-    // Wider spread for background particles
-    const spreadFactor = isRoughDate ? 0.7 : 0.5;
-    const spreadScale = spreadFactor * intensityScaling.spreadFactor;
-    
-    const randomOffset = new THREE.Vector3(
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale
-    );
-    
     const i3 = i * 3;
-    bgPositions[i3] = point.x + randomOffset.x;
-    bgPositions[i3 + 1] = point.y + randomOffset.y;
-    bgPositions[i3 + 2] = point.z + randomOffset.z;
     
     // Larger but more transparent
-    const baseSize = 0.26 * baseSizeFactor;
-    const sizeVariation = 0.2; // 20% variation
-    bgSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    const baseSize = 0.25 * intensityScaling.sizeFactor;
+    bgSizes[i] = baseSize * (0.8 + Math.random() * 0.4);
     
     // Lower opacity for diffuse background glow
     const baseOpacity = 0.04;
@@ -202,28 +234,11 @@ export const generateParticles = ({
   
   // Tertiary particles - for additional volume and detail
   for (let i = 0; i < tertiaryParticleCount; i++) {
-    const pathIndex = Math.floor(Math.random() * (pathLength - 1));
-    const point = points[pathIndex];
-    
-    // Medium spread for tertiary particles
-    const spreadFactor = isRoughDate ? 0.6 : 0.4;
-    const spreadScale = spreadFactor * intensityScaling.spreadFactor;
-    
-    const randomOffset = new THREE.Vector3(
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale,
-      (Math.random() - 0.5) * spreadScale
-    );
-    
     const i3 = i * 3;
-    terPositions[i3] = point.x + randomOffset.x;
-    terPositions[i3 + 1] = point.y + randomOffset.y;
-    terPositions[i3 + 2] = point.z + randomOffset.z;
     
     // Medium-sized particles
-    const baseSize = 0.20 * baseSizeFactor;
-    const sizeVariation = 0.25; // 25% variation
-    terSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
+    const baseSize = 0.19 * intensityScaling.sizeFactor;
+    terSizes[i] = baseSize * (0.75 + Math.random() * 0.5);
     
     // Medium opacity
     const baseOpacity = 0.07;

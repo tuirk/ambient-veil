@@ -82,10 +82,10 @@ export const getIntensityScaling = (intensity: number) => {
   
   return {
     // Particle counts (more particles for higher intensity)
-    particleCountFactor: 0.4 + normalizedIntensity * 0.6, // 0.4 to 1.0
+    particleCountFactor: 0.5 + normalizedIntensity * 0.7, // 0.5 to 1.2
     
     // Size scaling (larger particles for higher intensity)
-    sizeFactor: 0.7 + normalizedIntensity * 0.6, // 0.7 to 1.3
+    sizeFactor: 0.8 + normalizedIntensity * 0.5, // 0.8 to 1.3
     
     // Particle spread (wider area for higher intensity)
     spreadFactor: 0.8 + normalizedIntensity * 0.4, // 0.8 to 1.2

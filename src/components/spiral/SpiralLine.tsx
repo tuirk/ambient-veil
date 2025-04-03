@@ -32,23 +32,24 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
     // Extract positions for the spiral line
     const positionsArray = spiralPoints.map(point => point.position);
     
-    // Create an array of THREE.Color objects that the Line component can handle
+    // Create uniform white/off-white colors for the spiral line
     const colorsArray = [];
     
     spiralPoints.forEach((point) => {
-      const baseColor = new THREE.Color(0xffffff);
+      // Use a consistent off-white color - no rainbow effect
+      const baseColor = new THREE.Color(0xf0f0f0);
       
-      // Apply fading to years older than minAllowedYear
+      // Only slightly fade older years for subtle effect
       if (point.year < minAllowedYear) {
         // Calculate how far back this year is from the minimum allowed
         const yearsBeyondMin = minAllowedYear - point.year;
-        // 0.3 is minimum opacity, fade more for older years
-        const opacity = Math.max(0.3, 1 - (yearsBeyondMin * 0.15));
+        // Maintain high opacity for old years - just slightly dimmer
+        const opacity = Math.max(0.5, 1 - (yearsBeyondMin * 0.1));
         
-        // Create a gold color for older years instead of silver-gray
-        const goldColor = new THREE.Color(0xE6C200);
-        // Blend with white based on how old the year is
-        baseColor.lerp(goldColor, 0.5 + (yearsBeyondMin * 0.1));
+        // Create a very slight gold tint for older years
+        const slightlyWarmColor = new THREE.Color(0xf2f0e8);
+        // Very subtle blend
+        baseColor.lerp(slightlyWarmColor, Math.min(0.3, yearsBeyondMin * 0.05));
       }
       
       // Push the color to our array
