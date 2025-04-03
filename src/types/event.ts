@@ -1,4 +1,3 @@
-
 export interface TimeEvent {
   id: string;
   title: string;
@@ -12,6 +11,7 @@ export interface TimeEvent {
   roughDateYear?: number; // The year for the rough date
   eventType: "one-time" | "process"; // Explicit event type to differentiate visualization
   mood?: Mood; // The mood associated with this event
+  description?: string; // Optional description of the event
 }
 
 export interface SpiralConfig {

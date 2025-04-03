@@ -1,11 +1,16 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { TimeEvent } from "@/types/event";
-import { format } from "date-fns";
+import { formatDate } from "date-fns";
 
 interface MemoryListProps {
   events: TimeEvent[];
@@ -18,76 +23,60 @@ export const MemoryList: React.FC<MemoryListProps> = ({
   events,
   open,
   onOpenChange,
-  onDeleteEvent
+  onDeleteEvent,
 }) => {
-  // Sort events chronologically, newest first
+  // Sort events by date (newest first)
   const sortedEvents = [...events].sort((a, b) => 
     b.startDate.getTime() - a.startDate.getTime()
   );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[80vh]">
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Your Memories</DialogTitle>
         </DialogHeader>
-        
-        <ScrollArea className="h-[60vh] pr-4">
-          {sortedEvents.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No memories yet. Click on the spiral to add your first memory.
-            </div>
-          ) : (
+        {sortedEvents.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            You haven't added any memories yet.
+          </div>
+        ) : (
+          <ScrollArea className="flex-grow pr-4">
             <div className="space-y-4">
               {sortedEvents.map((event) => (
-                <div 
-                  key={event.id}
-                  className="p-4 border rounded-lg flex items-start gap-3"
-                  style={{
-                    borderColor: event.mood?.color || event.color,
-                    backgroundColor: `${event.mood?.color || event.color}10`
-                  }}
-                >
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDeleteEvent(event.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2Icon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                      <span>
-                        {format(event.startDate, "MMMM d, yyyy")}
-                        {event.endDate && ` - ${format(event.endDate, "MMMM d, yyyy")}`}
-                      </span>
-                      
-                      {event.mood && (
-                        <div className="flex items-center gap-1.5 ml-2">
-                          <div 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: event.mood.color }} 
-                          />
-                          <span>{event.mood.name}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {event.description && (
-                      <p className="mt-2 text-sm">{event.description}</p>
-                    )}
+                <div key={event.id} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-lg">{event.title}</h3>
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: event.mood?.color || event.color }}
+                    />
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {formatDate(event.startDate, "MMMM d, yyyy")}
+                    {event.endDate && ` - ${formatDate(event.endDate, "MMMM d, yyyy")}`}
+                  </div>
+                  
+                  {/* Only render description if it exists */}
+                  {event.description && (
+                    <p className="mt-2 text-sm">{event.description}</p>
+                  )}
+                  
+                  <div className="mt-3 flex justify-end">
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => onDeleteEvent(event.id)}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </ScrollArea>
+          </ScrollArea>
+        )}
       </DialogContent>
     </Dialog>
   );
