@@ -7,7 +7,6 @@ export { EventDuration } from './eventDuration/EventDuration';
 export { EventPoint } from './EventPoint';
 export { CosmicEventEffect } from './CosmicEventEffect';
 export { CosmicDust } from './CosmicDust';
-export { SpaceNebula } from './SpaceNebula';
 export { SpaceBackground } from './SpaceBackground';
 export { FutureEventPoint } from './FutureEventPoint';
 
