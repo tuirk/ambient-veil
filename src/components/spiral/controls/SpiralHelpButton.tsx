@@ -1,40 +1,58 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { HelpCircleIcon } from "lucide-react";
 
 interface SpiralHelpButtonProps {
   currentYear: number;
 }
 
 export const SpiralHelpButton: React.FC<SpiralHelpButtonProps> = ({ currentYear }) => {
+  const [showHelp, setShowHelp] = useState(false);
+  const minYear = currentYear - 5;
+  
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute bottom-4 right-4 rounded-full bg-background/30 backdrop-blur-sm hover:bg-background/50 border border-white/10"
-        >
-          <Info className="h-5 w-5" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 bg-background/80 backdrop-blur-md text-white border-cosmic-nebula-purple/30">
-        <div className="space-y-4">
-          <h3 className="font-medium text-lg">About "You Are Here"</h3>
-          <p className="text-sm text-gray-300">
-            This 3D spiral represents your personal timeline. Each loop is a year,
-            divided into 12 months.
-          </p>
-          <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
-            <li>Click anywhere on the spiral to add a memory at that time.</li>
-            <li>Colored trails represent events in your life.</li>
-            <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
-            <li>Drag to rotate the view and scroll to zoom in/out.</li>
-          </ul>
-        </div>
-      </PopoverContent>
-    </Popover>
+    <>
+      <Button 
+        variant="outline" 
+        size="icon"
+        className="absolute top-4 left-4 bg-background/30 backdrop-blur-sm border-white/10 hover:bg-white/10"
+        onClick={() => setShowHelp(true)}
+      >
+        <HelpCircleIcon className="h-5 w-5" />
+      </Button>
+      
+      <Dialog open={showHelp} onOpenChange={setShowHelp}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>About the Time Spiral</DialogTitle>
+            <DialogDescription>
+              <div className="space-y-4 mt-4">
+                <p>
+                  The Time Spiral visualizes your memories as a journey through time, 
+                  spiraling from the past into the future.
+                </p>
+                <p>
+                  <strong>Adding memories:</strong> Click anywhere on the spiral to add a memory 
+                  at that point in time. You can only add memories between {minYear} and {currentYear + 1}.
+                </p>
+                <p>
+                  <strong>Viewing memories:</strong> Click on any glowing point to see details about 
+                  that memory. You can also view all memories by clicking "View Memories" in the menu.
+                </p>
+                <p>
+                  <strong>Time perception:</strong> The spiral design represents how our perception of time
+                  changes - more recent memories feel more spread out, while distant memories condense.
+                </p>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Created with ❤️ using React Three Fiber and cosmic inspiration.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
