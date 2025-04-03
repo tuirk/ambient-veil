@@ -165,14 +165,6 @@ const Spiral: React.FC = () => {
                         <span className="text-xs px-2 py-1 rounded-full bg-white/10">
                           Intensity: {event.intensity}
                         </span>
-                        {event.mood && (
-                          <span 
-                            className="text-xs px-2 py-1 rounded-full text-white"
-                            style={{ backgroundColor: event.mood.color + "99" }}
-                          >
-                            {event.mood.name}
-                          </span>
-                        )}
                       </div>
                       <Button
                         variant="destructive"

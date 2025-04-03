@@ -1,8 +1,6 @@
-
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { Text } from "@react-three/drei";
 import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
 
@@ -25,7 +23,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Sprite>(null);
-  const textGroupRef = useRef<THREE.Group>(null);
   
   // Create a pulsing animation for the point
   useFrame((state) => {
@@ -42,16 +39,11 @@ export const EventPoint: React.FC<EventPointProps> = ({
       const glowScale = 1 + Math.sin(time * 2.2) * 0.15;
       glowRef.current.scale.set(glowScale, glowScale, 1);
     }
-    
-    // Make text always face the camera
-    if (textGroupRef.current && state.camera) {
-      textGroupRef.current.lookAt(state.camera.position);
-    }
   });
   
   // Calculate size based on event intensity (1-10)
-  // Further reduced by 25% for all event points (on top of previous reduction)
-  const size = 0.028 + (event.intensity / 10) * 0.056; // Reduced from 0.0375/0.075
+  // Reduced by 25% for all event points
+  const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
   
   // Create a texture for the glow effect - creating the canvas element first
   const canvas = document.createElement("canvas");
@@ -69,73 +61,30 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Now create the texture from the canvas
   const glowTexture = new THREE.CanvasTexture(canvas);
   
-  // Format date for display
-  const year = event.startDate.getFullYear();
-  
-  // Get mood color if available, otherwise use event color
-  const eventColor = event.mood?.color || event.color;
-  
   return (
     <group position={position} onClick={onClick}>
       {/* Core particle - small but visible */}
       <mesh ref={meshRef}>
         <sphereGeometry args={[size, 8, 8]} />
         <meshStandardMaterial 
-          color={eventColor} 
+          color={event.color} 
           transparent 
           opacity={0.9}
-          emissive={eventColor}
-          emissiveIntensity={1.1} // Reduced from 1.5
+          emissive={event.color}
+          emissiveIntensity={1.5}
         />
       </mesh>
       
       {/* Glow effect for one-time events */}
-      <sprite ref={glowRef} scale={[0.34 + event.intensity * 0.045, 0.34 + event.intensity * 0.045, 1]}>
+      <sprite ref={glowRef} scale={[0.45 + event.intensity * 0.06, 0.45 + event.intensity * 0.06, 1]}>
         <spriteMaterial 
           map={glowTexture} 
-          color={eventColor} 
+          color={event.color} 
           transparent 
-          opacity={0.6} // Reduced from 0.7
+          opacity={0.7}
           blending={THREE.AdditiveBlending}
         />
       </sprite>
-      
-      {/* Improved event label group that always faces camera */}
-      <group ref={textGroupRef} position={[0, size * 2 + 0.05, 0]}>
-        {/* Title text with improved visibility */}
-        <Text
-          position={[0, 0.12, 0]}
-          color="white"
-          fontSize={0.10}
-          anchorX="center"
-          anchorY="bottom"
-          outlineWidth={0.004}
-          outlineColor="#000000"
-        >
-          {event.title}
-        </Text>
-        
-        {/* Year text */}
-        <Text
-          position={[0, 0.02, 0]}
-          color="white"
-          fontSize={0.08}
-          anchorX="center"
-          anchorY="bottom"
-          outlineWidth={0.003}
-          outlineColor="#000000"
-        >
-          {year}
-        </Text>
-        
-        {/* Optional mood indicator if mood is present */}
-        {event.mood && (
-          <mesh position={[0, -0.05, 0]} scale={[0.05, 0.05, 0.01]}>
-            <planeGeometry />
-            <meshBasicMaterial color={event.mood.color} />
-          </mesh>
-        )}
-      </group>
     </group>
   );
 };

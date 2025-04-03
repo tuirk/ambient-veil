@@ -11,7 +11,6 @@ export interface TimeEvent {
   roughDateSeason?: string; // The season (Spring, Summer, Fall, Winter)
   roughDateYear?: number; // The year for the rough date
   eventType: "one-time" | "process"; // Explicit event type to differentiate visualization
-  mood?: Mood; // The mood associated with this event
 }
 
 export interface SpiralConfig {
@@ -21,19 +20,3 @@ export interface SpiralConfig {
   centerX: number;
   centerY: number;
 }
-
-export interface Mood {
-  name: string;
-  color: string;
-  isCustom?: boolean;
-}
-
-export const PRESET_MOODS: Mood[] = [
-  { name: "Happy", color: "#FFB86B" },      // Joyful, light, present
-  { name: "Hopeful", color: "#A3E8FF" },    // Looking forward, optimistic
-  { name: "Energized", color: "#FF5E5B" },  // Driven, focused, full of spark
-  { name: "Neutral", color: "#B5B5C0" },    // No strong feeling, in-between
-  { name: "Drained", color: "#6C6C8B" },    // Tired, depleted
-  { name: "Overwhelmed", color: "#9C5DC0" }, // Too much, overstimulated
-  { name: "Sad", color: "#444654" }         // Low, moody, emotionally heavy
-];
