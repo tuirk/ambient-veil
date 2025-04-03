@@ -93,6 +93,7 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
         map={texture}
         blending={THREE.AdditiveBlending}
         sizeAttenuation={true}
+        alphaTest={0.01} // Add alpha test to improve edge rendering
       />
     </points>
   );

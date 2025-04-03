@@ -52,17 +52,17 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Check if this is a seasonal rough date
   const isRoughDate = isSeasonalEvent(startEvent);
 
-  // Load textures
+  // Load high-quality textures
   const { particleTexture, glowTexture } = useParticleTextures();
   
   // Number of particles based on event intensity and span length - ENHANCED VALUES
   const particleCount = useMemo(() => {
     // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 200× spanLength (increased from 150)
-    // Intensity 5 → 400× spanLength (increased from 300)
-    // Intensity 10 → 600× spanLength (increased from 450)
-    const intensityFactor = 1.5 + startEvent.intensity * 0.4; // Increased from 0.3
-    const baseMultiplier = 200; // Increased from 150
+    // Intensity 1 → 400× spanLength (increased from 200)
+    // Intensity 5 → 600× spanLength (increased from 400)
+    // Intensity 10 → 800× spanLength (increased from 600)
+    const intensityFactor = 2 + startEvent.intensity * 0.4; // Increased for better visibility
+    const baseMultiplier = 400; // Doubled from 200
     
     // For minimal duration, use a fixed count to ensure visibility
     if (isMinimalDuration) {

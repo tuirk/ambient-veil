@@ -27,10 +27,11 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         gl={{ 
           antialias: true,
           alpha: true,
-          preserveDrawingBuffer: true  // For better quality effects
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance"
         }}
         linear
-        dpr={[1, 2]} // Better quality on high-DPI displays
+        dpr={window.devicePixelRatio} // Use actual device pixel ratio for sharp rendering
       >
         <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
         <SpiralScene 
