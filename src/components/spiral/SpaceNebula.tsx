@@ -32,7 +32,16 @@ export const SpaceNebula: React.FC = () => {
   return (
     <mesh ref={mesh} position={[0, 0, -80]} renderOrder={-2}>
       <sphereGeometry args={[70, 32, 32]} />
-      {material}
+      {/* Use meshBasicMaterial component instead of direct THREE.Material instance */}
+      <meshBasicMaterial
+        color={new THREE.Color(0x2a004c)}
+        transparent
+        opacity={0.2}
+        side={THREE.BackSide}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        fog={false}
+      />
     </mesh>
   );
 };

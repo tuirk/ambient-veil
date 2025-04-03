@@ -79,6 +79,7 @@ export const CosmicDust: React.FC = () => {
     }
   });
   
+  // We need to set the renderOrder on the group instead of the pointsMaterial
   return (
     <points ref={particles} renderOrder={-1}>
       <bufferGeometry>
@@ -110,7 +111,6 @@ export const CosmicDust: React.FC = () => {
         blending={THREE.AdditiveBlending}
         depthWrite={false} // Critical fix: prevent depth writing to avoid black shadow
         depthTest={true}   // Still perform depth testing
-        renderOrder={-1}   // Render background elements first
       />
     </points>
   );

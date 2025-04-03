@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Canvas } from "@react-three/fiber";
+import * as THREE from "three";  // Add missing THREE import
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { SpiralScene } from "./SpiralScene";
 
@@ -39,8 +40,9 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         onCreated={({ gl }) => {
           // Add explicit renderer settings to prevent context loss
           gl.setClearColor(new THREE.Color("#000000"), 0);
-          gl.physicallyCorrectLights = true;
-          gl.outputEncoding = THREE.sRGBEncoding;
+          // Replace deprecated properties with newer alternatives
+          gl.useLegacyLights = false; // Modern replacement for physicallyCorrectLights
+          gl.outputColorSpace = THREE.SRGBColorSpace; // Modern replacement for outputEncoding
           gl.shadowMap.enabled = false;
           gl.info.autoReset = true; // Auto reset memory stats to prevent leaks
         }}
