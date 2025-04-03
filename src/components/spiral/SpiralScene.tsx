@@ -7,6 +7,8 @@ import { SpiralLine } from "./SpiralLine";
 import { MonthMarkers } from "./MonthMarkers";
 import { EventVisualizations } from "./EventVisualizations";
 import { SpaceBackground } from "./SpaceBackground";
+import { SpaceNebula } from "./SpaceNebula";
+import { CosmicDust } from "./CosmicDust";
 
 interface SpiralSceneProps {
   events: TimeEvent[];
@@ -44,6 +46,8 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
       
       {/* Add space background with stars, nebula, and cosmic dust */}
       <SpaceBackground />
+      <SpaceNebula />
+      <CosmicDust />
       
       {/* Render the main spiral */}
       <SpiralLine 

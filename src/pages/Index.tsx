@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { SpaceBackground } from '@/components/spiral/SpaceBackground';
+import { StaticSpaceBackground } from '@/components/spiral/StaticSpaceBackground';
 
 const Index = () => {
   const [visible, setVisible] = useState(false);
@@ -33,7 +33,7 @@ const Index = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen relative">
       <div className="w-full h-full bg-black absolute">
-        <SpaceBackground />
+        <StaticSpaceBackground />
       </div>
       <div className={`text-center text-white transition-opacity duration-1000 ease-in-out ${visible ? 'opacity-90' : 'opacity-0'} z-10 relative`}>
         <h1 className="text-4xl font-light tracking-wider mb-2">You Are Here</h1>
