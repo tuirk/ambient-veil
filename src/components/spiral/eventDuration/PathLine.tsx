@@ -28,6 +28,7 @@ export const PathLine: React.FC<PathLineProps> = ({
       dashSize={isRoughDate ? 0.1 : 0}
       dashOffset={isRoughDate ? 0.1 : 0}
       dashScale={isRoughDate ? 10 : 0}
+      depthWrite={false} // Prevent depth writing to avoid black shadow
     />
   );
 };

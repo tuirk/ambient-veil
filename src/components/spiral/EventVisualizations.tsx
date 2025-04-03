@@ -1,3 +1,4 @@
+
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -98,6 +99,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 opacity={0.7} 
                 emissive={eventColor}
                 emissiveIntensity={0.5}
+                depthWrite={false} // Prevent depth writing to avoid black shadow
               />
             </mesh>
           );

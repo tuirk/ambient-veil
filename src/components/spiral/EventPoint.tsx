@@ -86,6 +86,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           opacity={0.9}
           emissive={eventColor}
           emissiveIntensity={1.1} // Reduced from 1.5
+          depthWrite={false} // Prevent depth writing to avoid black shadow
         />
       </mesh>
       
@@ -97,6 +98,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           transparent 
           opacity={0.6} // Reduced from 0.7
           blending={THREE.AdditiveBlending}
+          depthWrite={false}
         />
       </sprite>
       
@@ -111,6 +113,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           anchorY="bottom"
           outlineWidth={0.004}
           outlineColor="#000000"
+          depthWrite={false}
         >
           {event.title}
         </Text>
@@ -124,6 +127,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
           anchorY="bottom"
           outlineWidth={0.003}
           outlineColor="#000000"
+          depthWrite={false}
         >
           {year}
         </Text>
@@ -132,7 +136,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
         {event.mood && (
           <mesh position={[0, -0.05, 0]} scale={[0.05, 0.05, 0.01]}>
             <planeGeometry />
-            <meshBasicMaterial color={event.mood.color} />
+            <meshBasicMaterial color={event.mood.color} depthWrite={false} />
           </mesh>
         )}
       </group>

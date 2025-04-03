@@ -52,6 +52,9 @@ export const CosmicDust: React.FC = () => {
     }
   });
   
+  // Create a dust particle texture
+  const particleTexture = new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png');
+  
   return (
     <points ref={particles}>
       <bufferGeometry>
@@ -78,9 +81,10 @@ export const CosmicDust: React.FC = () => {
         size={0.15}
         vertexColors
         transparent
-        alphaMap={new THREE.TextureLoader().load('/lovable-uploads/ac7515f5-00b3-4d1d-aeb5-91538aa24dd6.png')}
+        opacity={0.7}
+        alphaMap={particleTexture}
         blending={THREE.AdditiveBlending}
-        depthWrite={false}
+        depthWrite={false} // Critical fix: prevent depth writing to avoid black shadow
       />
     </points>
   );
