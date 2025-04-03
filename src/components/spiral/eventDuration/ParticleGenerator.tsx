@@ -1,3 +1,4 @@
+
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
@@ -27,7 +28,10 @@ export interface ParticleGeneratorProps {
   isMinimalDuration: boolean;
 }
 
-// Helper function to create color variations
+/**
+ * Helper function to create color variations
+ * Creates subtle variations while maintaining overall color identity
+ */
 export const getColorVariation = (baseColor: THREE.Color, strength: number = 0.05) => {
   const newColor = baseColor.clone();
   
@@ -47,7 +51,10 @@ export const getColorVariation = (baseColor: THREE.Color, strength: number = 0.0
   return newColor;
 };
 
-// Generate particles distributed along the path
+/**
+ * Generates particles distributed along a path with optimized settings
+ * for high-quality, crisp particle rendering.
+ */
 export const generateParticles = ({
   points,
   particleCount,
@@ -78,9 +85,10 @@ export const generateParticles = ({
   // Path length for distribution calculation
   const pathLength = points.length;
   
-  // Base size calculation - scales with intensity - ENHANCED VALUES
-  // Intensity 1 → 0.9x, Intensity 5 → 1.5x, Intensity 10 → 2.4x
-  const baseSizeFactor = 0.9 + startEvent.intensity * 0.15;
+  // Base size calculation - scales with intensity
+  // Intensity 1 → 0.7x, Intensity 5 → 1.1x, Intensity 10 → 1.8x
+  // Reduced base scaling for more crisp particles
+  const baseSizeFactor = 0.7 + startEvent.intensity * 0.11;
   
   // Color variations to make the nebula more interesting
   const baseColor = new THREE.Color(startEvent.color);
@@ -127,17 +135,16 @@ export const generateParticles = ({
     positions[i3 + 1] = point.y + randomOffset.y;
     positions[i3 + 2] = point.z + randomOffset.z;
     
-    // Vary the size of particles with intensity scaling and 20% random variation
-    // Base size enhanced to 0.35 (from 0.30)
-    const baseSize = 0.35 * baseSizeFactor;
+    // Reduce the base particle size for sharper, more defined particles
+    const baseSize = 0.25 * baseSizeFactor;
     const sizeVariation = 0.2; // 20% variation
     sizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
     // Vary opacity based on position and intensity
     // More intense events get slightly higher base opacity
     const pathProgress = pathIndex / pathLength;
-    const baseOpacity = isRoughDate ? 0.08 : 0.12; // Increased from 0.06/0.1
-    const intensityOpacityBoost = 0.08 * (startEvent.intensity / 10); // Increased from 0.06
+    const baseOpacity = isRoughDate ? 0.08 : 0.12;
+    const intensityOpacityBoost = 0.08 * (startEvent.intensity / 10);
     
     // Opacity curve - slightly stronger in the middle of the path
     const progressFactor = 4 * (pathProgress * (1 - pathProgress));
@@ -172,14 +179,15 @@ export const generateParticles = ({
     bgPositions[i3 + 1] = point.y + randomOffset.y;
     bgPositions[i3 + 2] = point.z + randomOffset.z;
     
-    // Larger but more transparent - ENHANCED SIZE
-    const baseSize = 0.45 * baseSizeFactor; // Increased from 0.40
+    // Larger but more transparent
+    // Reduced from previous values for crisper particles
+    const baseSize = 0.35 * baseSizeFactor;
     const sizeVariation = 0.3; // 30% variation
     bgSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
     // Higher opacity for diffuse background glow
-    const baseOpacity = 0.06; // Increased from 0.04
-    const intensityOpacityBoost = 0.04 * (startEvent.intensity / 10); // Increased from 0.03
+    const baseOpacity = 0.06;
+    const intensityOpacityBoost = 0.04 * (startEvent.intensity / 10);
     bgOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.6 + Math.random() * 0.6);
     
     // Slightly varied colors for background
@@ -189,7 +197,7 @@ export const generateParticles = ({
     bgColors[i3 + 2] = variedColor.b;
   }
   
-  // Tertiary particles - for additional volume and detail - ENHANCED SIZE
+  // Tertiary particles - for additional volume and detail
   for (let i = 0; i < tertiaryParticleCount; i++) {
     const pathIndex = Math.floor(Math.random() * (pathLength - 1));
     const point = points[pathIndex];
@@ -209,14 +217,15 @@ export const generateParticles = ({
     terPositions[i3 + 1] = point.y + randomOffset.y;
     terPositions[i3 + 2] = point.z + randomOffset.z;
     
-    // Medium-sized particles - ENHANCED SIZE
-    const baseSize = 0.40 * baseSizeFactor; // Increased from 0.35
+    // Medium-sized particles
+    // Reduced from previous values for crisper particles
+    const baseSize = 0.30 * baseSizeFactor;
     const sizeVariation = 0.25; // 25% variation
     terSizes[i] = baseSize * (1 - sizeVariation/2 + Math.random() * sizeVariation);
     
-    // Medium opacity - ENHANCED OPACITY
-    const baseOpacity = 0.09; // Increased from 0.07
-    const intensityOpacityBoost = 0.05 * (startEvent.intensity / 10); // Increased from 0.04
+    // Medium opacity
+    const baseOpacity = 0.09;
+    const intensityOpacityBoost = 0.05 * (startEvent.intensity / 10);
     terOpacities[i] = (baseOpacity + intensityOpacityBoost) * (0.7 + Math.random() * 0.5);
     
     // Some color variation

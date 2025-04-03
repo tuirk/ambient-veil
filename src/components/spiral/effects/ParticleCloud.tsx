@@ -9,6 +9,9 @@ interface ParticleCloudProps {
   isProcessEvent?: boolean;
 }
 
+/**
+ * Creates a cloud of particles with consistent high-quality rendering
+ */
 export const ParticleCloud: React.FC<ParticleCloudProps> = ({ 
   color, 
   intensity,
@@ -17,22 +20,9 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
   // Reference for animation
   const particlesRef = useRef<THREE.Points>(null);
   
-  // Create texture for particles
+  // Use the high-quality particle texture
   const particleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 32, 32);
-    }
-    return new THREE.CanvasTexture(canvas);
+    return new THREE.TextureLoader().load('/lovable-uploads/aa0fbf13-30c5-4939-8a62-bf7b1f024055.png');
   }, []);
   
   // Generate particles for nebula effect
@@ -84,8 +74,9 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
       colors[i3 + 2] = baseColor.b * (1 - colorMix) + complementaryColor.b * colorMix;
       
       // Size varies based on distance from center and intensity
-      const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;
-      sizes[i] = (0.1 + Math.random() * 0.3) * (0.5 + intensity * 0.1) * sizeMultiplier;
+      // Reduced size for more crisp particles
+      const sizeMultiplier = isProcessEvent ? 0.5 : 0.8; 
+      sizes[i] = (0.08 + Math.random() * 0.15) * (0.5 + intensity * 0.1) * sizeMultiplier;
     }
     
     return { particlePositions: positions, particleColors: colors, particleSizes: sizes };
@@ -135,12 +126,15 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.2}
+        size={0.15}
         vertexColors
         transparent
         alphaMap={particleTexture}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        depthTest={true}
+        sizeAttenuation={true}
+        alphaTest={0.01}
       />
     </points>
   );

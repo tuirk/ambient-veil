@@ -16,6 +16,10 @@ interface ParticleSystemProps {
   animationAmplitude?: number;
 }
 
+/**
+ * Core particle system component with optimized rendering settings
+ * for high-quality, crisp particles.
+ */
 export const ParticleSystem: React.FC<ParticleSystemProps> = ({
   particlePositions,
   particleSizes,
@@ -93,12 +97,16 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({
         map={texture}
         blending={THREE.AdditiveBlending}
         sizeAttenuation={true}
-        alphaTest={0.01} // Add alpha test to improve edge rendering
+        alphaTest={0.01}
       />
     </points>
   );
 };
 
+/**
+ * Group of particle systems that work together to create a layered effect
+ * with consistent, high-quality particles.
+ */
 export const ParticleSystemGroup: React.FC<{
   data: {
     particlePositions: Float32Array;
@@ -132,7 +140,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.particleSizes}
         particleColors={data.particleColors}
         texture={textures.particleTexture}
-        size={0.35}
+        size={0.25}
         opacity={0.9}
         animationSpeed={animationSpeed}
         animationAmplitude={animationAmplitude}
@@ -146,7 +154,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.bgParticleSizes}
         particleColors={data.bgParticleColors}
         texture={textures.glowTexture}
-        size={0.45}
+        size={0.35}
         opacity={0.7}
         animationSpeed={animationSpeed * 0.7}
         animationAmplitude={animationAmplitude * 1.2}
@@ -160,7 +168,7 @@ export const ParticleSystemGroup: React.FC<{
         particleSizes={data.tertiaryParticleSizes}
         particleColors={data.tertiaryParticleColors}
         texture={textures.particleTexture}
-        size={0.40}
+        size={0.30}
         opacity={0.8}
         animationSpeed={animationSpeed * 0.4 * -1} // Negative to go in opposite direction
         animationAmplitude={animationAmplitude * 1.5}

@@ -11,6 +11,10 @@ interface SpiralVisualizationProps {
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
 }
 
+/**
+ * Main visualization component with optimized rendering settings
+ * for high-quality particle effects
+ */
 const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   events,
   config,
@@ -40,14 +44,18 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         onCreated={({ gl }) => {
           // Add explicit renderer settings to prevent context loss
           gl.setClearColor(new THREE.Color("#000000"), 1);
-          // Replace deprecated properties with newer alternatives
-          // Note: useLegacyLights was removed, we use the default behavior now
-          gl.outputColorSpace = THREE.SRGBColorSpace; // Modern replacement for outputEncoding
+          
+          // Set pixel ratio to improve quality without performance hit
+          gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          
+          // Use SRGB color space for better color rendering
+          gl.outputColorSpace = THREE.SRGBColorSpace;
+          
+          // Disable shadow maps for performance
           gl.shadowMap.enabled = false;
           gl.info.autoReset = true; // Auto reset memory stats to prevent leaks
         }}
       >
-        {/* Removed the fog that was causing black shadows */}
         <SpiralScene 
           events={events} 
           config={config} 

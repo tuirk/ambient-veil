@@ -59,16 +59,16 @@ export const CosmicDust: React.FC = () => {
     const sizeArray = new Float32Array(count);
     
     for (let i = 0; i < count; i++) {
-      // Vary the size of particles
-      sizeArray[i] = Math.random() * 1.5 + 0.2;
+      // Smaller, more consistent particle sizes for crisp points
+      sizeArray[i] = Math.random() * 0.8 + 0.2;
     }
     
     return sizeArray;
   }, [count]);
   
-  // Create a dust particle texture
+  // Use the high-quality particle texture
   const particleTexture = useMemo(() => {
-    return new THREE.TextureLoader().load('/lovable-uploads/58209b29-0c30-498e-b1e1-89b5cbef3bf1.png');
+    return new THREE.TextureLoader().load('/lovable-uploads/aa0fbf13-30c5-4939-8a62-bf7b1f024055.png');
   }, []);
   
   useFrame((state) => {
@@ -80,7 +80,7 @@ export const CosmicDust: React.FC = () => {
   });
   
   return (
-    <points ref={particles}>
+    <points ref={particles} renderOrder={-1}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -102,7 +102,7 @@ export const CosmicDust: React.FC = () => {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.15}
+        size={0.12}
         vertexColors
         transparent
         opacity={0.7}
@@ -110,6 +110,8 @@ export const CosmicDust: React.FC = () => {
         blending={THREE.AdditiveBlending}
         depthWrite={false}
         depthTest={true}
+        sizeAttenuation={true}
+        alphaTest={0.01}
       />
     </points>
   );
