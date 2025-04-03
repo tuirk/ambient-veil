@@ -1,3 +1,4 @@
+
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -36,11 +37,10 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
   
   // Generate particles for nebula effect
   const { particlePositions, particleColors, particleSizes } = useMemo(() => {
-    // One-time events have more concentrated, brighter particles
-    // Process events have more spread-out, diffuse particles
+    // Reduce the number of particles by 25%
     const count = isProcessEvent 
-      ? 80 + Math.floor(intensity * 20) // Fewer particles for process events
-      : 120 + Math.floor(intensity * 40); // More particles for one-time events
+      ? Math.floor((80 + Math.floor(intensity * 20)) * 0.75) // 25% fewer particles for process events
+      : Math.floor((120 + Math.floor(intensity * 40)) * 0.75); // 25% fewer particles for one-time events
     
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -64,10 +64,10 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
     // White for complementary color
     const complementaryColor = new THREE.Color("#FFFFFF");
     
-    // Intensity affects spread and size
+    // Reduce the spread by 25%
     const spread = isProcessEvent
-      ? 0.3 + intensity * 0.1 // More contained for process events
-      : 0.6 + intensity * 0.2; // More expansive for one-time events
+      ? (0.3 + intensity * 0.1) * 0.75 // 25% more contained for process events
+      : (0.6 + intensity * 0.2) * 0.75; // 25% less expansive for one-time events
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -94,8 +94,8 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
       // Reduce the blue component to keep the warm golden tone
       colors[i3 + 2] = baseColor.b * (1 - colorMix) + (complementaryColor.b * colorMix * 0.8);
       
-      // Size varies based on distance from center and intensity
-      const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;
+      // Reduce size by 25%
+      const sizeMultiplier = isProcessEvent ? 0.7 * 0.75 : 1.2 * 0.75;
       sizes[i] = (0.1 + Math.random() * 0.3) * (0.5 + intensity * 0.1) * sizeMultiplier;
     }
     
@@ -146,7 +146,7 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.2}
+        size={0.15} // Reduced from 0.2
         vertexColors
         transparent
         alphaMap={particleTexture}
