@@ -3,7 +3,7 @@
 export { default as SpiralVisualization } from './SpiralVisualization';
 export { SpiralScene } from './SpiralScene';
 export { SpiralLine } from './SpiralLine';
-export { EventDuration } from './EventDuration';
+export { EventDuration } from './eventDuration/EventDuration';
 export { EventPoint } from './EventPoint';
 export { CosmicEventEffect } from './CosmicEventEffect';
 export { CosmicDust } from './CosmicDust';

@@ -1,0 +1,2 @@
+
+export { EventDuration } from './EventDuration';
