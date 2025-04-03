@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -26,8 +25,8 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
     if (ctx) {
       const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(0.2, 'rgba(255, 250, 230, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(255, 240, 220, 0.4)');
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 32, 32);
@@ -47,14 +46,23 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
     
-    // Convert event color to THREE.Color
-    const baseColor = new THREE.Color(color);
-    // Calculate complementary colors for variety
-    const complementaryColor = new THREE.Color(
-      1 - baseColor.r,
-      1 - baseColor.g,
-      1 - baseColor.b
-    ).lerp(baseColor, 0.7); // Mix with original for subtlety
+    // Use a warm base color but keep a hint of the event color
+    const baseHsl = {h: 0, s: 0, l: 0};
+    const eventColor = new THREE.Color(color);
+    eventColor.getHSL(baseHsl);
+    
+    // Create a warm gold base but maintain some of the original color's character
+    const baseColor = new THREE.Color().setHSL(
+      // Blend toward gold (0.14) but keep some of the original hue
+      baseHsl.h * 0.2 + 0.14 * 0.8,
+      // Moderate saturation for gold
+      Math.min(0.7, baseHsl.s),
+      // High lightness for bright appearance
+      Math.max(0.7, baseHsl.l)
+    );
+    
+    // White for complementary color
+    const complementaryColor = new THREE.Color("#FFFFFF");
     
     // Intensity affects spread and size
     const spread = isProcessEvent
@@ -79,9 +87,12 @@ export const EventParticleCloud: React.FC<EventParticleCloudProps> = ({
       
       // Color varies between base color and complementary color
       const colorMix = Math.random();
+      
+      // Mix between colors, ensuring warmth by limiting the blue component
       colors[i3] = baseColor.r * (1 - colorMix) + complementaryColor.r * colorMix;
       colors[i3 + 1] = baseColor.g * (1 - colorMix) + complementaryColor.g * colorMix;
-      colors[i3 + 2] = baseColor.b * (1 - colorMix) + complementaryColor.b * colorMix;
+      // Reduce the blue component to keep the warm golden tone
+      colors[i3 + 2] = baseColor.b * (1 - colorMix) + (complementaryColor.b * colorMix * 0.8);
       
       // Size varies based on distance from center and intensity
       const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;

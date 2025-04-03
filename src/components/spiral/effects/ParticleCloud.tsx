@@ -1,4 +1,3 @@
-
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
@@ -26,8 +25,8 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
     if (ctx) {
       const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(0.2, 'rgba(255, 250, 230, 0.8)');
+      gradient.addColorStop(0.5, 'rgba(255, 240, 220, 0.4)');
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 32, 32);
@@ -48,18 +47,14 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
     const sizes = new Float32Array(count);
     
     // Convert event color to THREE.Color
-    const baseColor = new THREE.Color(color);
+    const baseColor = new THREE.Color("#FFD700");
     // Calculate complementary colors for variety
-    const complementaryColor = new THREE.Color(
-      1 - baseColor.r,
-      1 - baseColor.g,
-      1 - baseColor.b
-    ).lerp(baseColor, 0.7); // Mix with original for subtlety
+    const complementaryColor = new THREE.Color("#FFFFFF");
     
     // Intensity affects spread and size
     const spread = isProcessEvent
-      ? 0.3 + intensity * 0.1 // More contained for process events
-      : 0.6 + intensity * 0.2; // More expansive for one-time events
+      ? 0.3 + intensity * 0.1
+      : 0.6 + intensity * 0.2;
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -70,18 +65,20 @@ export const ParticleCloud: React.FC<ParticleCloudProps> = ({
       
       // For process events, particles are more stretched along the spiral path
       const phi = isProcessEvent
-        ? Math.acos((Math.random() * 1.5) - 1) // More vertical stretch
-        : Math.acos((Math.random() * 2) - 1);  // Even distribution
+        ? Math.acos((Math.random() * 1.5) - 1)
+        : Math.acos((Math.random() * 2) - 1);
       
       positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i3 + 2] = radius * Math.cos(phi);
       
-      // Color varies between base color and complementary color
+      // Color varies between gold and white
       const colorMix = Math.random();
+      
+      // Mix between colors, ensuring warmth by limiting the blue component
       colors[i3] = baseColor.r * (1 - colorMix) + complementaryColor.r * colorMix;
       colors[i3 + 1] = baseColor.g * (1 - colorMix) + complementaryColor.g * colorMix;
-      colors[i3 + 2] = baseColor.b * (1 - colorMix) + complementaryColor.b * colorMix;
+      colors[i3 + 2] = baseColor.b * (1 - colorMix) + (complementaryColor.b * colorMix * 0.8);
       
       // Size varies based on distance from center and intensity
       const sizeMultiplier = isProcessEvent ? 0.7 : 1.2;

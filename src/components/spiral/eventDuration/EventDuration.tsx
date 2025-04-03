@@ -6,6 +6,7 @@ import { calculateSpiralSegment } from "@/utils/spiralUtils";
 import { isSeasonalEvent } from "@/utils/seasonalUtils";
 import { useParticleTextures } from "./ParticleTextures";
 import { generateParticles } from "./ParticleGenerator";
+import { calculateParticleCounts } from "./ParticleArrayFactory";
 import { ParticleSystemGroup } from "./ParticleSystems";
 import { PathLine } from "./PathLine";
 
@@ -56,38 +57,20 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   const { particleTexture, glowTexture } = useParticleTextures();
   
   // Number of particles based on event intensity and span length - ENHANCED VALUES
-  const particleCount = useMemo(() => {
-    // Base count depends on intensity (1-10 scale)
-    // Intensity 1 → 200× spanLength (increased from 150)
-    // Intensity 5 → 400× spanLength (increased from 300)
-    // Intensity 10 → 600× spanLength (increased from 450)
-    const intensityFactor = 1.5 + startEvent.intensity * 0.4; // Increased from 0.3
-    const baseMultiplier = 200; // Increased from 150
-    
-    // For minimal duration, use a fixed count to ensure visibility
-    if (isMinimalDuration) {
-      return Math.floor(baseMultiplier * intensityFactor);
-    }
-    
-    // For actual spans, scale by length but cap for performance
-    const lengthFactor = Math.min(1.2, Math.log10(spanLengthInDays) / 3 + 0.6);
-    return Math.floor(baseMultiplier * intensityFactor * lengthFactor);
-  }, [startEvent.intensity, isMinimalDuration, spanLengthInDays]);
-  
-  // Additional background particles for more volume
-  const backgroundParticleCount = Math.floor(particleCount * 0.8);
-  const tertiaryParticleCount = Math.floor(particleCount * 0.5);
+  const { primaryCount, secondaryCount, tertiaryCount } = useMemo(() => {
+    return calculateParticleCounts(startEvent, isMinimalDuration);
+  }, [startEvent, isMinimalDuration]);
   
   // Generate all particle data
   const particleData = useMemo(() => generateParticles({
     points,
-    particleCount,
-    backgroundParticleCount,
-    tertiaryParticleCount,
+    particleCount: primaryCount,
+    backgroundParticleCount: secondaryCount,
+    tertiaryParticleCount: tertiaryCount,
     startEvent,
     isRoughDate,
     isMinimalDuration
-  }), [points, particleCount, backgroundParticleCount, tertiaryParticleCount, startEvent, isRoughDate, isMinimalDuration]);
+  }), [points, primaryCount, secondaryCount, tertiaryCount, startEvent, isRoughDate, isMinimalDuration]);
   
   // For all durations, show layered particle systems
   return (
