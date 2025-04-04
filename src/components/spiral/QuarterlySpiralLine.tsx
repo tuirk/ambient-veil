@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { generateQuarterlySpiralPoints } from "@/utils/quarterlyUtils";
@@ -15,26 +15,35 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   currentYear,
   zoom
 }) => {
-  // Generate points for the quarterly spiral
-  // This will now cover from Jan 1st of the current year to today
-  const spiralPoints = generateQuarterlySpiralPoints(
-    startYear, 
-    currentYear, 
-    360, 
-    5 * zoom, 
-    1.5 * zoom
-  );
+  // Generate points for the quarterly spiral with memoization
+  // This prevents recalculating the points on every render
+  const spiralPoints = useMemo(() => {
+    return generateQuarterlySpiralPoints(
+      startYear, 
+      currentYear, 
+      // Reduce resolution for better performance
+      280, // Reduced from 360
+      5 * zoom, 
+      1.5 * zoom
+    );
+  }, [startYear, currentYear, zoom]);
   
   // Extract positions for the spiral line
-  const positions = spiralPoints.map(point => point.position);
+  const positions = useMemo(() => {
+    return spiralPoints.map(point => point.position);
+  }, [spiralPoints]);
   
   // Create colors for the spiral line
-  const colors = [];
-  
-  spiralPoints.forEach((point) => {
-    const baseColor = new THREE.Color(0xffffff);
-    colors.push(baseColor);
-  });
+  const colors = useMemo(() => {
+    const colorArray = [];
+    
+    spiralPoints.forEach((point) => {
+      const baseColor = new THREE.Color(0xffffff);
+      colorArray.push(baseColor);
+    });
+    
+    return colorArray;
+  }, [spiralPoints]);
   
   return (
     <Line
