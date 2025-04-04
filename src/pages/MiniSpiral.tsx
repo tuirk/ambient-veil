@@ -6,7 +6,7 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info, ListIcon, Calendar } from "lucide-react";
+import { Info, ListIcon, Calendar, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -101,8 +101,8 @@ const MiniSpiral: React.FC = () => {
             variant="outline" 
             className="border-white/20 text-white hover:bg-white/10"
           >
-            <Calendar className="mr-2 h-4 w-4" />
-            Annual View
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Annual View
           </Button>
         </Link>
         <Link to="/quarterly">

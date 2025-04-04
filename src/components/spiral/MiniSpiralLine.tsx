@@ -15,12 +15,12 @@ export const MiniSpiralLine: React.FC<MiniSpiralLineProps> = ({
   currentYear,
   zoom
 }) => {
-  // Generate points for the mini spiral
+  // Generate points for the mini spiral with more steps per coil for smoother transitions
   // This will cover from Jan 1st of current year to today
   const spiralPoints = generateMiniSpiralPoints(
     startYear, 
     currentYear, 
-    180, 
+    360, // Increased from 180 to 360 steps per coil for smoother transitions
     5 * zoom, 
     1.2 * zoom
   );
