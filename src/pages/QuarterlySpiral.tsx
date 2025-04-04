@@ -1,20 +1,20 @@
 
 import React, { useState, useEffect } from "react";
-import { SpiralVisualization } from "@/components/spiral";
+import { QuarterlySpiralVisualization } from "@/components/spiral";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import SpiralContainer from "@/components/spiral/SpiralContainer";
 
-const Spiral: React.FC = () => {
+const QuarterlySpiral: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: currentYear - 5, // Fixed to current year - 5
-    currentYear: currentYear,
+    startYear: currentYear, // Start from January 1st of current year
+    currentYear: currentYear, // End at current date
     zoom: 1,
     centerX: window.innerWidth / 2,
     centerY: window.innerHeight / 2,
@@ -27,14 +27,14 @@ const Spiral: React.FC = () => {
     
     const savedConfig = getConfig();
     
-    // Always set startYear to 5 years before current year
-    const fixedConfig = {
+    // Set to current calendar year to current date
+    const quarterlyConfig = {
       ...savedConfig,
-      startYear: currentYear - 5
+      startYear: currentYear, // January 1st of current year
+      currentYear: currentYear // Current date (today)
     };
     
-    setConfig(fixedConfig);
-    saveConfig(fixedConfig); // Save the fixed config
+    setConfig(quarterlyConfig);
   }, []);
   
   const handleSaveEvent = (newEvent: TimeEvent) => {
@@ -49,24 +49,24 @@ const Spiral: React.FC = () => {
     saveEvents(updatedEvents);
   };
   
-  // Setup help items for the annual view
+  // Help items specific to the quarterly view
   const helpItems = [
-    "Each loop represents a year, divided into 12 months.",
-    `You can add memories from ${currentYear - 5} to ${currentYear + 1}.`,
+    "Each coil represents 3 months (one quarter).",
+    "The visualization starts from January 1st of the current year.",
     "Click anywhere on the spiral to add a memory at that time.",
     "Colored trails represent events in your life.",
     "Drag to rotate the view and scroll to zoom in/out."
   ];
   
-  // Action button for navigating to quarterly view
+  // Action button for navigating back to annual view
   const actionButton = (
-    <Link to="/quarterly">
+    <Link to="/spiral">
       <Button 
         variant="outline" 
         className="border-white/20 text-white hover:bg-white/10"
       >
-        <Calendar className="mr-2 h-4 w-4" />
-        Quarterly View
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Annual View
       </Button>
     </Link>
   );
@@ -78,13 +78,13 @@ const Spiral: React.FC = () => {
       onSaveEvent={handleSaveEvent}
       onDeleteEvent={handleDeleteEvent}
       actionButton={actionButton}
-      helpTitle="About 'You Are Here'"
-      helpDescription="This 3D spiral represents your personal timeline. Each loop is a year, divided into 12 months."
+      helpTitle="Quarterly Timeline View"
+      helpDescription="This 3D spiral represents the current year, divided into quarters."
       helpItems={helpItems}
-      startYear={currentYear - 5}
+      startYear={currentYear}
       currentYear={currentYear}
     >
-      <SpiralVisualization 
+      <QuarterlySpiralVisualization 
         events={events} 
         config={config} 
         onSpiralClick={(year, month, x, y) => {}} // Adding the missing prop with an empty handler
@@ -93,4 +93,4 @@ const Spiral: React.FC = () => {
   );
 };
 
-export default Spiral;
+export default QuarterlySpiral;
