@@ -5,11 +5,11 @@ import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info, ListIcon, ArrowLeft } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ListIcon, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import MemoryListDialog from "@/components/MemoryListDialog";
+import SpiralHelpPopover from "@/components/SpiralHelpPopover";
 
 const QuarterlySpiral: React.FC = () => {
   const { toast } = useToast();
@@ -64,6 +64,15 @@ const QuarterlySpiral: React.FC = () => {
     saveEvents(updatedEvents);
   };
   
+  // Help items specific to the quarterly view
+  const helpItems = [
+    "Each coil represents 3 months (one quarter).",
+    "The visualization starts from January 1st of the current year.",
+    "Click anywhere on the spiral to add a memory at that time.",
+    "Colored trails represent events in your life.",
+    "Drag to rotate the view and scroll to zoom in/out."
+  ];
+  
   return (
     <div className="w-full h-screen">
       {/* Spiral visualization */}
@@ -98,90 +107,19 @@ const QuarterlySpiral: React.FC = () => {
       </div>
       
       {/* Help button */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute bottom-4 right-4 rounded-full bg-background/30 backdrop-blur-sm hover:bg-background/50 border border-white/10"
-          >
-            <Info className="h-5 w-5" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 bg-background/80 backdrop-blur-md text-white border-cosmic-nebula-purple/30">
-          <div className="space-y-4">
-            <h3 className="font-medium text-lg">Quarterly Timeline View</h3>
-            <p className="text-sm text-gray-300">
-              This 3D spiral represents the current year, divided into quarters.
-            </p>
-            <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
-              <li>Each coil represents 3 months (one quarter).</li>
-              <li>The visualization starts from January 1st of the current year.</li>
-              <li>Click anywhere on the spiral to add a memory at that time.</li>
-              <li>Colored trails represent events in your life.</li>
-              <li>Drag to rotate the view and scroll to zoom in/out.</li>
-            </ul>
-          </div>
-        </PopoverContent>
-      </Popover>
+      <SpiralHelpPopover 
+        title="Quarterly Timeline View"
+        description="This 3D spiral represents the current year, divided into quarters."
+        helpItems={helpItems}
+      />
       
       {/* Memory List Dialog */}
-      <Dialog open={showMemoryList} onOpenChange={setShowMemoryList}>
-        <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Your Memories</DialogTitle>
-          </DialogHeader>
-          
-          <div className="max-h-[60vh] overflow-y-auto p-1">
-            {events.length === 0 ? (
-              <p className="text-center py-8 text-gray-400">No memories yet. Click anywhere on the spiral to add one.</p>
-            ) : (
-              <div className="space-y-4">
-                {events
-                  .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
-                  .map(event => (
-                    <div 
-                      key={event.id} 
-                      className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: event.color }}
-                          />
-                          <h3 className="font-medium">{event.title}</h3>
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          {event.isRoughDate 
-                            ? `${event.roughDateSeason} ${event.roughDateYear}`
-                            : event.startDate.toLocaleDateString() + (event.endDate ? ` - ${event.endDate.toLocaleDateString()}` : "")
-                          }
-                        </div>
-                      </div>
-                      <div className="mt-2 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs px-2 py-1 rounded-full bg-white/10">
-                            Intensity: {event.intensity}
-                          </span>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteEvent(event.id)}
-                          className="h-8 bg-red-900/50 hover:bg-red-800"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                }
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <MemoryListDialog
+        open={showMemoryList}
+        onOpenChange={setShowMemoryList}
+        events={events}
+        onDeleteEvent={handleDeleteEvent}
+      />
       
       {/* Add event form */}
       <EventForm
