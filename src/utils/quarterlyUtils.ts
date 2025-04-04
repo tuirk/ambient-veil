@@ -1,10 +1,11 @@
+
 import { Vector3 } from "three";
 import { TimeEvent } from "@/types/event";
 import { SpiralPoint } from "./spiralUtils";
 
 /**
  * Generates points for the quarterly spiral visualization
- * Each coil represents 4 months (one quarter of a year)
+ * Each coil represents 3 months (one quarter of a year)
  * @param startYear The first year to display in the spiral
  * @param currentYear The latest year to display in the spiral
  * @param stepsPerLoop Number of points to use for each quarter loop
@@ -30,8 +31,8 @@ export const generateQuarterlySpiralPoints = (
   for (let yearOffset = 0; yearOffset < yearSpan; yearOffset++) {
     const year = startYear + yearOffset;
     
-    // Create quarterly coils (3 coils per year, 4 months per coil)
-    for (let quarter = 0; quarter < 3; quarter++) {
+    // Create quarterly coils (4 coils per year, 3 months per coil)
+    for (let quarter = 0; quarter < 4; quarter++) {
       // Steps for this quarter
       const stepsThisQuarter = stepsPerLoop;
       
@@ -40,19 +41,19 @@ export const generateQuarterlySpiralPoints = (
         const progress = step / stepsPerLoop;
         
         // Calculate the month within the year
-        const monthOffset = quarter * 4; // 0, 4, or 8
+        const monthOffset = quarter * 3; // 0, 3, 6, or 9
         const monthProgress = progress; // 0-1 progress within the quarter
-        const month = Math.floor(monthOffset + monthProgress * 4);
+        const month = Math.floor(monthOffset + monthProgress * 3);
         
         // Calculate the day within the month (approximate)
-        const day = Math.floor((monthProgress * 4 - Math.floor(monthProgress * 4)) * 30) + 1;
+        const day = Math.floor((monthProgress * 3 - Math.floor(monthProgress * 3)) * 30) + 1;
         
         // Calculate angle in radians with proper offset
         // Negative angle for clockwise rotation, offset for positioning
         const angleRad = -progress * Math.PI * 2 + Math.PI/2;
         
         // Calculate the total progress through all quarters
-        const totalProgress = yearOffset * 3 + quarter + progress;
+        const totalProgress = yearOffset * 4 + quarter + progress;
         
         // Apply consistent radius expansion formula
         const currentRadius = baseRadius + totalProgress * 0.5;
@@ -93,14 +94,14 @@ export const getQuarterlyEventPosition = (
   const month = event.startDate.getMonth();
   const day = event.startDate.getDate();
   
-  // Calculate quarter (0, 1, 2) and progress within quarter
-  const quarter = Math.floor(month / 4);
-  const monthInQuarter = month % 4;
-  const quarterProgress = monthInQuarter / 4 + day / (4 * 30);
+  // Calculate quarter (0, 1, 2, 3) and progress within quarter
+  const quarter = Math.floor(month / 3);
+  const monthInQuarter = month % 3;
+  const quarterProgress = monthInQuarter / 3 + day / (3 * 30);
   
   // Calculate total progress (in terms of quarter loops)
   const yearOffset = year - startYear;
-  const totalProgress = yearOffset * 3 + quarter + quarterProgress;
+  const totalProgress = yearOffset * 4 + quarter + quarterProgress;
   
   // Calculate angle
   const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
@@ -153,13 +154,13 @@ export const calculateQuarterlySpiralSegment = (
     const day = currentDate.getDate();
     
     // Calculate quarter and progress
-    const quarter = Math.floor(month / 4);
-    const monthInQuarter = month % 4;
-    const quarterProgress = monthInQuarter / 4 + day / (4 * 30);
+    const quarter = Math.floor(month / 3);
+    const monthInQuarter = month % 3;
+    const quarterProgress = monthInQuarter / 3 + day / (3 * 30);
     
     // Calculate total progress
     const yearOffset = year - startYear;
-    const totalProgress = yearOffset * 3 + quarter + quarterProgress;
+    const totalProgress = yearOffset * 4 + quarter + quarterProgress;
     
     // Calculate position
     const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;

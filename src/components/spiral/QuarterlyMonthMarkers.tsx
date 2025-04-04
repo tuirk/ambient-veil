@@ -22,11 +22,11 @@ export const QuarterlyMonthMarkers: React.FC<QuarterlyMonthMarkersProps> = ({
     for (let month = 0; month < 12; month++) {
       // Calculate position for quarterly spiral
       const yearProgress = month / 12;
-      const quarterIndex = Math.floor(month / 4);
+      const quarterIndex = Math.floor(month / 3);
       
       // Position calculation for quarterly spiral
-      // Each coil represents 4 months
-      const coilProgress = (month % 4) / 4;
+      // Each coil represents 3 months
+      const coilProgress = (month % 3) / 3;
       const totalProgress = quarterIndex + coilProgress;
       
       // Calculate angle with appropriate offset

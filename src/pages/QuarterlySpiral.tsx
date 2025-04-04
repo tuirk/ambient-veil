@@ -14,11 +14,10 @@ import { Link } from "react-router-dom";
 const QuarterlySpiral: React.FC = () => {
   const { toast } = useToast();
   const currentYear = new Date().getFullYear();
-  const previousYear = currentYear - 1;
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: previousYear, // Start from January 1st of previous year
+    startYear: currentYear, // Start from January 1st of current year
     currentYear: currentYear, // End at current date
     zoom: 1,
     centerX: window.innerWidth / 2,
@@ -37,10 +36,10 @@ const QuarterlySpiral: React.FC = () => {
     
     const savedConfig = getConfig();
     
-    // Set to previous calendar year to current year
+    // Set to current calendar year to current date
     const quarterlyConfig = {
       ...savedConfig,
-      startYear: previousYear, // January 1st of previous year
+      startYear: currentYear, // January 1st of current year
       currentYear: currentYear // Current date (today)
     };
     
@@ -113,11 +112,11 @@ const QuarterlySpiral: React.FC = () => {
           <div className="space-y-4">
             <h3 className="font-medium text-lg">Quarterly Timeline View</h3>
             <p className="text-sm text-gray-300">
-              This 3D spiral represents {previousYear} to today, divided into quarters.
+              This 3D spiral represents the current year, divided into quarters.
             </p>
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
-              <li>Each coil represents 4 months.</li>
-              <li>The visualization starts from January 1st, {previousYear}.</li>
+              <li>Each coil represents 3 months (one quarter).</li>
+              <li>The visualization starts from January 1st of the current year.</li>
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
@@ -191,7 +190,7 @@ const QuarterlySpiral: React.FC = () => {
         onSave={handleSaveEvent}
         preselectedYear={selectedYear}
         preselectedMonth={selectedMonth}
-        startYear={previousYear} // Allow events from the start year
+        startYear={currentYear} // Allow events from the start of current year
         currentYear={currentYear} // Allow events up to current year
       />
     </div>
