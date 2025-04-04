@@ -22,6 +22,12 @@ export const generateQuarterlySpiralPoints = (
 ): SpiralPoint[] => {
   const points: SpiralPoint[] = [];
   
+  // Get current date to limit the spiral to today
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();
+  const todayDay = now.getDate();
+  
   // Number of years to render
   const yearSpan = currentYear - startYear + 1;
   // Base radius of the spiral
@@ -31,8 +37,16 @@ export const generateQuarterlySpiralPoints = (
   for (let yearOffset = 0; yearOffset < yearSpan; yearOffset++) {
     const year = startYear + yearOffset;
     
+    // For current year, determine how many quarters to show based on today's date
+    const numberOfQuarters = (year === todayYear) 
+      ? Math.floor(todayMonth / 3) + 1 // Only render quarters up to the current one
+      : 4; // All quarters for past years
+    
     // Create quarterly coils (4 coils per year, 3 months per coil)
-    for (let quarter = 0; quarter < 4; quarter++) {
+    for (let quarter = 0; quarter < numberOfQuarters; quarter++) {
+      // For the current quarter of the current year, only show days up to today
+      const isCurrentQuarter = (year === todayYear && quarter === Math.floor(todayMonth / 3));
+      
       // Steps for this quarter
       const stepsThisQuarter = stepsPerLoop;
       
@@ -47,6 +61,15 @@ export const generateQuarterlySpiralPoints = (
         
         // Calculate the day within the month (approximate)
         const day = Math.floor((monthProgress * 3 - Math.floor(monthProgress * 3)) * 30) + 1;
+        
+        // Skip points after today's date in the current quarter
+        if (isCurrentQuarter) {
+          // If we're in a future month of the current quarter
+          if (month > todayMonth) continue;
+          
+          // If we're in the current month but a future day
+          if (month === todayMonth && day > todayDay) continue;
+        }
         
         // Calculate angle in radians with proper offset
         // Negative angle for clockwise rotation, offset for positioning

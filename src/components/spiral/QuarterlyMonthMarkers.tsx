@@ -13,15 +13,22 @@ export const QuarterlyMonthMarkers: React.FC<QuarterlyMonthMarkersProps> = ({
   currentYear, 
   zoom 
 }) => {
+  // Get current date to limit markers to today
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();
+  
   // Show all months for quarterly view
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const markers = [];
   
   // Create markers for each month in each year
   for (let year = startYear; year <= currentYear; year++) {
-    for (let month = 0; month < 12; month++) {
+    // Determine how many months to show for this year
+    const monthsToShow = (year === todayYear) ? todayMonth + 1 : 12;
+    
+    for (let month = 0; month < monthsToShow; month++) {
       // Calculate position for quarterly spiral
-      const yearProgress = month / 12;
       const quarterIndex = Math.floor(month / 3);
       
       // Position calculation for quarterly spiral
