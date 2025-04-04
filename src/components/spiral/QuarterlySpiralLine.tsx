@@ -16,6 +16,7 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   zoom
 }) => {
   // Generate points for the quarterly spiral
+  // This will now cover from Jan 1st of previous year to today
   const spiralPoints = generateQuarterlySpiralPoints(
     startYear, 
     currentYear, 

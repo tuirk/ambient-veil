@@ -18,8 +18,8 @@ const QuarterlySpiral: React.FC = () => {
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
-    startYear: previousYear, // Always start from January 1st of previous year
-    currentYear: previousYear, // End at December 31st of previous year
+    startYear: previousYear, // Start from January 1st of previous year
+    currentYear: currentYear, // End at current date
     zoom: 1,
     centerX: window.innerWidth / 2,
     centerY: window.innerHeight / 2,
@@ -37,27 +37,17 @@ const QuarterlySpiral: React.FC = () => {
     
     const savedConfig = getConfig();
     
-    // Always set to previous calendar year
+    // Set to previous calendar year to current year
     const quarterlyConfig = {
       ...savedConfig,
-      startYear: previousYear,
-      currentYear: previousYear
+      startYear: previousYear, // January 1st of previous year
+      currentYear: currentYear // Current date (today)
     };
     
     setConfig(quarterlyConfig);
   }, []);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
-    // Only allow clicks within the previous year
-    if (year !== previousYear) {
-      toast({
-        title: "Outside Allowed Time Range",
-        description: `You can only add memories in ${previousYear}`,
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setSelectedYear(year);
     setSelectedMonth(month);
     setShowEventForm(true);
@@ -123,11 +113,11 @@ const QuarterlySpiral: React.FC = () => {
           <div className="space-y-4">
             <h3 className="font-medium text-lg">Quarterly Timeline View</h3>
             <p className="text-sm text-gray-300">
-              This 3D spiral represents the previous calendar year ({previousYear}) divided into quarters.
+              This 3D spiral represents {previousYear} to today, divided into quarters.
             </p>
             <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
               <li>Each coil represents 4 months.</li>
-              <li>The entire visualization shows one full year.</li>
+              <li>The visualization starts from January 1st, {previousYear}.</li>
               <li>Click anywhere on the spiral to add a memory at that time.</li>
               <li>Colored trails represent events in your life.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
@@ -140,7 +130,7 @@ const QuarterlySpiral: React.FC = () => {
       <Dialog open={showMemoryList} onOpenChange={setShowMemoryList}>
         <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10 max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl">Your Memories ({previousYear})</DialogTitle>
+            <DialogTitle className="text-xl">Your Memories</DialogTitle>
           </DialogHeader>
           
           <div className="max-h-[60vh] overflow-y-auto p-1">
@@ -149,7 +139,6 @@ const QuarterlySpiral: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {events
-                  .filter(event => event.startDate.getFullYear() === previousYear)
                   .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
                   .map(event => (
                     <div 
@@ -202,8 +191,8 @@ const QuarterlySpiral: React.FC = () => {
         onSave={handleSaveEvent}
         preselectedYear={selectedYear}
         preselectedMonth={selectedMonth}
-        startYear={previousYear} // Only allow events in the previous year
-        currentYear={previousYear} // Only allow events in the previous year
+        startYear={previousYear} // Allow events from the start year
+        currentYear={currentYear} // Allow events up to current year
       />
     </div>
   );
