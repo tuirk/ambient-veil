@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface Star {
@@ -25,7 +24,6 @@ const DeepSpaceBackground: React.FC = () => {
   const dustParticlesRef = useRef<HTMLDivElement>(null);
   const galaxiesRef = useRef<HTMLDivElement>(null);
   
-  // Generate random stars
   const generateStars = (count: number): Star[] => {
     return Array.from({ length: count }).map(() => ({
       x: Math.random() * 100,
@@ -37,7 +35,6 @@ const DeepSpaceBackground: React.FC = () => {
     }));
   };
   
-  // Generate nebula clouds
   const generateNebulas = (count: number): Nebula[] => {
     return Array.from({ length: count }).map(() => ({
       x: Math.random() * 100,
@@ -54,10 +51,8 @@ const DeepSpaceBackground: React.FC = () => {
     const nebulas = generateNebulas(7);
     
     if (starsContainerRef.current) {
-      // Clear any existing stars
       starsContainerRef.current.innerHTML = '';
       
-      // Create star elements
       stars.forEach((star) => {
         const starElement = document.createElement('div');
         starElement.className = 'star';
@@ -72,7 +67,6 @@ const DeepSpaceBackground: React.FC = () => {
         starsContainerRef.current.appendChild(starElement);
       });
       
-      // Add a few lens flare stars for extra effect
       for (let i = 0; i < 5; i++) {
         const lensFlare = document.createElement('div');
         lensFlare.className = 'lens-flare-star';
@@ -88,10 +82,8 @@ const DeepSpaceBackground: React.FC = () => {
     }
     
     if (nebulasContainerRef.current) {
-      // Clear any existing nebulas
       nebulasContainerRef.current.innerHTML = '';
       
-      // Create nebula elements
       nebulas.forEach((nebula) => {
         const nebulaElement = document.createElement('div');
         nebulaElement.className = 'nebula';
@@ -102,7 +94,6 @@ const DeepSpaceBackground: React.FC = () => {
         nebulaElement.style.opacity = `${nebula.opacity}`;
         nebulaElement.style.animation = `nebula-drift ${nebula.animationDuration}s ease-in-out infinite`;
         
-        // Randomize the nebula colors slightly
         const hueRotate = nebula.hue;
         nebulaElement.style.filter = `hue-rotate(${hueRotate}deg)`;
         
@@ -110,7 +101,6 @@ const DeepSpaceBackground: React.FC = () => {
       });
     }
     
-    // Add dust particles
     if (dustParticlesRef.current) {
       dustParticlesRef.current.innerHTML = '';
       
@@ -124,7 +114,6 @@ const DeepSpaceBackground: React.FC = () => {
         dust.style.opacity = `${Math.random() * 0.5 + 0.1}`;
         dust.style.backgroundColor = `rgba(${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, 0.8)`;
         
-        // Set custom property for random values
         dust.style.setProperty('--tw-random', Math.random().toString());
         dust.style.animation = `float ${Math.random() * 60 + 30}s linear infinite`;
         
@@ -132,7 +121,6 @@ const DeepSpaceBackground: React.FC = () => {
       }
     }
     
-    // Add galaxies
     if (galaxiesRef.current) {
       galaxiesRef.current.innerHTML = '';
       
