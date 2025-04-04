@@ -9,6 +9,7 @@ import DeepSpaceBackground from "@/components/DeepSpaceBackground";
 import Index from "./pages/Index";
 import Spiral from "./pages/Spiral";
 import QuarterlySpiral from "./pages/QuarterlySpiral";
+import MiniSpiral from "./pages/MiniSpiral";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -30,6 +31,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/spiral" element={<Spiral />} />
                 <Route path="/quarterly" element={<QuarterlySpiral />} />
+                <Route path="/mini" element={<MiniSpiral />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
