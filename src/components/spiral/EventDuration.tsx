@@ -20,17 +20,34 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   // Memoize color to prevent recalculation
   const colorObj = useMemo(() => new THREE.Color(event.color), [event.color]);
   
-  // Calculate line width and opacity based on intensity, but limit to reasonable values
-  const lineWidth = useMemo(() => Math.min(2 + event.intensity * 0.3, 4.5), [event.intensity]);
-  const opacity = useMemo(() => Math.min(0.6 + event.intensity * 0.03, 0.85), [event.intensity]);
+  // Calculate line width and opacity based on intensity, with enhanced values
+  const lineWidth = useMemo(() => Math.min(3 + event.intensity * 0.4, 6.0), [event.intensity]);
+  const opacity = useMemo(() => Math.min(0.7 + event.intensity * 0.04, 0.95), [event.intensity]);
+  
+  // Create a glow effect with a second line
+  const glowWidth = useMemo(() => lineWidth * 1.8, [lineWidth]);
+  const glowOpacity = useMemo(() => opacity * 0.5, [opacity]);
   
   return (
-    <Line
-      points={points}
-      color={colorObj}
-      lineWidth={lineWidth}
-      transparent
-      opacity={opacity}
-    />
+    <>
+      {/* Main line */}
+      <Line
+        points={points}
+        color={colorObj}
+        lineWidth={lineWidth}
+        transparent
+        opacity={opacity}
+      />
+      
+      {/* Glow effect line */}
+      <Line
+        points={points}
+        color={colorObj}
+        lineWidth={glowWidth}
+        transparent
+        opacity={glowOpacity}
+        blending={THREE.AdditiveBlending}
+      />
+    </>
   );
 };

@@ -3,7 +3,6 @@ import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
-import { getEventPosition } from "@/utils/spiralUtils";
 
 interface EventPointProps {
   event: TimeEvent;
@@ -41,51 +40,59 @@ export const EventPoint: React.FC<EventPointProps> = ({
     return new THREE.CanvasTexture(canvas);
   }, []);
   
-  // Create a pulsing animation for the point with reduced frequency
+  // Create a pulsing animation for the point
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.getElapsedTime();
-      // Slower pulse effect (reduced from 1.5 to 1.0)
-      const pulseScale = 1 + Math.sin(time * 1.0) * 0.1 * (event.intensity / 10);
+      // More noticeable pulse effect (increased from 1.0 to 1.5)
+      const pulseScale = 1 + Math.sin(time * 1.5) * 0.15 * (event.intensity / 10);
       meshRef.current.scale.set(pulseScale, pulseScale, pulseScale);
     }
     
     if (glowRef.current) {
       const time = state.clock.getElapsedTime();
-      // Slower independent pulse for the glow (reduced from 2.2 to 1.5)
-      const glowScale = 1 + Math.sin(time * 1.5) * 0.15;
+      // Enhanced glow pulse (increased from 1.5 to 2.2)
+      const glowScale = 1.2 + Math.sin(time * 2.2) * 0.2;
       glowRef.current.scale.set(glowScale, glowScale, 1);
     }
   });
   
   // Calculate size based on event intensity (1-10)
-  // Further reduced size by 15% for better performance
-  const size = 0.03 + (event.intensity / 10) * 0.06; // Reduced from previous values
+  // Increasing size by 30% for more visibility
+  const size = 0.05 + (event.intensity / 10) * 0.08;
   
   return (
     <group position={position} onClick={onClick}>
-      {/* Core particle - small but visible */}
+      {/* Core particle - more detailed with better geometry */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[size, 6, 6]} /> {/* Reduced geometry complexity from 8,8 to 6,6 */}
+        <sphereGeometry args={[size, 12, 12]} /> {/* Increased geometry detail from 6,6 to 12,12 */}
         <meshStandardMaterial 
           color={event.color} 
           transparent 
           opacity={0.9}
           emissive={event.color}
-          emissiveIntensity={1.5}
+          emissiveIntensity={2.5} // Increased from 1.5 to 2.5 for more glow
         />
       </mesh>
       
-      {/* Glow effect for one-time events */}
-      <sprite ref={glowRef} scale={[0.4 + event.intensity * 0.05, 0.4 + event.intensity * 0.05, 1]}>
+      {/* Enhanced glow effect */}
+      <sprite ref={glowRef} scale={[0.6 + event.intensity * 0.08, 0.6 + event.intensity * 0.08, 1]}>
         <spriteMaterial 
           map={glowTexture} 
           color={event.color} 
           transparent 
-          opacity={0.7}
+          opacity={0.8} // Increased from 0.7
           blending={THREE.AdditiveBlending}
         />
       </sprite>
+      
+      {/* Add a point light for extra illumination */}
+      <pointLight 
+        color={event.color} 
+        intensity={0.5 + event.intensity * 0.1} 
+        distance={1.5} 
+        decay={2}
+      />
     </group>
   );
 };

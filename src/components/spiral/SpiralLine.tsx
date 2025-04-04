@@ -23,8 +23,8 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
     return generateSpiralPoints(
       startYear, 
       currentYear, 
-      // Reduce resolution for better performance
-      280, // Reduced from 360
+      // Restore higher resolution for smoother curves
+      360, // Restored from 280 to 360
       5 * zoom, 
       1.5 * zoom
     );
@@ -46,13 +46,13 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       if (point.year < minAllowedYear) {
         // Calculate how far back this year is from the minimum allowed
         const yearsBeyondMin = minAllowedYear - point.year;
-        // 0.3 is minimum opacity, fade more for older years
-        const opacity = Math.max(0.3, 1 - (yearsBeyondMin * 0.15));
+        // 0.4 is minimum opacity (increased from 0.3), fade more for older years
+        const opacity = Math.max(0.4, 1 - (yearsBeyondMin * 0.12));
         
         // Create a silver-gray color for older years
         const silverGray = new THREE.Color(0x9F9EA1);
         // Blend with white based on how old the year is
-        baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
+        baseColor.lerp(silverGray, 0.4 + (yearsBeyondMin * 0.08));
       }
       
       colorArray.push(baseColor);
@@ -62,13 +62,26 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   }, [spiralPoints, minAllowedYear]);
   
   return (
-    <Line
-      points={positions}
-      color="white"
-      vertexColors={colors}
-      lineWidth={1}
-      transparent
-      opacity={0.3}
-    />
+    <>
+      {/* Main spiral line */}
+      <Line
+        points={positions}
+        color="white"
+        vertexColors={colors}
+        lineWidth={1.2} // Increased from 1.0
+        transparent
+        opacity={0.4} // Increased from 0.3
+      />
+      
+      {/* Subtle glow effect for the spiral */}
+      <Line
+        points={positions}
+        color="white"
+        lineWidth={2.5}
+        transparent
+        opacity={0.15}
+        blending={THREE.AdditiveBlending}
+      />
+    </>
   );
 };

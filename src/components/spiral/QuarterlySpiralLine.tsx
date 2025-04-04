@@ -16,13 +16,12 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   zoom
 }) => {
   // Generate points for the quarterly spiral with memoization
-  // This prevents recalculating the points on every render
   const spiralPoints = useMemo(() => {
     return generateQuarterlySpiralPoints(
       startYear, 
       currentYear, 
-      // Reduce resolution for better performance
-      280, // Reduced from 360
+      // Restore higher resolution for smoother curves
+      360, // Restored from 280 to 360
       5 * zoom, 
       1.5 * zoom
     );
@@ -46,13 +45,26 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   }, [spiralPoints]);
   
   return (
-    <Line
-      points={positions}
-      color="white"
-      vertexColors={colors}
-      lineWidth={1}
-      transparent
-      opacity={0.3}
-    />
+    <>
+      {/* Main spiral line */}
+      <Line
+        points={positions}
+        color="white"
+        vertexColors={colors}
+        lineWidth={1.2} // Increased from 1.0
+        transparent
+        opacity={0.4} // Increased from 0.3
+      />
+      
+      {/* Subtle glow effect for the spiral */}
+      <Line
+        points={positions}
+        color="white"
+        lineWidth={2.5}
+        transparent
+        opacity={0.15}
+        blending={THREE.AdditiveBlending}
+      />
+    </>
   );
 };
