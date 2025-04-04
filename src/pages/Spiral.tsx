@@ -10,7 +10,7 @@ import { Info, ListIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-type ViewMode = "month" | "year";
+type ViewMode = "year" | "near-future";
 
 const Spiral: React.FC = () => {
   const { toast } = useToast();
@@ -25,7 +25,7 @@ const Spiral: React.FC = () => {
     centerY: window.innerHeight / 2,
   });
   
-  const [viewMode, setViewMode] = useState<ViewMode>("month"); // Default to month view
+  const [viewMode, setViewMode] = useState<ViewMode>("near-future"); // Default to near-future view
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
@@ -51,11 +51,16 @@ const Spiral: React.FC = () => {
   // Handle keyboard shortcut for view toggle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'v' || e.key === 'V') {
-        setViewMode(prev => prev === "month" ? "year" : "month");
-        
+      if (e.key === 'y' || e.key === 'Y') {
+        setViewMode("year");
         toast({
-          title: `Switched to ${viewMode === "month" ? "year" : "month"} view`,
+          title: "Switched to year view",
+          duration: 1500,
+        });
+      } else if (e.key === 'n' || e.key === 'N') {
+        setViewMode("near-future");
+        toast({
+          title: "Switched to near future view",
           duration: 1500,
         });
       }
@@ -63,7 +68,7 @@ const Spiral: React.FC = () => {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [viewMode, toast]);
+  }, [toast]);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
@@ -100,7 +105,7 @@ const Spiral: React.FC = () => {
     setViewMode(newView);
     
     toast({
-      title: `Switched to ${newView} view`,
+      title: `Switched to ${newView === 'year' ? 'year' : 'near future'} view`,
       duration: 1500,
     });
   };
@@ -137,7 +142,7 @@ const Spiral: React.FC = () => {
       
       {/* Keyboard shortcut hint */}
       <div className="absolute bottom-4 left-4 text-xs text-white/60 bg-background/30 backdrop-blur-sm px-2 py-1 rounded-md">
-        Press 'V' to toggle views
+        Press 'Y' for year view, 'N' for near future view
       </div>
       
       {/* Help button */}
@@ -163,7 +168,7 @@ const Spiral: React.FC = () => {
               <li>Colored trails represent events in your life.</li>
               <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
-              <li><strong>Switch between year and month views</strong> using the toggle in the top left.</li>
+              <li><strong>Switch between year and near future views</strong> using the toggle in the top left.</li>
             </ul>
           </div>
         </PopoverContent>

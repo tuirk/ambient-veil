@@ -11,7 +11,7 @@ interface SpiralSceneProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
-  view: "month" | "year"; // Add view prop
+  view: "year" | "near-future"; // Updated view prop type
 }
 
 export const SpiralScene: React.FC<SpiralSceneProps> = ({ 
@@ -26,8 +26,8 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   // Update camera position based on zoom and view
   useEffect(() => {
     if (camera) {
-      if (view === "month") {
-        // For month view, position camera closer to the current month
+      if (view === "near-future") {
+        // For near future view, position camera closer to the current and previous month
         const today = new Date();
         const currentYear = today.getFullYear();
         const currentMonth = today.getMonth();
@@ -44,7 +44,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         const currentRadius = (5 * config.zoom) + (totalProgress * 0.5);
         
         // Position camera looking at current month
-        const distanceFactor = 2.5 / config.zoom; // Closer for month view
+        const distanceFactor = 2.5 / config.zoom; // Closer for near future view
         const x = currentRadius * Math.cos(angleRad) + distanceFactor * Math.cos(angleRad);
         const y = -totalProgress * (1.5 * config.zoom) - distanceFactor;
         const z = currentRadius * Math.sin(angleRad) + distanceFactor * Math.sin(angleRad);

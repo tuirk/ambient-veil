@@ -8,7 +8,7 @@ interface SpiralLineProps {
   startYear: number;
   currentYear: number;
   zoom: number;
-  view: "month" | "year"; // Add view prop
+  view: "year" | "near-future"; // Updated view prop type
 }
 
 export const SpiralLine: React.FC<SpiralLineProps> = ({
@@ -20,21 +20,30 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   const minAllowedYear = new Date().getFullYear() - 5;
   const maxAllowedYear = new Date().getFullYear() + 1;
   
-  // For month view, only generate points for the current month
+  // For near-future view, only generate points for current and previous month
   const today = new Date();
   const currentYearValue = today.getFullYear();
   const currentMonthValue = today.getMonth();
+
+  // Calculate previous month and year
+  let previousMonthValue = currentMonthValue - 1;
+  let previousYearValue = currentYearValue;
+
+  if (previousMonthValue < 0) {
+    previousMonthValue = 11; // December
+    previousYearValue = currentYearValue - 1;
+  }
   
   // Determine the year and month range based on the view
   let yearStart = startYear;
   let yearEnd = currentYear;
   let stepsPerLoop = 360; // Default for year view
   
-  if (view === "month") {
-    // For month view, focus on current month +/- half a month
-    yearStart = currentYearValue;
+  if (view === "near-future") {
+    // For near-future view, focus on current month and previous month
+    yearStart = Math.min(previousYearValue, currentYearValue);
     yearEnd = currentYearValue;
-    stepsPerLoop = 60; // Higher resolution for month view
+    stepsPerLoop = 120; // Higher resolution for near-future view
   }
   
   // Generate points for the spiral
@@ -47,14 +56,22 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   );
   
   // Filter points based on view if needed
-  const filteredPoints = view === "month" 
+  const filteredPoints = view === "near-future" 
     ? spiralPoints.filter(point => {
-        // Show only points within +/- half a month of the current month
-        if (point.year !== currentYearValue) return false;
-        
-        const monthDiff = Math.abs(point.month - currentMonthValue);
-        // Allow a bit of overlap with adjacent months
-        return monthDiff < 1.5 || monthDiff > 10.5; // Handle December-January wrap
+        // Show only points from current and previous month
+        if (point.year === currentYearValue && point.month === currentMonthValue) {
+          return true;
+        }
+        if (point.year === previousYearValue && point.month === previousMonthValue) {
+          return true;
+        }
+        // Also include points in between for smooth transition
+        if (point.year === currentYearValue && 
+            ((point.month === previousMonthValue && previousYearValue === currentYearValue) || 
+             (point.month === (currentMonthValue + 1) % 12))) {
+          return true;
+        }
+        return false;
       })
     : spiralPoints;
   
@@ -80,8 +97,8 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
     }
     
-    // If month view, highlight the current month
-    if (view === "month" && point.year === currentYearValue && point.month === currentMonthValue) {
+    // If near-future view, highlight the current month
+    if (view === "near-future" && point.year === currentYearValue && point.month === currentMonthValue) {
       // Brighter color for current month
       baseColor.multiplyScalar(1.5);
     }
@@ -95,7 +112,7 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={view === "month" ? 2 : 1} // Thicker line for month view
+      lineWidth={view === "near-future" ? 2 : 1} // Thicker line for near-future view
       transparent
       opacity={0.5} // Slightly higher opacity for better visibility
     />
