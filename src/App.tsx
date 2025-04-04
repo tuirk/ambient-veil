@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Spiral from "./pages/Spiral";
+import MinimalSpiral from "./pages/MinimalSpiral";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
                 {/* Redirect from root to spiral page */}
                 <Route path="/" element={<Navigate to="/spiral" replace />} />
                 <Route path="/spiral" element={<Spiral />} />
+                <Route path="/minimal" element={<MinimalSpiral />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
