@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
@@ -105,15 +106,6 @@ const Spiral: React.FC = () => {
           >
             <Calendar className="mr-2 h-4 w-4" />
             Quarterly View
-          </Button>
-        </Link>
-        <Link to="/mini">
-          <Button 
-            variant="outline" 
-            className="border-white/20 text-white hover:bg-white/10"
-          >
-            <Calendar className="mr-2 h-4 w-4" />
-            Mini View
           </Button>
         </Link>
       </div>
