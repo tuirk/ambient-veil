@@ -1,12 +1,11 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { getQuarterlyEventPosition, calculateQuarterlySpiralSegment } from "@/utils/quarterlyUtils";
 import { getEventPosition, calculateSpiralSegment } from "@/utils/spiralUtils";
 import { CosmicEventEffect } from "./CosmicEventEffect";
-import * as THREE from "three";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -22,16 +21,24 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   // Determine if we're in quarterly or annual view based on the spiral config
   const isQuarterly = config.currentYear === new Date().getFullYear();
   
+  // Use useMemo to optimize rendering and avoid unnecessary recalculations
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => 
+      event.startDate.getFullYear() >= config.startYear && 
+      event.startDate.getFullYear() <= config.currentYear
+    );
+  }, [events, config.startYear, config.currentYear]);
+  
+  // Memoize high-intensity events to improve performance
+  const highIntensityEvents = useMemo(() => {
+    return filteredEvents.filter(event => event.intensity >= 8);
+  }, [filteredEvents]);
+  
   return (
     <>
-      {events.map((event) => {
+      {filteredEvents.map((event) => {
         const eventYear = event.startDate.getFullYear();
         const eventMonth = event.startDate.getMonth();
-        
-        // Skip events outside the visible range
-        if (eventYear < config.startYear || eventYear > config.currentYear) {
-          return null;
-        }
         
         // For events without end date, show a point
         if (!event.endDate) {
@@ -56,12 +63,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           // Create a mock end event for the segment calculation
           const endEvent = {...event, startDate: event.endDate};
           
-          // Calculate segment points based on view type
-          const segmentPoints = isQuarterly
-            ? calculateQuarterlySpiralSegment(event, endEvent, config.startYear, 100, 5 * config.zoom, 1.5 * config.zoom)
-            : calculateSpiralSegment(event, endEvent, config.startYear, 100, 5 * config.zoom, 1.5 * config.zoom);
-            
-          // Create the event duration visualization
           return (
             <EventDuration
               key={event.id}
@@ -74,25 +75,16 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         }
       })}
       
-      {/* Add cosmic effect for high-intensity events */}
-      {events
-        .filter(event => event.intensity >= 8)
-        .map(event => {
-          const position = isQuarterly
-            ? getQuarterlyEventPosition(event, config.startYear, 5 * config.zoom, 1.5 * config.zoom)
-            : getEventPosition(event, config.startYear, 5 * config.zoom, 1.5 * config.zoom);
-            
-          return (
-            <CosmicEventEffect
-              key={`effect-${event.id}`}
-              event={event}
-              startYear={config.startYear}
-              zoom={config.zoom}
-              isProcessEvent={event.eventType === "process"}
-            />
-          );
-        })
-      }
+      {/* Add cosmic effect only for high-intensity events (optimized with useMemo) */}
+      {highIntensityEvents.map(event => (
+        <CosmicEventEffect
+          key={`effect-${event.id}`}
+          event={event}
+          startYear={config.startYear}
+          zoom={config.zoom}
+          isProcessEvent={event.eventType === "process"}
+        />
+      ))}
     </>
   );
 };
