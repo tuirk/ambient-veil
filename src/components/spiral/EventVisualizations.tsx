@@ -4,6 +4,7 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
+import { EventBurst } from "./EventBurst";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -11,27 +12,16 @@ interface EventVisualizationsProps {
   onEventClick: (year: number, month: number, x: number, y: number) => void;
 }
 
-// Helper function to determine if an event is actually a one-time event
 const isOneTimeEvent = (event: TimeEvent): boolean => {
-  // One-time events must have:
-  // 1. A specific day (not just month/year or season)
-  // 2. No end date
-  
-  // If explicitly typed as "one-time", trust that
   if (event.eventType === "one-time") return true;
   
-  // Otherwise fallback to old logic for backward compatibility
-  // If it has an end date, it's a process event
   if (event.endDate) return false;
   
-  // If it's a rough date (seasonal), it's a process event
   if (event.isRoughDate) return false;
   
-  // Check if the start date has a specific day (not just month/year)
   const startDate = event.startDate;
   const hasSpecificDay = startDate && startDate.getDate() > 0;
   
-  // Only events with specific day + no end date are one-time
   return hasSpecificDay;
 };
 
@@ -43,9 +33,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   return (
     <>
       {events.map((event) => {
-        // Future events render as scattered objects
         if (event.startDate.getFullYear() > config.currentYear) {
-          // Create a more interesting future event visualization as floating debris
           const randomDistance = 15 + Math.random() * 20;
           const randomAngle = Math.random() * Math.PI * 2;
           const randomHeight = (Math.random() - 0.5) * 20;
@@ -54,7 +42,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           const y = randomHeight;
           const z = randomDistance * Math.sin(randomAngle);
           
-          // Create different geometry based on intensity
           return (
             <mesh 
               key={event.id} 
@@ -84,12 +71,10 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
-        // Determine if this should be visualized as a one-time or process event
         const actuallyOneTimeEvent = isOneTimeEvent(event);
         
         return (
           <React.Fragment key={event.id}>
-            {/* ONLY add cosmic effect for actual one-time events */}
             {actuallyOneTimeEvent && (
               <CosmicEventEffect
                 event={event}
@@ -99,7 +84,14 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For one-time events: render cosmic burst at a single point */}
+            {actuallyOneTimeEvent && (
+              <EventBurst
+                event={event}
+                startYear={config.startYear}
+                zoom={config.zoom}
+              />
+            )}
+            
             {actuallyOneTimeEvent && (
               <EventPoint
                 event={event}
@@ -113,7 +105,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For process events with end date: render nebula dust trail along spiral */}
             {!actuallyOneTimeEvent && event.endDate && (
               <EventDuration
                 startEvent={event}
@@ -123,11 +114,10 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For process events with no end date but aren't one-time: render minimal dust */}
             {!actuallyOneTimeEvent && !event.endDate && (
               <EventDuration
                 startEvent={event}
-                endEvent={event} // Same start and end point for minimal duration
+                endEvent={event}
                 startYear={config.startYear}
                 zoom={config.zoom}
               />

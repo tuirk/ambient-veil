@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
@@ -46,20 +47,22 @@ export const EventPoint: React.FC<EventPointProps> = ({
   const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
   
   // Create a texture for the glow effect - creating the canvas element first
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (context) {
-    const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
-    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, 64, 64);
-  }
-  // Now create the texture from the canvas
-  const glowTexture = new THREE.CanvasTexture(canvas);
+  const glowTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext("2d");
+    if (context) {
+      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 64, 64);
+    }
+    // Now create the texture from the canvas
+    return new THREE.CanvasTexture(canvas);
+  }, []);
   
   return (
     <group position={position} onClick={onClick}>
