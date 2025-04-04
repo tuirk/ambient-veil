@@ -84,7 +84,11 @@ const QuarterlySpiral: React.FC = () => {
       startYear={currentYear}
       currentYear={currentYear}
     >
-      <QuarterlySpiralVisualization events={events} config={config} />
+      <QuarterlySpiralVisualization 
+        events={events} 
+        config={config} 
+        onSpiralClick={(year, month, x, y) => {}} // Adding the missing prop with an empty handler
+      />
     </SpiralContainer>
   );
 };

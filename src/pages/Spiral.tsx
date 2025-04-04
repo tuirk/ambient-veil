@@ -84,7 +84,11 @@ const Spiral: React.FC = () => {
       startYear={currentYear - 5}
       currentYear={currentYear}
     >
-      <SpiralVisualization events={events} config={config} />
+      <SpiralVisualization 
+        events={events} 
+        config={config} 
+        onSpiralClick={(year, month, x, y) => {}} // Adding the missing prop with an empty handler
+      />
     </SpiralContainer>
   );
 };
