@@ -9,11 +9,10 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Use a single effect for better performance
+    // Simple animation sequence
     const textTimer = setTimeout(() => {
       setVisible(true);
       
-      // Nest the button timer to ensure proper sequence
       const buttonTimer = setTimeout(() => {
         setShowButton(true);
       }, 1500);

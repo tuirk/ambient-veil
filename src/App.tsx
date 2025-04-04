@@ -14,10 +14,8 @@ import NotFound from "./pages/NotFound";
 const BackgroundManager = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
-  // Determine if we need the full cosmic background
-  const needsBackground = location.pathname === "/" || 
-                          location.pathname === "/spiral" || 
-                          location.pathname === "/quarterly";
+  // Only apply cosmic background to the home page (index)
+  const needsBackground = location.pathname === "/";
   
   return (
     <div className={`min-h-screen w-full overflow-hidden relative ${needsBackground ? 'cosmic-background' : ''}`}>

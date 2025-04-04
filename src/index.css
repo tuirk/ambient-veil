@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -104,6 +105,7 @@
   }
 }
 
+/* Star and cosmic elements - only used on the index page */
 .star {
   @apply absolute rounded-full bg-white;
   box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.3);
@@ -135,6 +137,7 @@
   box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.1);
 }
 
+/* Main cosmic background classes - only apply to index page */
 .cosmic-background {
   @apply bg-black;
 }
@@ -150,6 +153,7 @@
   background-image: url('/lovable-uploads/71823fe3-8bc8-4e6a-845e-a136c64ca75a.png');
 }
 
+/* Animation keyframes */
 @keyframes twinkle {
   0%, 100% { opacity: 0.3; transform: scale(0.8); }
   50% { opacity: 1; transform: scale(1); }
@@ -161,11 +165,10 @@
 }
 
 @keyframes drift {
-  0% { transform: translate(0, 0) rotate(0deg); }
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
   25% { transform: translate(5px, -5px) rotate(0.5deg); }
   50% { transform: translate(0, -10px) rotate(1deg); }
   75% { transform: translate(-5px, -5px) rotate(0.5deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 @keyframes nebula-drift {
