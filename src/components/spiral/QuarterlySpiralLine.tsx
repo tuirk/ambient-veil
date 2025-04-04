@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import { generateQuarterlySpiralPoints } from "@/utils/quarterlyUtils";
@@ -15,56 +15,35 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   currentYear,
   zoom
 }) => {
-  // Generate points for the quarterly spiral with memoization
-  const spiralPoints = useMemo(() => {
-    return generateQuarterlySpiralPoints(
-      startYear, 
-      currentYear, 
-      // Restore higher resolution for smoother curves
-      360, // Restored from 280 to 360
-      5 * zoom, 
-      1.5 * zoom
-    );
-  }, [startYear, currentYear, zoom]);
+  // Generate points for the quarterly spiral
+  // This will now cover from Jan 1st of the current year to today
+  const spiralPoints = generateQuarterlySpiralPoints(
+    startYear, 
+    currentYear, 
+    360, 
+    5 * zoom, 
+    1.5 * zoom
+  );
   
   // Extract positions for the spiral line
-  const positions = useMemo(() => {
-    return spiralPoints.map(point => point.position);
-  }, [spiralPoints]);
+  const positions = spiralPoints.map(point => point.position);
   
   // Create colors for the spiral line
-  const colors = useMemo(() => {
-    const colorArray = [];
-    
-    spiralPoints.forEach((point) => {
-      const baseColor = new THREE.Color(0xffffff);
-      colorArray.push(baseColor);
-    });
-    
-    return colorArray;
-  }, [spiralPoints]);
+  const colors = [];
+  
+  spiralPoints.forEach((point) => {
+    const baseColor = new THREE.Color(0xffffff);
+    colors.push(baseColor);
+  });
   
   return (
-    <>
-      {/* Main spiral line */}
-      <Line
-        points={positions}
-        color="white"
-        vertexColors={colors}
-        lineWidth={1.2} // Increased from 1.0
-        transparent
-        opacity={0.4} // Increased from 0.3
-      />
-      
-      {/* Subtle glow effect for the spiral */}
-      <Line
-        points={positions}
-        color="white"
-        lineWidth={2.5}
-        transparent
-        opacity={0.15}
-        blending={THREE.AdditiveBlending}
-      />
-    </>
+    <Line
+      points={positions}
+      color="white"
+      vertexColors={colors}
+      lineWidth={1}
+      transparent
+      opacity={0.3}
+    />
   );
 };
