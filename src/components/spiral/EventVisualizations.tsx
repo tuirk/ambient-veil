@@ -45,7 +45,8 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
             <EventPoint
               key={event.id}
               event={event}
-              position={position}
+              startYear={config.startYear}
+              zoom={config.zoom}
               onClick={() => onEventClick(eventYear, eventMonth, position.x, position.z)}
             />
           );
@@ -64,8 +65,10 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           return (
             <EventDuration
               key={event.id}
-              event={event}
-              points={segmentPoints}
+              startEvent={event}
+              endEvent={endEvent}
+              startYear={config.startYear}
+              zoom={config.zoom}
             />
           );
         }
@@ -82,9 +85,10 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           return (
             <CosmicEventEffect
               key={`effect-${event.id}`}
-              position={position}
-              color={new THREE.Color(event.color)}
-              intensity={event.intensity}
+              event={event}
+              startYear={config.startYear}
+              zoom={config.zoom}
+              isProcessEvent={event.eventType === "process"}
             />
           );
         })
