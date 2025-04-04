@@ -105,7 +105,7 @@
   }
 }
 
-/* Star and cosmic elements - only used on the index page */
+/* Star and cosmic elements - used globally now */
 .star {
   @apply absolute rounded-full bg-white;
   box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.3);
@@ -137,7 +137,7 @@
   box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.1);
 }
 
-/* Main cosmic background classes - only apply to index page */
+/* Main cosmic background classes - applied globally now */
 .cosmic-background {
   @apply bg-black;
 }
