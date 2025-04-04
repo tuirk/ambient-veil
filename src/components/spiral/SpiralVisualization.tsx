@@ -27,12 +27,25 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         gl={{ 
           antialias: true,
           alpha: true,
-          preserveDrawingBuffer: true  // For better quality effects
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+          failIfMajorPerformanceCaveat: false
         }}
         linear
-        dpr={[1, 2]} // Better quality on high-DPI displays
+        dpr={[1, 2]}
+        onCreated={({ gl }) => {
+          // Handle WebGL context loss and restoration gracefully
+          gl.canvas.addEventListener('webglcontextlost', (event) => {
+            console.log('WebGL context lost. You can try refreshing the page.');
+            event.preventDefault();
+          }, false);
+          
+          gl.canvas.addEventListener('webglcontextrestored', () => {
+            console.log('WebGL context restored.');
+          }, false);
+        }}
       >
-        <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
+        <fog attach="fog" args={['#000', 15, 50]} />
         <SpiralScene 
           events={events} 
           config={config} 

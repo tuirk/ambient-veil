@@ -25,6 +25,23 @@ export const EventPoint: React.FC<EventPointProps> = ({
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Sprite>(null);
   
+  // Create a texture for the glow effect using useMemo to prevent recreation on every render
+  const glowTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext("2d");
+    if (context) {
+      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 64, 64);
+    }
+    return new THREE.CanvasTexture(canvas);
+  }, []);
+  
   // Create a pulsing animation for the point
   useFrame((state) => {
     if (meshRef.current) {
@@ -45,22 +62,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
   // Calculate size based on event intensity (1-10)
   // Reduced by 25% for all event points
   const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
-  
-  // Create a texture for the glow effect - creating the canvas element first
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (context) {
-    const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
-    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, 64, 64);
-  }
-  // Now create the texture from the canvas
-  const glowTexture = new THREE.CanvasTexture(canvas);
   
   return (
     <group position={position} onClick={onClick}>

@@ -27,10 +27,23 @@ const QuarterlySpiralVisualization: React.FC<QuarterlySpiralVisualizationProps> 
         gl={{ 
           antialias: true,
           alpha: true,
-          preserveDrawingBuffer: true
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+          failIfMajorPerformanceCaveat: false
         }}
         linear
         dpr={[1, 2]}
+        onCreated={({ gl }) => {
+          // Handle WebGL context loss and restoration gracefully
+          gl.canvas.addEventListener('webglcontextlost', (event) => {
+            console.log('WebGL context lost. You can try refreshing the page.');
+            event.preventDefault();
+          }, false);
+          
+          gl.canvas.addEventListener('webglcontextrestored', () => {
+            console.log('WebGL context restored.');
+          }, false);
+        }}
       >
         <fog attach="fog" args={['#000', 15, 50]} />
         <QuarterlySpiralScene 

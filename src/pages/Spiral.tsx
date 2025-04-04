@@ -143,6 +143,9 @@ const Spiral: React.FC = () => {
         <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10 max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl">Your Memories</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              View, manage, and delete your timeline memories.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="max-h-[60vh] overflow-y-auto p-1">
