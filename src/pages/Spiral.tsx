@@ -25,7 +25,7 @@ const Spiral: React.FC = () => {
     centerY: window.innerHeight / 2,
   });
   
-  const [viewMode, setViewMode] = useState<ViewMode>("near-future"); // Default to near-future view
+  const [viewMode, setViewMode] = useState<ViewMode>("year"); // Default to year view
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();

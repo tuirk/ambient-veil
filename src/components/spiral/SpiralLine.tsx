@@ -8,7 +8,7 @@ interface SpiralLineProps {
   startYear: number;
   currentYear: number;
   zoom: number;
-  view: "year" | "near-future"; // Updated view prop type
+  view: "year" | "near-future";
 }
 
 export const SpiralLine: React.FC<SpiralLineProps> = ({
@@ -20,30 +20,18 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   const minAllowedYear = new Date().getFullYear() - 5;
   const maxAllowedYear = new Date().getFullYear() + 1;
   
-  // For near-future view, only generate points for current and previous month
-  const today = new Date();
-  const currentYearValue = today.getFullYear();
-  const currentMonthValue = today.getMonth();
-
-  // Calculate previous month and year
-  let previousMonthValue = currentMonthValue - 1;
-  let previousYearValue = currentYearValue;
-
-  if (previousMonthValue < 0) {
-    previousMonthValue = 11; // December
-    previousYearValue = currentYearValue - 1;
-  }
+  // Get current year for near-future view
+  const currentYearValue = new Date().getFullYear();
   
-  // Determine the year and month range based on the view
+  // Determine the year range based on the view
   let yearStart = startYear;
   let yearEnd = currentYear;
   let stepsPerLoop = 360; // Default for year view
   
   if (view === "near-future") {
-    // For near-future view, focus on current month and previous month
-    yearStart = Math.min(previousYearValue, currentYearValue);
-    yearEnd = currentYearValue;
-    stepsPerLoop = 120; // Higher resolution for near-future view
+    // For near-future view, start from January 1st of current year
+    yearStart = currentYearValue;
+    yearEnd = currentYear; // Keep the same end year
   }
   
   // Generate points for the spiral
@@ -55,33 +43,13 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
     1.5 * zoom
   );
   
-  // Filter points based on view if needed
-  const filteredPoints = view === "near-future" 
-    ? spiralPoints.filter(point => {
-        // Show only points from current and previous month
-        if (point.year === currentYearValue && point.month === currentMonthValue) {
-          return true;
-        }
-        if (point.year === previousYearValue && point.month === previousMonthValue) {
-          return true;
-        }
-        // Also include points in between for smooth transition
-        if (point.year === currentYearValue && 
-            ((point.month === previousMonthValue && previousYearValue === currentYearValue) || 
-             (point.month === (currentMonthValue + 1) % 12))) {
-          return true;
-        }
-        return false;
-      })
-    : spiralPoints;
-  
   // Extract positions for the spiral line
-  const positions = filteredPoints.map(point => point.position);
+  const positions = spiralPoints.map(point => point.position);
   
   // Instead of using Float32Array, create an array of THREE.Color objects
   const colors = [];
   
-  filteredPoints.forEach((point) => {
+  spiralPoints.forEach((point) => {
     const baseColor = new THREE.Color(0xffffff);
     
     // Apply fading to years older than minAllowedYear
@@ -95,12 +63,6 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       const silverGray = new THREE.Color(0x9F9EA1);
       // Blend with white based on how old the year is
       baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
-    }
-    
-    // If near-future view, highlight the current month
-    if (view === "near-future" && point.year === currentYearValue && point.month === currentMonthValue) {
-      // Brighter color for current month
-      baseColor.multiplyScalar(1.5);
     }
     
     // Push the color to our array

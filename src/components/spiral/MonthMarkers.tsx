@@ -6,7 +6,7 @@ interface MonthMarkersProps {
   startYear: number;
   currentYear: number;
   zoom: number;
-  view: "year" | "near-future"; // Add view prop
+  view: "year" | "near-future";
 }
 
 export const MonthMarkers: React.FC<MonthMarkersProps> = ({ 
@@ -15,38 +15,29 @@ export const MonthMarkers: React.FC<MonthMarkersProps> = ({
   zoom,
   view
 }) => {
-  const today = new Date();
-  const currentYearValue = today.getFullYear();
-  const currentMonthValue = today.getMonth();
-  
-  // Calculate previous month and year
-  let previousMonthValue = currentMonthValue - 1;
-  let previousYearValue = currentYearValue;
-  
-  if (previousMonthValue < 0) {
-    previousMonthValue = 11; // December
-    previousYearValue = currentYearValue - 1;
-  }
+  // Get current year for near-future view
+  const currentYearValue = new Date().getFullYear();
   
   const monthsToShow = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const markers = [];
   
-  for (let year = startYear; year <= currentYear; year++) {
+  // For near-future view, adjust the start year
+  const displayStartYear = view === "near-future" ? currentYearValue : startYear;
+  
+  for (let year = displayStartYear; year <= currentYear; year++) {
     for (let month = 0; month < 12; month++) {
-      // For year view, only show quarterly months
+      // Skip months that have already passed in the current year for near-future view
+      if (view === "near-future" && year === currentYearValue && month < new Date().getMonth()) {
+        continue;
+      }
+      
+      // For year view, only show quarterly months to reduce clutter
       if (view === "year" && month % 3 !== 0) {
         continue;
       }
       
-      // For near-future view, only show current and previous month
-      if (view === "near-future" && 
-          !((year === currentYearValue && month === currentMonthValue) || 
-            (year === previousYearValue && month === previousMonthValue))) {
-        continue;
-      }
-      
       // Calculate position for this month
-      const yearIndex = year - startYear;
+      const yearIndex = year - (view === "near-future" ? currentYearValue : startYear);
       const monthFraction = month / 12;
       const angleRad = -monthFraction * Math.PI * 2 + Math.PI/2;
       const radius = 5 * zoom + yearIndex * 0.5;

@@ -8,7 +8,7 @@ interface SpiralVisualizationProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
-  view: "year" | "near-future"; // Update view prop type
+  view: "year" | "near-future";
 }
 
 const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
@@ -39,7 +39,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
           events={events} 
           config={config} 
           onEventClick={onSpiralClick}
-          view={view} // Pass view to SpiralScene
+          view={view}
         />
       </Canvas>
     </div>

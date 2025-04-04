@@ -11,7 +11,7 @@ interface SpiralSceneProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
-  view: "year" | "near-future"; // Updated view prop type
+  view: "year" | "near-future";
 }
 
 export const SpiralScene: React.FC<SpiralSceneProps> = ({ 
@@ -27,43 +27,35 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
   useEffect(() => {
     if (camera) {
       if (view === "near-future") {
-        // For near future view, position camera closer to the current and previous month
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
+        // For near future view, position camera closer to the current year's spiral
+        const currentYear = new Date().getFullYear();
         
-        // Calculate position on spiral for current month
-        const yearOffset = currentYear - config.startYear;
-        const monthProgress = currentMonth / 12;
-        const totalProgress = yearOffset + monthProgress;
+        // Calculate position on spiral for current year (January)
+        const yearOffset = 0; // Start at 0 for the current year in near-future view
         
-        // Calculate angle for current month
-        const angleRad = -monthProgress * Math.PI * 2 + Math.PI/2;
+        // Position camera to see the current year spiral section
+        const currentRadius = (5 * config.zoom) + (yearOffset * 0.5);
+        const distanceFactor = 2.5 / config.zoom;
         
-        // Radius at current month position
-        const currentRadius = (5 * config.zoom) + (totalProgress * 0.5);
+        camera.position.set(
+          distanceFactor * 2, 
+          distanceFactor * 0.5, 
+          distanceFactor * 2
+        );
         
-        // Position camera looking at current month
-        const distanceFactor = 2.5 / config.zoom; // Closer for near future view
-        const x = currentRadius * Math.cos(angleRad) + distanceFactor * Math.cos(angleRad);
-        const y = -totalProgress * (1.5 * config.zoom) - distanceFactor;
-        const z = currentRadius * Math.sin(angleRad) + distanceFactor * Math.sin(angleRad);
-        
-        camera.position.set(x, y, z);
-        
-        // Look at the current month position
+        // Look at the current year position
         camera.lookAt(
-          currentRadius * Math.cos(angleRad),
-          -totalProgress * (1.5 * config.zoom),
-          currentRadius * Math.sin(angleRad)
+          currentRadius * 0.5,
+          -yearOffset * (1.5 * config.zoom),
+          currentRadius * 0.5
         );
         
         // Update controls target
         if (controlsRef.current) {
           controlsRef.current.target.set(
-            currentRadius * Math.cos(angleRad),
-            -totalProgress * (1.5 * config.zoom),
-            currentRadius * Math.sin(angleRad)
+            currentRadius * 0.5,
+            -yearOffset * (1.5 * config.zoom),
+            currentRadius * 0.5
           );
         }
       } else {
@@ -105,7 +97,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         startYear={config.startYear} 
         currentYear={config.currentYear}
         zoom={config.zoom}
-        view={view} // Pass view to SpiralLine
+        view={view}
       />
       
       {/* Render month markers */}
@@ -113,7 +105,7 @@ export const SpiralScene: React.FC<SpiralSceneProps> = ({
         startYear={config.startYear} 
         currentYear={config.currentYear}
         zoom={config.zoom}
-        view={view} // Pass view to MonthMarkers
+        view={view}
       />
       
       {/* Render all events with the enhanced cosmic visualization */}
