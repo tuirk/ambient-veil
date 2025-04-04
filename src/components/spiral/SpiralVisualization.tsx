@@ -8,14 +8,12 @@ interface SpiralVisualizationProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onSpiralClick: (year: number, month: number, x: number, y: number) => void;
-  view: "year" | "near-future";
 }
 
 const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
   events,
   config,
   onSpiralClick,
-  view,
 }) => {
   return (
     <div className="w-full h-full">
@@ -29,17 +27,16 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         gl={{ 
           antialias: true,
           alpha: true,
-          preserveDrawingBuffer: true
+          preserveDrawingBuffer: true  // For better quality effects
         }}
         linear
-        dpr={[1, 2]}
+        dpr={[1, 2]} // Better quality on high-DPI displays
       >
-        <fog attach="fog" args={['#000', 15, 50]} />
+        <fog attach="fog" args={['#000', 15, 50]} /> {/* Add subtle fog for depth */}
         <SpiralScene 
           events={events} 
           config={config} 
-          onEventClick={onSpiralClick}
-          view={view}
+          onEventClick={onSpiralClick} 
         />
       </Canvas>
     </div>

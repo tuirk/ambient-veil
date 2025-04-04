@@ -3,61 +3,55 @@ import React from "react";
 import { Text } from "@react-three/drei";
 
 interface MonthMarkersProps {
-  startYear: number;
-  currentYear: number;
-  zoom: number;
-  view: "year" | "near-future";
+  startYear: number;     // First year to display in the spiral
+  currentYear: number;   // Latest year to display in the spiral
+  zoom: number;          // Current zoom level (affects visual scale)
 }
 
+/**
+ * Renders month labels at regular intervals along the spiral
+ * Only shows quarters (Jan, Apr, Jul, Oct) to avoid cluttering the spiral
+ */
 export const MonthMarkers: React.FC<MonthMarkersProps> = ({ 
   startYear, 
   currentYear, 
-  zoom,
-  view
+  zoom 
 }) => {
-  // Get current year for near-future view
-  const currentYearValue = new Date().getFullYear();
-  
-  const monthsToShow = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // Only show these months to reduce clutter
+  const monthsToShow = ["Jan", "Apr", "Jul", "Oct"];
   const markers = [];
   
-  // For near-future view, adjust the start year
-  const displayStartYear = view === "near-future" ? currentYearValue : startYear;
-  
-  for (let year = displayStartYear; year <= currentYear; year++) {
-    for (let month = 0; month < 12; month++) {
-      // Skip months that have already passed in the current year for near-future view
-      if (view === "near-future" && year === currentYearValue && month < new Date().getMonth()) {
-        continue;
+  // Create markers for each quarter month in each year
+  for (let year = startYear; year <= currentYear; year++) {
+    for (let month = 0; month < 12; month += 3) {
+      // Only render the specific months we want to show
+      const monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
+      if (monthsToShow.includes(monthName)) {
+        // Calculate position consistently with spiral generation
+        const yearIndex = year - startYear;
+        const monthFraction = month / 12;
+        const angleRad = -monthFraction * Math.PI * 2 + Math.PI/2;
+        const radius = 5 * zoom + yearIndex * 0.5;
+        
+        // Position calculation
+        const x = radius * Math.cos(angleRad);
+        const y = -yearIndex * 1.5 * zoom - monthFraction * 1.5 * zoom;
+        const z = radius * Math.sin(angleRad);
+        
+        // Create text marker
+        markers.push(
+          <Text
+            key={`${year}-${month}`}
+            position={[x, y, z]}
+            color="white"
+            fontSize={0.3}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {monthName}
+          </Text>
+        );
       }
-      
-      // For year view, only show quarterly months to reduce clutter
-      if (view === "year" && month % 3 !== 0) {
-        continue;
-      }
-      
-      // Calculate position for this month
-      const yearIndex = year - (view === "near-future" ? currentYearValue : startYear);
-      const monthFraction = month / 12;
-      const angleRad = -monthFraction * Math.PI * 2 + Math.PI/2;
-      const radius = 5 * zoom + yearIndex * 0.5;
-      
-      const x = radius * Math.cos(angleRad);
-      const y = -yearIndex * 1.5 * zoom - monthFraction * 1.5 * zoom;
-      const z = radius * Math.sin(angleRad);
-      
-      markers.push(
-        <Text
-          key={`${year}-${month}`}
-          position={[x, y, z]}
-          color="white"
-          fontSize={view === "near-future" ? 0.4 : 0.3} // Larger text for near-future view
-          anchorX="center"
-          anchorY="middle"
-        >
-          {monthsToShow[month]}
-        </Text>
-      );
     }
   }
   

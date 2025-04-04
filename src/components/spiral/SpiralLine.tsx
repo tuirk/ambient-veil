@@ -8,37 +8,21 @@ interface SpiralLineProps {
   startYear: number;
   currentYear: number;
   zoom: number;
-  view: "year" | "near-future";
 }
 
 export const SpiralLine: React.FC<SpiralLineProps> = ({
   startYear,
   currentYear,
-  zoom,
-  view
+  zoom
 }) => {
   const minAllowedYear = new Date().getFullYear() - 5;
   const maxAllowedYear = new Date().getFullYear() + 1;
   
-  // Get current year for near-future view
-  const currentYearValue = new Date().getFullYear();
-  
-  // Determine the year range based on the view
-  let yearStart = startYear;
-  let yearEnd = currentYear;
-  let stepsPerLoop = 360; // Default for year view
-  
-  if (view === "near-future") {
-    // For near-future view, start from January 1st of current year
-    yearStart = currentYearValue;
-    yearEnd = currentYear; // Keep the same end year
-  }
-  
-  // Generate points for the spiral
+  // Generate points for the full spiral
   const spiralPoints = generateSpiralPoints(
-    yearStart, 
-    yearEnd, 
-    stepsPerLoop, 
+    startYear, 
+    currentYear, 
+    360, 
     5 * zoom, 
     1.5 * zoom
   );
@@ -47,6 +31,7 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
   const positions = spiralPoints.map(point => point.position);
   
   // Instead of using Float32Array, create an array of THREE.Color objects
+  // that the Line component can handle properly
   const colors = [];
   
   spiralPoints.forEach((point) => {
@@ -74,9 +59,9 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={view === "near-future" ? 2 : 1} // Thicker line for near-future view
+      lineWidth={1}
       transparent
-      opacity={0.5} // Slightly higher opacity for better visibility
+      opacity={0.3}
     />
   );
 };

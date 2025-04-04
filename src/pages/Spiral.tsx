@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { SpiralVisualization, ViewToggle } from "@/components/spiral";
+import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
@@ -10,12 +10,10 @@ import { Info, ListIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-type ViewMode = "year" | "near-future";
-
 const Spiral: React.FC = () => {
   const { toast } = useToast();
   const currentYear = new Date().getFullYear();
-  
+
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
     startYear: currentYear - 5, // Fixed to current year - 5
@@ -25,7 +23,6 @@ const Spiral: React.FC = () => {
     centerY: window.innerHeight / 2,
   });
   
-  const [viewMode, setViewMode] = useState<ViewMode>("year"); // Default to year view
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
@@ -47,28 +44,6 @@ const Spiral: React.FC = () => {
     setConfig(fixedConfig);
     saveConfig(fixedConfig); // Save the fixed config
   }, []);
-  
-  // Handle keyboard shortcut for view toggle
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'y' || e.key === 'Y') {
-        setViewMode("year");
-        toast({
-          title: "Switched to year view",
-          duration: 1500,
-        });
-      } else if (e.key === 'n' || e.key === 'N') {
-        setViewMode("near-future");
-        toast({
-          title: "Switched to near future view",
-          duration: 1500,
-        });
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toast]);
   
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
@@ -101,23 +76,13 @@ const Spiral: React.FC = () => {
     saveEvents(updatedEvents);
   };
   
-  const handleViewChange = (newView: ViewMode) => {
-    setViewMode(newView);
-    
-    toast({
-      title: `Switched to ${newView === 'year' ? 'year' : 'near future'} view`,
-      duration: 1500,
-    });
-  };
-  
   return (
     <div className="w-full h-screen">
       {/* Spiral visualization */}
       <SpiralVisualization 
         events={events} 
         config={config} 
-        onSpiralClick={handleSpiralClick}
-        view={viewMode}
+        onSpiralClick={handleSpiralClick} 
       />
       
       {/* Controls */}
@@ -133,16 +98,6 @@ const Spiral: React.FC = () => {
           <ListIcon className="mr-2 h-4 w-4" />
           View Memories
         </Button>
-      </div>
-      
-      {/* View toggle button */}
-      <div className="absolute top-4 left-4">
-        <ViewToggle view={viewMode} onViewChange={handleViewChange} />
-      </div>
-      
-      {/* Keyboard shortcut hint */}
-      <div className="absolute bottom-4 left-4 text-xs text-white/60 bg-background/30 backdrop-blur-sm px-2 py-1 rounded-md">
-        Press 'Y' for year view, 'N' for near future view
       </div>
       
       {/* Help button */}
@@ -168,7 +123,6 @@ const Spiral: React.FC = () => {
               <li>Colored trails represent events in your life.</li>
               <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
               <li>Drag to rotate the view and scroll to zoom in/out.</li>
-              <li><strong>Switch between year and near future views</strong> using the toggle in the top left.</li>
             </ul>
           </div>
         </PopoverContent>
