@@ -8,33 +8,63 @@ interface SpiralLineProps {
   startYear: number;
   currentYear: number;
   zoom: number;
+  view: "month" | "year"; // Add view prop
 }
 
 export const SpiralLine: React.FC<SpiralLineProps> = ({
   startYear,
   currentYear,
-  zoom
+  zoom,
+  view
 }) => {
   const minAllowedYear = new Date().getFullYear() - 5;
   const maxAllowedYear = new Date().getFullYear() + 1;
   
-  // Generate points for the full spiral
+  // For month view, only generate points for the current month
+  const today = new Date();
+  const currentYearValue = today.getFullYear();
+  const currentMonthValue = today.getMonth();
+  
+  // Determine the year and month range based on the view
+  let yearStart = startYear;
+  let yearEnd = currentYear;
+  let stepsPerLoop = 360; // Default for year view
+  
+  if (view === "month") {
+    // For month view, focus on current month +/- half a month
+    yearStart = currentYearValue;
+    yearEnd = currentYearValue;
+    stepsPerLoop = 60; // Higher resolution for month view
+  }
+  
+  // Generate points for the spiral
   const spiralPoints = generateSpiralPoints(
-    startYear, 
-    currentYear, 
-    360, 
+    yearStart, 
+    yearEnd, 
+    stepsPerLoop, 
     5 * zoom, 
     1.5 * zoom
   );
   
+  // Filter points based on view if needed
+  const filteredPoints = view === "month" 
+    ? spiralPoints.filter(point => {
+        // Show only points within +/- half a month of the current month
+        if (point.year !== currentYearValue) return false;
+        
+        const monthDiff = Math.abs(point.month - currentMonthValue);
+        // Allow a bit of overlap with adjacent months
+        return monthDiff < 1.5 || monthDiff > 10.5; // Handle December-January wrap
+      })
+    : spiralPoints;
+  
   // Extract positions for the spiral line
-  const positions = spiralPoints.map(point => point.position);
+  const positions = filteredPoints.map(point => point.position);
   
   // Instead of using Float32Array, create an array of THREE.Color objects
-  // that the Line component can handle properly
   const colors = [];
   
-  spiralPoints.forEach((point) => {
+  filteredPoints.forEach((point) => {
     const baseColor = new THREE.Color(0xffffff);
     
     // Apply fading to years older than minAllowedYear
@@ -50,6 +80,12 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       baseColor.lerp(silverGray, 0.5 + (yearsBeyondMin * 0.1));
     }
     
+    // If month view, highlight the current month
+    if (view === "month" && point.year === currentYearValue && point.month === currentMonthValue) {
+      // Brighter color for current month
+      baseColor.multiplyScalar(1.5);
+    }
+    
     // Push the color to our array
     colors.push(baseColor);
   });
@@ -59,9 +95,9 @@ export const SpiralLine: React.FC<SpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={1}
+      lineWidth={view === "month" ? 2 : 1} // Thicker line for month view
       transparent
-      opacity={0.3}
+      opacity={0.5} // Slightly higher opacity for better visibility
     />
   );
 };
