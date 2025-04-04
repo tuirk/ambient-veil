@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { SpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
+import { saveEvents, getEvents, saveConfig, getConfig, deleteEvent } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info, ListIcon, Calendar } from "lucide-react";
@@ -46,6 +46,7 @@ const Spiral: React.FC = () => {
     saveConfig(fixedConfig); // Save the fixed config
   }, []);
   
+  // Function to handle spiral clicks
   const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Only allow clicks within the allowed date range
     const maxYear = currentYear + 1;
@@ -65,16 +66,31 @@ const Spiral: React.FC = () => {
     setShowEventForm(true);
   };
   
+  // Function to save a new event
   const handleSaveEvent = (newEvent: TimeEvent) => {
     const updatedEvents = [...events, newEvent];
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
+    
+    toast({
+      title: "Memory Saved",
+      description: `"${newEvent.title}" has been added to your timeline`,
+    });
   };
 
+  // Function to delete an event
   const handleDeleteEvent = (eventId: string) => {
+    // Use the enhanced deleteEvent function
+    deleteEvent(eventId);
+    
+    // Update local state to reflect the deletion
     const updatedEvents = events.filter(event => event.id !== eventId);
     setEvents(updatedEvents);
-    saveEvents(updatedEvents);
+    
+    toast({
+      title: "Memory Deleted",
+      description: "The memory has been removed from your timeline",
+    });
   };
   
   return (

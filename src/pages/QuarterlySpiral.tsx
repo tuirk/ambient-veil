@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { QuarterlySpiralVisualization } from "@/components/spiral";
 import EventForm from "@/components/EventForm";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { saveEvents, getEvents, saveConfig, getConfig } from "@/utils/storage";
+import { saveEvents, getEvents, saveConfig, getConfig, deleteEvent } from "@/utils/storage";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info, ListIcon, ArrowLeft } from "lucide-react";
@@ -56,12 +56,25 @@ const QuarterlySpiral: React.FC = () => {
     const updatedEvents = [...events, newEvent];
     setEvents(updatedEvents);
     saveEvents(updatedEvents);
+    
+    toast({
+      title: "Memory Saved",
+      description: `"${newEvent.title}" has been added to your timeline`,
+    });
   };
 
   const handleDeleteEvent = (eventId: string) => {
+    // Use the enhanced deleteEvent function
+    deleteEvent(eventId);
+    
+    // Update local state to reflect the deletion
     const updatedEvents = events.filter(event => event.id !== eventId);
     setEvents(updatedEvents);
-    saveEvents(updatedEvents);
+    
+    toast({
+      title: "Memory Deleted",
+      description: "The memory has been removed from your timeline",
+    });
   };
   
   return (
@@ -130,6 +143,9 @@ const QuarterlySpiral: React.FC = () => {
         <DialogContent className="bg-background/90 backdrop-blur-md text-white border-white/10 max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl">Your Memories</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              View, manage, and delete your timeline memories.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="max-h-[60vh] overflow-y-auto p-1">
