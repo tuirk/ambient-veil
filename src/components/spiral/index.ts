@@ -8,3 +8,5 @@ export { SpiralLine } from './SpiralLine';
 export { QuarterlySpiralLine } from './QuarterlySpiralLine';
 export { EventDuration } from './EventDuration';
 export { QuarterlyMonthMarkers } from './QuarterlyMonthMarkers';
+export { EventBurst } from './EventBurst';
+

@@ -3,9 +3,10 @@ import React, { useMemo } from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
-import { getQuarterlyEventPosition, calculateQuarterlySpiralSegment } from "@/utils/quarterlyUtils";
-import { getEventPosition, calculateSpiralSegment } from "@/utils/spiralUtils";
+import { getQuarterlyEventPosition } from "@/utils/quarterlyUtils";
+import { getEventPosition } from "@/utils/spiralUtils";
 import { CosmicEventEffect } from "./CosmicEventEffect";
+import { EventBurst } from "./EventBurst";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -40,14 +41,33 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         const eventYear = event.startDate.getFullYear();
         const eventMonth = event.startDate.getMonth();
         
-        // For events without end date, show a point
+        // For events without end date, show a point with burst for one-time events
         if (!event.endDate) {
           // Use quarterly or annual position calculation based on view
           const position = isQuarterly
             ? getQuarterlyEventPosition(event, config.startYear, 5 * config.zoom, 1.5 * config.zoom)
             : getEventPosition(event, config.startYear, 5 * config.zoom, 1.5 * config.zoom);
           
-          // Create the event point visualization
+          // For one-time events, use EventBurst
+          if (event.eventType === "one-time") {
+            return (
+              <React.Fragment key={event.id}>
+                <EventBurst
+                  event={event}
+                  startYear={config.startYear}
+                  zoom={config.zoom}
+                />
+                <EventPoint
+                  event={event}
+                  startYear={config.startYear}
+                  zoom={config.zoom}
+                  onClick={() => onEventClick(eventYear, eventMonth, position.x, position.z)}
+                />
+              </React.Fragment>
+            );
+          }
+          
+          // For process events, just use EventPoint
           return (
             <EventPoint
               key={event.id}
