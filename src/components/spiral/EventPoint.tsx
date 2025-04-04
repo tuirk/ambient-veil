@@ -26,6 +26,7 @@ export const EventPoint: React.FC<EventPointProps> = ({
   const glowRef = useRef<THREE.Sprite>(null);
   const haloRef = useRef<THREE.Mesh>(null);
   const particlesRef = useRef<THREE.Points>(null);
+  const burstRef = useRef<THREE.Group>(null);
   
   // Create a pulsing animation for the point
   useFrame((state) => {
@@ -56,6 +57,25 @@ export const EventPoint: React.FC<EventPointProps> = ({
     if (particlesRef.current) {
       particlesRef.current.rotation.y += 0.002;
       particlesRef.current.rotation.z += 0.001;
+    }
+    
+    // Animate burst rays
+    if (burstRef.current) {
+      const time = state.clock.getElapsedTime();
+      burstRef.current.rotation.y = time * 0.2;
+      burstRef.current.rotation.z = time * 0.1;
+      
+      // Make the burst rays pulse
+      const burstScale = 1 + Math.sin(time * 1.2) * 0.15;
+      burstRef.current.scale.set(burstScale, burstScale, burstScale);
+      
+      // Animate individual rays
+      burstRef.current.children.forEach((ray, i) => {
+        const offset = i * 0.1;
+        if (ray instanceof THREE.Mesh) {
+          ray.scale.y = 1 + Math.sin(time * 2 + offset) * 0.3;
+        }
+      });
     }
   });
   
@@ -99,6 +119,26 @@ export const EventPoint: React.FC<EventPointProps> = ({
     }
     
     return { particlePositions: positions, particleSizes: sizes };
+  }, [event.intensity]);
+  
+  // Create burst ray data
+  const burstRays = useMemo(() => {
+    const rays = [];
+    const rayCount = 8 + Math.floor(event.intensity / 2);
+    
+    for (let i = 0; i < rayCount; i++) {
+      const angle = (i / rayCount) * Math.PI * 2;
+      const length = 0.15 + (event.intensity / 10) * 0.1 + Math.random() * 0.1;
+      
+      rays.push({
+        angle,
+        length,
+        width: 0.02 + Math.random() * 0.01,
+        rotation: [0, 0, angle]
+      });
+    }
+    
+    return rays;
   }, [event.intensity]);
   
   return (
@@ -169,6 +209,23 @@ export const EventPoint: React.FC<EventPointProps> = ({
           map={glowTexture}
         />
       </points>
+      
+      {/* Burst rays emanating from the center - the star burst effect */}
+      <group ref={burstRef}>
+        {burstRays.map((ray, i) => (
+          <mesh key={i} rotation={ray.rotation}>
+            <planeGeometry args={[ray.width, ray.length]} />
+            <meshBasicMaterial
+              color={event.color}
+              transparent
+              opacity={0.7}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        ))}
+      </group>
       
       {/* Stronger point light to illuminate surroundings */}
       <pointLight 
