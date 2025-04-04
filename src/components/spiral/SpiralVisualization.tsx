@@ -35,12 +35,13 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         dpr={[1, 2]}
         onCreated={({ gl }) => {
           // Handle WebGL context loss and restoration gracefully
-          gl.canvas.addEventListener('webglcontextlost', (event) => {
+          const canvas = gl.domElement;
+          canvas.addEventListener('webglcontextlost', (event) => {
             console.log('WebGL context lost. You can try refreshing the page.');
             event.preventDefault();
           }, false);
           
-          gl.canvas.addEventListener('webglcontextrestored', () => {
+          canvas.addEventListener('webglcontextrestored', () => {
             console.log('WebGL context restored.');
           }, false);
         }}
