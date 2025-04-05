@@ -4,42 +4,22 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
-import { getQuarterlyEventPosition } from "@/utils/quarterlyUtils";
-import { getSeasonMiddleDate } from "@/utils/seasonalUtils";
 
 interface EventPointProps {
   event: TimeEvent;
   startYear: number;
   zoom: number;
   onClick?: () => void;
-  isQuarterly?: boolean;
 }
 
 export const EventPoint: React.FC<EventPointProps> = ({ 
   event, 
   startYear, 
   zoom, 
-  onClick,
-  isQuarterly = false
+  onClick 
 }) => {
-  // Handle seasonal dates properly
-  let effectiveEvent = event;
-  if (event.isRoughDate && event.roughDateSeason) {
-    const seasonDate = getSeasonMiddleDate(
-      event.roughDateSeason, 
-      event.roughDateYear || event.startDate.getFullYear()
-    );
-    
-    effectiveEvent = {
-      ...event,
-      startDate: seasonDate
-    };
-  }
-  
-  // Get position on the spiral based on whether we're in quarterly or annual view
-  const position = isQuarterly 
-    ? getQuarterlyEventPosition(effectiveEvent, startYear, 5 * zoom, 1.5 * zoom)
-    : getEventPosition(effectiveEvent, startYear, 5 * zoom, 1.5 * zoom);
+  // Get position on the spiral
+  const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
   
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);
