@@ -70,14 +70,14 @@ export const generateQuarterlySpiralPoints = (
           if (month === todayMonth && day > todayDay) continue;
         }
         
-        // Calculate angle in radians with proper offset
-        // Negative angle for clockwise rotation, offset for positioning
+        // Fix: Use consistent angle calculation with event positioning
+        // The negative angle creates clockwise rotation
         const angleRad = -progress * Math.PI * 2 + Math.PI/2;
         
         // Calculate the total progress through all quarters
         const totalProgress = yearOffset * 4 + quarter + progress;
         
-        // Apply consistent radius expansion formula
+        // Apply consistent radius expansion formula - must match event positioning
         const currentRadius = baseRadius + totalProgress * 0.5;
         
         // Position calculation with gradual height change

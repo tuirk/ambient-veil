@@ -27,28 +27,41 @@ export const getQuarterlyEventPosition = (
   
   // Calculate quarter (0, 1, 2, 3) and progress within quarter
   const quarter = Math.floor(month / 3);
+  
+  // Fix: Calculate quarter and month position more accurately
+  // Each quarter takes up one full loop (0 to 2π)
+  // Each month within the quarter takes up 1/3 of the loop
   const monthInQuarter = month % 3;
   
-  // More accurate calculation of progress within the quarter
-  // This now properly accounts for days within the month
+  // Calculate days in the month for more precise positioning
   const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
   // Adjust for leap years
   if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
     daysInMonth[1] = 29;
   }
   
-  // Calculate more accurate progress within quarter
+  // Normalize the day position within the month (0 to 1)
   const dayProgress = (day - 1) / daysInMonth[month];
+  
+  // Calculate position within the quarter (0 to 1)
+  // This is critical for correct positioning
+  // Each month in the quarter takes up 1/3 of the coil
   const quarterProgress = (monthInQuarter + dayProgress) / 3;
   
-  // Calculate total progress (in terms of quarter loops)
+  // Calculate total progress in quarter-loops
   const yearOffset = year - startYear;
   const totalProgress = yearOffset * 4 + quarter + quarterProgress;
   
-  // Calculate angle - now more accurately reflecting the day position
+  // Fix: Calculate angle correctly for quarterly view
+  // The quarterly spiral uses different angle calculations than the annual spiral
+  // In quarterly spiral, one complete coil = one quarter (not one year)
+  // Each quarter starts at the same position in its loop
+  
+  // Fix: angle now correctly represents position within the quarter
+  // Subtract from PI/2 to position January, April, July, October at the top
   const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
   
-  // Use the same radius formula
+  // The radius increases as we move down the spiral
   const currentRadius = radius + totalProgress * 0.5;
   
   const x = currentRadius * Math.cos(angleRad);

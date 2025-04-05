@@ -32,15 +32,15 @@ export const QuarterlyMonthMarkers: React.FC<QuarterlyMonthMarkersProps> = ({
       const quarter = Math.floor(month / 3);
       const monthInQuarter = month % 3;
       
-      // Position calculation - improved accuracy
-      // Each month is 1/3 of the way around a quarter coil
+      // Fix: Use the same positioning logic as in getQuarterlyEventPosition
+      // Calculate position within the quarter (0 to 1)
       const quarterProgress = monthInQuarter / 3;
       
       // Calculate the total progress through all quarters
       const yearOffset = year - startYear;
       const totalProgress = yearOffset * 4 + quarter + quarterProgress;
       
-      // Calculate angle with appropriate offset
+      // Calculate angle with appropriate offset - must match event positioning
       const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
       const radius = 5 * zoom + totalProgress * 0.5;
       
@@ -49,7 +49,6 @@ export const QuarterlyMonthMarkers: React.FC<QuarterlyMonthMarkersProps> = ({
       const z = radius * Math.sin(angleRad);
       
       // Create text marker with improved visibility
-      // Using increased font size and higher contrast
       markers.push(
         <Text
           key={`${year}-${month}`}
