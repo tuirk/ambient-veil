@@ -63,7 +63,7 @@ export const getQuarterlyEventPosition = (
   
   // Calculate angle based on position within the quarter
   // One complete circle (2π) represents one quarter
-  const angleRad = quarterProgress * Math.PI * 2 + Math.PI/2;
+  const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
   
   // The radius increases as we move down the spiral
   // Must match the formula used in generateQuarterlySpiralPoints

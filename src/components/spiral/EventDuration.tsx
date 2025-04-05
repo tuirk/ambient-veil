@@ -5,7 +5,6 @@ import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { calculateSpiralSegment } from "@/utils/spiralUtils";
 import { calculateQuarterlySpiralSegment } from "@/utils/quarterlyUtils";
-import { getSeasonMiddleDate } from "@/utils/seasonalUtils";
 
 interface EventDurationProps {
   startEvent: TimeEvent;
@@ -22,40 +21,19 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   zoom,
   useQuarterlyPositioning = false
 }) => {
-  // Create effective event copies that handle seasonal events
-  let effectiveStartEvent = startEvent;
-  let effectiveEndEvent = endEvent;
-  
-  // Handle seasonal dates correctly
-  if (startEvent.isRoughDate && startEvent.roughDateSeason) {
-    const seasonDate = getSeasonMiddleDate(
-      startEvent.roughDateSeason, 
-      startEvent.roughDateYear || startEvent.startDate.getFullYear()
-    );
-    effectiveStartEvent = { ...startEvent, startDate: seasonDate };
-  }
-  
-  if (endEvent.isRoughDate && endEvent.roughDateSeason) {
-    const seasonDate = getSeasonMiddleDate(
-      endEvent.roughDateSeason, 
-      endEvent.roughDateYear || endEvent.startDate.getFullYear()
-    );
-    effectiveEndEvent = { ...endEvent, startDate: seasonDate };
-  }
-
   // Calculate points along the spiral segment for this event duration
   const points = useQuarterlyPositioning
     ? calculateQuarterlySpiralSegment(
-        effectiveStartEvent,
-        effectiveEndEvent,
+        startEvent,
+        endEvent,
         startYear,
         30,
         5 * zoom,
         1.5 * zoom
       )
     : calculateSpiralSegment(
-        effectiveStartEvent,
-        effectiveEndEvent,
+        startEvent,
+        endEvent,
         startYear,
         30,
         5 * zoom,

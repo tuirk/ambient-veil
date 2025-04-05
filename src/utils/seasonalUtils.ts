@@ -53,51 +53,6 @@ export function getSeasonalDateRange(season: string, year: number): { startDate:
 }
 
 /**
- * Get a date in the middle of the specified season
- * Used for positioning events with rough seasonal dates
- * @param season The season (Spring, Summer, Fall, Winter)
- * @param year The year
- * @returns A Date object representing the middle of the season
- */
-export function getSeasonMiddleDate(season: string, year: number): Date {
-  const range = seasonalDateRanges[season];
-  
-  if (!range) {
-    throw new Error(`Invalid season: ${season}`);
-  }
-  
-  let startYear = year;
-  let endYear = year;
-  
-  // Handle winter special case (spans two years)
-  if (season === "Winter" && range.startMonth > range.endMonth) {
-    endYear = year + 1;
-  }
-  
-  // Calculate middle month
-  let middleMonth: number;
-  
-  if (season === "Winter" && range.startMonth > range.endMonth) {
-    // For winter (Dec-Feb), calculate middle differently since it spans years
-    // December + (January + February)/2 as middle
-    middleMonth = range.startMonth + 1;
-    if (middleMonth > 11) {
-      middleMonth = 0; // January of next year
-      year = endYear;
-    }
-  } else {
-    // For other seasons, simple middle calculation
-    middleMonth = Math.floor((range.startMonth + range.endMonth) / 2);
-  }
-  
-  // Create date at middle of the middle month
-  const daysInMonth = new Date(year, middleMonth + 1, 0).getDate();
-  const middleDay = Math.floor(daysInMonth / 2);
-  
-  return new Date(year, middleMonth, middleDay);
-}
-
-/**
  * Determines if a given event is a seasonal rough date
  * @param event The event to check
  * @returns True if the event is a seasonal rough date
