@@ -55,11 +55,14 @@ export const generateQuarterlySpiralPoints = (
         
         // Calculate the month within the year
         const monthOffset = quarter * 3; // 0, 3, 6, or 9
-        const monthProgress = progress; // 0-1 progress within the quarter
-        const month = Math.floor(monthOffset + monthProgress * 3);
+        const monthProgress = progress * 3; // 0-3 progress within the quarter
+        const month = monthOffset + Math.floor(monthProgress);
         
         // Calculate the day within the month (approximate)
-        const day = Math.floor((monthProgress * 3 - Math.floor(monthProgress * 3)) * 30) + 1;
+        const monthIndex = month % 12;
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][monthIndex];
+        const dayFraction = monthProgress - Math.floor(monthProgress);
+        const day = Math.floor(dayFraction * daysInMonth) + 1;
         
         // Skip points after today's date in the current quarter
         if (isCurrentQuarter) {
@@ -70,12 +73,13 @@ export const generateQuarterlySpiralPoints = (
           if (month === todayMonth && day > todayDay) continue;
         }
         
-        // Fix: Use consistent angle calculation with event positioning
+        // Calculate angle for this point in the spiral
         // The negative angle creates clockwise rotation
         const angleRad = -progress * Math.PI * 2 + Math.PI/2;
         
         // Calculate the total progress through all quarters
-        const totalProgress = yearOffset * 4 + quarter + progress;
+        const totalQuarters = yearOffset * 4 + quarter;
+        const totalProgress = totalQuarters + progress;
         
         // Apply consistent radius expansion formula - must match event positioning
         const currentRadius = baseRadius + totalProgress * 0.5;

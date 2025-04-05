@@ -25,12 +25,10 @@ export const getQuarterlyEventPosition = (
   const month = effectiveDate.getMonth();
   const day = effectiveDate.getDate();
   
-  // Calculate quarter (0, 1, 2, 3) and progress within quarter
+  // Calculate which quarter this month belongs to (0-3)
   const quarter = Math.floor(month / 3);
   
-  // Fix: Calculate quarter and month position more accurately
-  // Each quarter takes up one full loop (0 to 2π)
-  // Each month within the quarter takes up 1/3 of the loop
+  // Calculate which month within the quarter (0-2)
   const monthInQuarter = month % 3;
   
   // Calculate days in the month for more precise positioning
@@ -44,24 +42,19 @@ export const getQuarterlyEventPosition = (
   const dayProgress = (day - 1) / daysInMonth[month];
   
   // Calculate position within the quarter (0 to 1)
-  // This is critical for correct positioning
-  // Each month in the quarter takes up 1/3 of the coil
   const quarterProgress = (monthInQuarter + dayProgress) / 3;
   
   // Calculate total progress in quarter-loops
   const yearOffset = year - startYear;
-  const totalProgress = yearOffset * 4 + quarter + quarterProgress;
+  const totalQuarters = yearOffset * 4 + quarter;
+  const totalProgress = totalQuarters + quarterProgress;
   
-  // Fix: Calculate angle correctly for quarterly view
-  // The quarterly spiral uses different angle calculations than the annual spiral
-  // In quarterly spiral, one complete coil = one quarter (not one year)
-  // Each quarter starts at the same position in its loop
-  
-  // Fix: angle now correctly represents position within the quarter
-  // Subtract from PI/2 to position January, April, July, October at the top
+  // Calculate angle based on position within the quarter
+  // One complete circle (2π) represents one quarter
   const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
   
   // The radius increases as we move down the spiral
+  // Must match the formula used in generateQuarterlySpiralPoints
   const currentRadius = radius + totalProgress * 0.5;
   
   const x = currentRadius * Math.cos(angleRad);
