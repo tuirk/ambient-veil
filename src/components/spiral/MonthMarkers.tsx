@@ -38,15 +38,17 @@ export const MonthMarkers: React.FC<MonthMarkersProps> = ({
         const y = -yearIndex * 1.5 * zoom - monthFraction * 1.5 * zoom;
         const z = radius * Math.sin(angleRad);
         
-        // Create text marker
+        // Create text marker with improved visibility to match quarterly view
         markers.push(
           <Text
             key={`${year}-${month}`}
             position={[x, y, z]}
-            color="white"
-            fontSize={0.3}
+            color="#ffffff" // Pure white for better visibility
+            fontSize={0.4} // Increased from 0.3 to match quarterly view
             anchorX="center"
             anchorY="middle"
+            outlineWidth={0.06} // Add outline for better visibility
+            outlineColor="#000000" // Pure black outline for maximum contrast
           >
             {monthName}
           </Text>
