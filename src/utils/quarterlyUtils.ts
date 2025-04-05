@@ -1,4 +1,3 @@
-
 import { Vector3 } from "three";
 import { TimeEvent } from "@/types/event";
 import { SpiralPoint } from "./spiralUtils";
@@ -141,6 +140,10 @@ export const getQuarterlyEventPosition = (
 
 /**
  * Generates points for visualizing event durations in the quarterly spiral
+ * 
+ * This function now handles events that start before the visible time range by
+ * clamping the start date to the beginning of the visible period.
+ * 
  * @param startEvent The event marking the start of the duration
  * @param endEvent The event marking the end of the duration
  * @param startYear First year of the spiral (for reference)
@@ -157,10 +160,17 @@ export const calculateQuarterlySpiralSegment = (
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
-  // Calculate a good number of points based on the segment length
-  const startDate = new Date(startEvent.startDate);
+  // Get the effective start date - clamp to the start of the visible period if needed
+  const effectiveStartDate = new Date(Math.max(
+    new Date(startEvent.startDate).getTime(),
+    new Date(startYear, 0, 1).getTime() // January 1st of startYear
+  ));
+  
+  // Get the end date
   const endDate = new Date(endEvent.startDate || endEvent.endDate || startEvent.startDate);
-  const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Calculate total days for the visible portion of the event
+  const totalDays = Math.max(1, (endDate.getTime() - effectiveStartDate.getTime()) / (1000 * 60 * 60 * 24));
   
   // Scale points with duration, but keep a reasonable maximum
   const actualSegmentPoints = Math.min(500, segmentPoints);
@@ -170,7 +180,7 @@ export const calculateQuarterlySpiralSegment = (
   // Create points at regular intervals between the two dates
   for (let i = 0; i <= actualSegmentPoints; i++) {
     const progress = i / actualSegmentPoints;
-    const currentDate = new Date(startDate.getTime() + progress * totalDays * 24 * 60 * 60 * 1000);
+    const currentDate = new Date(effectiveStartDate.getTime() + progress * totalDays * 24 * 60 * 60 * 1000);
     
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();

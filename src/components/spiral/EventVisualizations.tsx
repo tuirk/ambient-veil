@@ -1,3 +1,4 @@
+
 import React from "react";
 import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
@@ -33,7 +34,20 @@ const isOneTimeEvent = (event: TimeEvent): boolean => {
   
   // Only events with specific day + no end date are one-time
   return hasSpecificDay;
-};
+}
+
+// Helper function to create a clipped event that only shows the portion within the visible period
+const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
+  const visibleStartDate = new Date(Math.max(
+    new Date(event.startDate).getTime(),
+    new Date(startYear, 0, 1).getTime() // January 1st of startYear
+  ));
+  
+  return {
+    ...event,
+    startDate: visibleStartDate
+  };
+}
 
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
@@ -84,15 +98,19 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
           );
         }
         
+        // Check if this event needs to be clipped (starts before the visible period)
+        const needsClipping = event.startDate.getFullYear() < config.startYear;
+        const visibleEvent = needsClipping ? getClippedEvent(event, config.startYear) : event;
+        
         // Determine if this should be visualized as a one-time or process event
-        const actuallyOneTimeEvent = isOneTimeEvent(event);
+        const actuallyOneTimeEvent = isOneTimeEvent(visibleEvent);
         
         return (
           <React.Fragment key={event.id}>
             {/* ONLY add cosmic effect for actual one-time events */}
             {actuallyOneTimeEvent && (
               <CosmicEventEffect
-                event={event}
+                event={visibleEvent}
                 startYear={config.startYear}
                 zoom={config.zoom}
                 isProcessEvent={false}
@@ -102,32 +120,32 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
             {/* For one-time events: render cosmic burst at a single point */}
             {actuallyOneTimeEvent && (
               <EventPoint
-                event={event}
+                event={visibleEvent}
                 startYear={config.startYear}
                 zoom={config.zoom}
                 onClick={() => {
-                  const year = event.startDate.getFullYear();
-                  const month = event.startDate.getMonth();
+                  const year = visibleEvent.startDate.getFullYear();
+                  const month = visibleEvent.startDate.getMonth();
                   onEventClick(year, month, 0, 0);
                 }}
               />
             )}
             
             {/* For process events with end date: render nebula dust trail along spiral */}
-            {!actuallyOneTimeEvent && event.endDate && (
+            {!actuallyOneTimeEvent && visibleEvent.endDate && (
               <EventDuration
-                startEvent={event}
-                endEvent={{...event, startDate: event.endDate}}
+                startEvent={visibleEvent}
+                endEvent={{...visibleEvent, startDate: visibleEvent.endDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
               />
             )}
             
             {/* For process events with no end date but aren't one-time: render minimal dust */}
-            {!actuallyOneTimeEvent && !event.endDate && (
+            {!actuallyOneTimeEvent && !visibleEvent.endDate && (
               <EventDuration
-                startEvent={event}
-                endEvent={event} // Same start and end point for minimal duration
+                startEvent={visibleEvent}
+                endEvent={visibleEvent} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
               />

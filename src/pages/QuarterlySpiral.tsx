@@ -30,11 +30,35 @@ const QuarterlySpiral: React.FC = () => {
     enforceYearConstraints: false // The quarterly view only shows current year anyway
   });
   
+  // Filter events to include those that:
+  // 1. Start within the current year, OR
+  // 2. Started earlier but continue into the current year (have an end date in or after the current year)
+  const visibleEvents = events.filter(event => {
+    // Events that start within the current year
+    if (event.startDate.getFullYear() === currentYear) {
+      return true;
+    }
+    
+    // Events that started earlier but continue into the current year
+    if (event.startDate.getFullYear() < currentYear && 
+        event.endDate && 
+        event.endDate.getFullYear() >= currentYear) {
+      return true;
+    }
+    
+    // Future events are still shown as floating objects
+    if (event.startDate.getFullYear() > currentYear) {
+      return true;
+    }
+    
+    return false;
+  });
+  
   return (
     <div className="w-full h-screen">
       {/* Spiral visualization */}
       <QuarterlySpiralVisualization 
-        events={events} 
+        events={visibleEvents} 
         config={config} 
         onSpiralClick={handleSpiralClick} 
       />
