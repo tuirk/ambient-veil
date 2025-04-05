@@ -1,8 +1,10 @@
+
 import React from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
+import { getSeasonMiddleDate } from "@/utils/seasonalUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -48,6 +50,14 @@ const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
   return event;
 }
 
+// Get an effective date for the event, handling seasonal dates
+const getEffectiveEventDate = (event: TimeEvent): Date => {
+  if (event.isRoughDate && event.roughDateSeason) {
+    return getSeasonMiddleDate(event.roughDateSeason, event.roughDateYear || event.startDate.getFullYear());
+  }
+  return event.startDate;
+};
+
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
   config,
@@ -57,7 +67,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
     <>
       {events.map((event) => {
         // Future events render as scattered objects
-        if (event.startDate.getFullYear() > config.currentYear) {
+        if (getEffectiveEventDate(event).getFullYear() > config.currentYear) {
           // Create a more interesting future event visualization as floating debris
           const randomDistance = 15 + Math.random() * 20;
           const randomAngle = Math.random() * Math.PI * 2;
@@ -74,8 +84,9 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               position={[x, y, z]}
               rotation={[Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]}
               onClick={() => {
-                const year = event.startDate.getFullYear();
-                const month = event.startDate.getMonth();
+                const effectiveDate = getEffectiveEventDate(event);
+                const year = effectiveDate.getFullYear();
+                const month = effectiveDate.getMonth();
                 onEventClick(year, month, x, z);
               }}
             >
@@ -98,7 +109,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         }
         
         // Check if this event needs to be clipped (starts before the visible period)
-        const needsClipping = event.startDate.getFullYear() < config.startYear;
+        const needsClipping = getEffectiveEventDate(event).getFullYear() < config.startYear;
         const visibleEvent = needsClipping ? getClippedEvent(event, config.startYear) : event;
         
         // Determine if this should be visualized as a one-time or process event
@@ -123,8 +134,9 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 startYear={config.startYear}
                 zoom={config.zoom}
                 onClick={() => {
-                  const year = visibleEvent.startDate.getFullYear();
-                  const month = visibleEvent.startDate.getMonth();
+                  const effectiveDate = getEffectiveEventDate(visibleEvent);
+                  const year = effectiveDate.getFullYear();
+                  const month = effectiveDate.getMonth();
                   onEventClick(year, month, 0, 0);
                 }}
               />

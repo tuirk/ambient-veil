@@ -1,6 +1,7 @@
 
 import { Vector3 } from "three";
 import { TimeEvent } from "@/types/event";
+import { getSeasonMiddleDate } from "../seasonalUtils";
 
 /**
  * Calculates the position for a single event on the quarterly spiral
@@ -16,10 +17,21 @@ export const getQuarterlyEventPosition = (
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3 => {
+  // Handle seasonal dates by converting them to specific dates
+  // This ensures "Summer 2025" is positioned in the middle of summer
+  let effectiveDate: Date;
+  
+  if (event.isRoughDate && event.roughDateSeason) {
+    effectiveDate = getSeasonMiddleDate(event.roughDateSeason, event.roughDateYear || event.startDate.getFullYear());
+  } else {
+    // Use the event's start date
+    effectiveDate = event.startDate;
+  }
+  
   // Ensure we're not positioning events from before the start year incorrectly
-  const effectiveDate = event.startDate.getFullYear() < startYear 
-    ? new Date(startYear, 0, 1) // Use January 1st of the start year
-    : event.startDate;
+  if (effectiveDate.getFullYear() < startYear) {
+    effectiveDate = new Date(startYear, 0, 1); // Use January 1st of the start year
+  }
   
   const year = effectiveDate.getFullYear();
   const month = effectiveDate.getMonth();
