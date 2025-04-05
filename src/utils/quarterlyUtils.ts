@@ -112,9 +112,14 @@ export const getQuarterlyEventPosition = (
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3 => {
-  const year = event.startDate.getFullYear();
-  const month = event.startDate.getMonth();
-  const day = event.startDate.getDate();
+  // Ensure we're not positioning events from before the start year incorrectly
+  const effectiveDate = event.startDate.getFullYear() < startYear 
+    ? new Date(startYear, 0, 1) // Use January 1st of the start year
+    : event.startDate;
+  
+  const year = effectiveDate.getFullYear();
+  const month = effectiveDate.getMonth();
+  const day = effectiveDate.getDate();
   
   // Calculate quarter (0, 1, 2, 3) and progress within quarter
   const quarter = Math.floor(month / 3);
@@ -162,7 +167,7 @@ export const calculateQuarterlySpiralSegment = (
 ): Vector3[] => {
   // Get the effective start date - clamp to the start of the visible period if needed
   const effectiveStartDate = new Date(Math.max(
-    new Date(startEvent.startDate).getTime(),
+    startEvent.startDate.getTime(),
     new Date(startYear, 0, 1).getTime() // January 1st of startYear
   ));
   
@@ -173,7 +178,7 @@ export const calculateQuarterlySpiralSegment = (
   const totalDays = Math.max(1, (endDate.getTime() - effectiveStartDate.getTime()) / (1000 * 60 * 60 * 24));
   
   // Scale points with duration, but keep a reasonable maximum
-  const actualSegmentPoints = Math.min(500, segmentPoints);
+  const actualSegmentPoints = Math.min(500, Math.max(100, Math.floor(totalDays / 7))); // At least one point per week
   
   const points: Vector3[] = [];
   

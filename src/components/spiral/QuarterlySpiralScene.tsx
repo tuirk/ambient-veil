@@ -67,10 +67,7 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
       
       {/* Render events with the enhanced cosmic visualization */}
       <EventVisualizations 
-        events={events.filter(event => 
-          event.startDate.getFullYear() >= config.startYear && 
-          event.startDate.getFullYear() <= config.currentYear
-        )}
+        events={events}
         config={config}
         onEventClick={onEventClick}
       />

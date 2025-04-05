@@ -32,22 +32,28 @@ const QuarterlySpiral: React.FC = () => {
   
   // Filter events to include those that:
   // 1. Start within the current year, OR
-  // 2. Started earlier but continue into the current year (have an end date in or after the current year)
+  // 2. Started earlier but continue into the current year (have an end date in or after the current year), OR
+  // 3. Are future events (for floating visualization)
   const visibleEvents = events.filter(event => {
+    const eventStartYear = event.startDate.getFullYear();
+    const eventStartsInCurrentYear = eventStartYear === currentYear;
+    
     // Events that start within the current year
-    if (event.startDate.getFullYear() === currentYear) {
+    if (eventStartsInCurrentYear) {
       return true;
     }
     
     // Events that started earlier but continue into the current year
-    if (event.startDate.getFullYear() < currentYear && 
-        event.endDate && 
-        event.endDate.getFullYear() >= currentYear) {
-      return true;
+    const hasEndDate = !!event.endDate;
+    if (eventStartYear < currentYear && hasEndDate) {
+      const eventEndYear = event.endDate.getFullYear();
+      if (eventEndYear >= currentYear) {
+        return true;
+      }
     }
     
     // Future events are still shown as floating objects
-    if (event.startDate.getFullYear() > currentYear) {
+    if (eventStartYear > currentYear) {
       return true;
     }
     

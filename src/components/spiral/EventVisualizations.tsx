@@ -1,6 +1,4 @@
-
 import React from "react";
-import * as THREE from "three";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
@@ -38,15 +36,16 @@ const isOneTimeEvent = (event: TimeEvent): boolean => {
 
 // Helper function to create a clipped event that only shows the portion within the visible period
 const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
-  const visibleStartDate = new Date(Math.max(
-    new Date(event.startDate).getTime(),
-    new Date(startYear, 0, 1).getTime() // January 1st of startYear
-  ));
+  // If the event starts before the visible period, clip it to start at the beginning of the visible period
+  if (event.startDate.getFullYear() < startYear) {
+    return {
+      ...event,
+      startDate: new Date(startYear, 0, 1) // January 1st of startYear
+    };
+  }
   
-  return {
-    ...event,
-    startDate: visibleStartDate
-  };
+  // If the event starts within or after the visible period, return it as is
+  return event;
 }
 
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
