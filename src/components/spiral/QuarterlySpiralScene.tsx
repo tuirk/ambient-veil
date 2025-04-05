@@ -24,10 +24,11 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
   // Update camera position based on zoom
   useEffect(() => {
     if (camera) {
-      // Adjust camera position based on zoom
+      // Adjust camera position for quarterly view
+      // Use a higher position to better see the tighter quarterly coils
       const distance = 15 / config.zoom;
-      camera.position.set(distance, distance, distance);
-      camera.lookAt(0, -3, 0);
+      camera.position.set(distance, distance * 0.8, distance);
+      camera.lookAt(0, -2, 0);
     }
   }, [config.zoom, camera]);
   
@@ -39,6 +40,7 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
         enableZoom={true}
         minDistance={5}
         maxDistance={30}
+        target={[0, -2, 0]} // Focus on a better default position
       />
       
       {/* Enhanced space background */}

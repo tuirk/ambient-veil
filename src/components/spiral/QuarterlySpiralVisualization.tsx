@@ -19,7 +19,7 @@ const QuarterlySpiralVisualization: React.FC<QuarterlySpiralVisualizationProps> 
     <div className="w-full h-full">
       <Canvas 
         camera={{ 
-          position: [15, 15, 15], 
+          position: [15, 12, 15], 
           fov: 50,
           near: 0.1,
           far: 1000 
@@ -33,6 +33,18 @@ const QuarterlySpiralVisualization: React.FC<QuarterlySpiralVisualizationProps> 
         }}
         linear
         dpr={[1, 2]}
+        onCreated={({ gl }) => {
+          // Handle WebGL context loss and restoration gracefully
+          const canvas = gl.domElement;
+          canvas.addEventListener('webglcontextlost', (event) => {
+            console.log('WebGL context lost. You can try refreshing the page.');
+            event.preventDefault();
+          }, false);
+          
+          canvas.addEventListener('webglcontextrestored', () => {
+            console.log('WebGL context restored.');
+          }, false);
+        }}
       >
         <fog attach="fog" args={['#000', 15, 50]} />
         <QuarterlySpiralScene 

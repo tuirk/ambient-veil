@@ -1,3 +1,4 @@
+
 import { Vector3 } from "three";
 import { TimeEvent } from "@/types/event";
 import { SpiralPoint } from "./spiralUtils";
@@ -124,13 +125,24 @@ export const getQuarterlyEventPosition = (
   // Calculate quarter (0, 1, 2, 3) and progress within quarter
   const quarter = Math.floor(month / 3);
   const monthInQuarter = month % 3;
-  const quarterProgress = monthInQuarter / 3 + day / (3 * 30);
+  
+  // More accurate calculation of progress within the quarter
+  // This now properly accounts for days within the month
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  // Adjust for leap years
+  if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
+    daysInMonth[1] = 29;
+  }
+  
+  // Calculate more accurate progress within quarter
+  const dayProgress = (day - 1) / daysInMonth[month];
+  const quarterProgress = (monthInQuarter + dayProgress) / 3;
   
   // Calculate total progress (in terms of quarter loops)
   const yearOffset = year - startYear;
   const totalProgress = yearOffset * 4 + quarter + quarterProgress;
   
-  // Calculate angle
+  // Calculate angle - now more accurately reflecting the day position
   const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
   
   // Use the same radius formula
@@ -191,10 +203,19 @@ export const calculateQuarterlySpiralSegment = (
     const month = currentDate.getMonth();
     const day = currentDate.getDate();
     
-    // Calculate quarter and progress
+    // Calculate quarter and progress - improved accuracy
     const quarter = Math.floor(month / 3);
     const monthInQuarter = month % 3;
-    const quarterProgress = monthInQuarter / 3 + day / (3 * 30);
+    
+    // More accurate day progress calculation
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    // Adjust for leap years
+    if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
+      daysInMonth[1] = 29;
+    }
+    
+    const dayProgress = (day - 1) / daysInMonth[month];
+    const quarterProgress = (monthInQuarter + dayProgress) / 3;
     
     // Calculate total progress
     const yearOffset = year - startYear;
@@ -213,3 +234,4 @@ export const calculateQuarterlySpiralSegment = (
   
   return points;
 };
+

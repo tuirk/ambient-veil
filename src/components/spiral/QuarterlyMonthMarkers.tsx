@@ -29,30 +29,37 @@ export const QuarterlyMonthMarkers: React.FC<QuarterlyMonthMarkersProps> = ({
     
     for (let month = 0; month < monthsToShow; month++) {
       // Calculate position for quarterly spiral
-      const quarterIndex = Math.floor(month / 3);
+      const quarter = Math.floor(month / 3);
+      const monthInQuarter = month % 3;
       
-      // Position calculation for quarterly spiral
-      // Each coil represents 3 months
-      const coilProgress = (month % 3) / 3;
-      const totalProgress = quarterIndex + coilProgress;
+      // Position calculation - improved accuracy
+      // Each month is 1/3 of the way around a quarter coil
+      const quarterProgress = monthInQuarter / 3;
+      
+      // Calculate the total progress through all quarters
+      const yearOffset = year - startYear;
+      const totalProgress = yearOffset * 4 + quarter + quarterProgress;
       
       // Calculate angle with appropriate offset
-      const angleRad = -coilProgress * Math.PI * 2 + Math.PI/2;
+      const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
       const radius = 5 * zoom + totalProgress * 0.5;
       
       const x = radius * Math.cos(angleRad);
       const y = -totalProgress * 1.5 * zoom;
       const z = radius * Math.sin(angleRad);
       
-      // Create text marker
+      // Create text marker with improved visibility
       markers.push(
         <Text
           key={`${year}-${month}`}
           position={[x, y, z]}
           color="white"
-          fontSize={0.3}
+          fontSize={0.35}
           anchorX="center"
           anchorY="middle"
+          outlineWidth={0.05}
+          outlineColor="#00000080"
+          maxWidth={2}
         >
           {monthNames[month]}
         </Text>
