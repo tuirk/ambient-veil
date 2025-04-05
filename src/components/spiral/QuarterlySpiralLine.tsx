@@ -27,14 +27,14 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   // Extract positions for the spiral line
   const positions = spiralPoints.map(point => point.position);
   
-  // Create colors for the spiral line with subtle quarter transitions
+  // Create colors for the spiral line with enhanced quarter transitions
   const colors = [];
   let previousQuarter = -1;
   
   spiralPoints.forEach((point) => {
     const quarter = Math.floor(point.month / 3);
     
-    // Create subtle color variations by quarter
+    // Enhanced color variations by quarter with improved visibility
     let baseColor;
     if (quarter === 0) {
       baseColor = new THREE.Color(0x6495ED); // Spring blue
@@ -46,8 +46,8 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
       baseColor = new THREE.Color(0xF0F8FF); // Winter white-blue
     }
     
-    // Make color very subtle
-    baseColor.lerp(new THREE.Color(0xffffff), 0.8);
+    // Make colors more visible in quarterly view - less white blending
+    baseColor.lerp(new THREE.Color(0xffffff), 0.6); // Reduced from 0.8 to 0.6 for more vibrance
     colors.push(baseColor);
     
     previousQuarter = quarter;
@@ -58,9 +58,9 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={1.5}
+      lineWidth={2} // Increased from 1.5 for better visibility
       transparent
-      opacity={0.4}
+      opacity={0.6} // Increased from 0.4 for better visibility
     />
   );
 };

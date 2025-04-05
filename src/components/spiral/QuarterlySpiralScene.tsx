@@ -25,10 +25,10 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
   useEffect(() => {
     if (camera) {
       // Adjust camera position for quarterly view
-      // Use a higher position to better see the tighter quarterly coils
+      // Better positioning to view the quarterly spiral
       const distance = 15 / config.zoom;
-      camera.position.set(distance, distance * 0.8, distance);
-      camera.lookAt(0, -2, 0);
+      camera.position.set(distance, distance * 0.9, distance);
+      camera.lookAt(0, -3, 0); // Look slightly lower for better quarterly view
     }
   }, [config.zoom, camera]);
   
@@ -40,7 +40,7 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
         enableZoom={true}
         minDistance={5}
         maxDistance={30}
-        target={[0, -2, 0]} // Focus on a better default position
+        target={[0, -3, 0]} // Consistent with camera lookAt
       />
       
       {/* Enhanced space background */}
@@ -50,8 +50,8 @@ export const QuarterlySpiralScene: React.FC<QuarterlySpiralSceneProps> = ({
       <Stars radius={100} depth={50} count={5000} factor={4} saturation={0.5} fade speed={1} />
       
       {/* Ambient and directional lighting */}
-      <ambientLight intensity={0.2} />
-      <directionalLight position={[10, 10, 5]} intensity={0.4} />
+      <ambientLight intensity={0.3} /> {/* Increased from 0.2 for better visibility */}
+      <directionalLight position={[10, 10, 5]} intensity={0.5} /> {/* Increased from 0.4 */}
       
       {/* Render the quarterly spiral */}
       <QuarterlySpiralLine 
