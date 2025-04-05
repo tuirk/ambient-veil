@@ -73,9 +73,8 @@ export const generateQuarterlySpiralPoints = (
           if (month === todayMonth && day > todayDay) continue;
         }
         
-        // Calculate angle for this point in the spiral
-        // The negative angle creates clockwise rotation
-        const angleRad = -progress * Math.PI * 2 + Math.PI/2;
+        // Calculate angle for this point in the spiral - matching event positioning
+        const angleRad = progress * Math.PI * 2 + Math.PI/2;
         
         // Calculate the total progress through all quarters
         const totalQuarters = yearOffset * 4 + quarter;
