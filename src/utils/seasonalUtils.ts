@@ -3,6 +3,9 @@
  * Utility functions for handling seasonal dates
  */
 
+// Define seasons constants
+export const SEASONS = ["Spring", "Summer", "Fall", "Winter"];
+
 /**
  * Gets the middle date of a season in a given year
  * @param season The season name (Spring, Summer, Fall, Winter)
@@ -23,6 +26,43 @@ export const getSeasonMiddleDate = (season: string, year: number): Date => {
     default:
       return new Date(year, 6, 1); // Default to mid-year
   }
+};
+
+/**
+ * Gets seasonal date range for a given season and year
+ * @param season The season name
+ * @param year The year
+ * @returns Object with startDate and endDate
+ */
+export const getSeasonalDateRange = (season: string, year: number): { startDate: Date, endDate: Date } => {
+  // Start with the season's start date
+  const startDate = getSeasonStartDate(season, year);
+  
+  // Calculate end date based on the season
+  let endDate: Date;
+  switch (season.toLowerCase()) {
+    case 'spring':
+      endDate = new Date(year, 5, 20); // June 20th
+      break;
+    case 'summer':
+      endDate = new Date(year, 8, 21); // September 21st
+      break;
+    case 'fall':
+    case 'autumn':
+      endDate = new Date(year, 11, 20); // December 20th
+      break;
+    case 'winter':
+      // Winter spans into the next year
+      endDate = new Date(year + 1, 2, 19); // March 19th next year
+      break;
+    default:
+      // Default to 3 months from start
+      endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 3);
+      break;
+  }
+  
+  return { startDate, endDate };
 };
 
 /**
