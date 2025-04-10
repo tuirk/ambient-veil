@@ -133,6 +133,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 startYear={config.startYear}
                 zoom={config.zoom}
                 isProcessEvent={false}
+                dailyMode={dailyMode}
               />
             )}
             
@@ -147,6 +148,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                   const month = visibleEvent.startDate.getMonth();
                   onEventClick(year, month, 0, 0);
                 }}
+                dailyMode={dailyMode}
               />
             )}
             
@@ -157,6 +159,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={{...visibleEvent, startDate: visibleEvent.endDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
+                dailyMode={dailyMode}
               />
             )}
             
@@ -167,6 +170,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={visibleEvent} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
+                dailyMode={dailyMode}
               />
             )}
           </React.Fragment>
