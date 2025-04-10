@@ -1,13 +1,17 @@
+
 import React from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
+import { getMonthlyEventPosition } from "@/utils/monthlyUtils";
+import { calculateMonthlySpiralSegment } from "@/utils/monthlyUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
+  viewMode?: "annual" | "quarterly" | "monthly";
 }
 
 // Helper function to determine if an event is actually a one-time event
@@ -51,7 +55,8 @@ const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
   config,
-  onEventClick
+  onEventClick,
+  viewMode = "annual" // Default to annual view
 }) => {
   return (
     <>
@@ -113,6 +118,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 startYear={config.startYear}
                 zoom={config.zoom}
                 isProcessEvent={false}
+                viewMode={viewMode}
               />
             )}
             
@@ -122,6 +128,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 event={visibleEvent}
                 startYear={config.startYear}
                 zoom={config.zoom}
+                viewMode={viewMode}
                 onClick={() => {
                   const year = visibleEvent.startDate.getFullYear();
                   const month = visibleEvent.startDate.getMonth();
@@ -137,6 +144,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={{...visibleEvent, startDate: visibleEvent.endDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
+                viewMode={viewMode}
               />
             )}
             
@@ -147,6 +155,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={visibleEvent} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
+                viewMode={viewMode}
               />
             )}
           </React.Fragment>

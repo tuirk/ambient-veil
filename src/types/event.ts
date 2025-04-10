@@ -20,3 +20,5 @@ export interface SpiralConfig {
   centerX: number;
   centerY: number;
 }
+
+export type SpiralViewMode = "annual" | "quarterly" | "monthly";
