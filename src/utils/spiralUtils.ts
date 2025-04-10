@@ -14,7 +14,6 @@ export interface SpiralPoint {
   year: number;
   month: number;
   day: number;
-  hour?: number; // Added optional hour property for weekly view
 }
 
 // Re-export all functions from their separate modules
