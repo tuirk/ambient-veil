@@ -55,7 +55,8 @@ export const generateMonthlySpiralPoints = (
         
         // Calculate the day within the month (approximate)
         const monthIndex = month % 12;
-        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][monthIndex];
+        // Changed from const to let so it can be modified
+        let daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][monthIndex];
         // Adjust for leap years
         if (monthIndex === 1 && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)) {
           daysInMonth = 29;
