@@ -22,9 +22,11 @@ export const EventPoint: React.FC<EventPointProps> = ({
   dailyMode
 }) => {
   // Get position on the spiral - use daily positioning if in daily mode
-  const position = dailyMode?.enabled
-    ? getDailyEventPosition(event, dailyMode.startDate, 5 * zoom, 1.5 * zoom)
-    : getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+  const position = useMemo(() => {
+    return dailyMode?.enabled
+      ? getDailyEventPosition(event, dailyMode.startDate, 5 * zoom, 1.5 * zoom)
+      : getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+  }, [event, startYear, zoom, dailyMode]);
   
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);
