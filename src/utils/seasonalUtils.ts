@@ -1,72 +1,61 @@
 
 /**
- * Utility functions for handling seasonal rough dates
+ * Utility functions for handling seasonal dates
  */
-export interface SeasonalDateRange {
-  startMonth: number; // 0-based month index (0 = January)
-  endMonth: number;   // 0-based month index
-}
 
 /**
- * Mapping of seasons to their corresponding month ranges
- * Note: Winter is a special case as it spans across two years
+ * Gets the middle date of a season in a given year
+ * @param season The season name (Spring, Summer, Fall, Winter)
+ * @param year The year
+ * @returns A date object representing the middle of the specified season
  */
-export const seasonalDateRanges: Record<string, SeasonalDateRange> = {
-  Spring: { startMonth: 2, endMonth: 4 }, // March–May
-  Summer: { startMonth: 5, endMonth: 7 }, // June–August
-  Fall:   { startMonth: 8, endMonth: 10 }, // September–November
-  Winter: { startMonth: 11, endMonth: 1 }, // December–February (spans two years)
+export const getSeasonMiddleDate = (season: string, year: number): Date => {
+  switch (season.toLowerCase()) {
+    case 'spring':
+      return new Date(year, 3, 15); // April 15th
+    case 'summer':
+      return new Date(year, 6, 15); // July 15th
+    case 'fall':
+    case 'autumn':
+      return new Date(year, 9, 15); // October 15th
+    case 'winter':
+      return new Date(year, 0, 15); // January 15th (northern hemisphere)
+    default:
+      return new Date(year, 6, 1); // Default to mid-year
+  }
 };
 
 /**
- * Seasons for selection in the UI
+ * Converts a month number (0-11) to a season
+ * @param month Month number (0-11)
+ * @returns Season name
  */
-export const SEASONS = ["Spring", "Summer", "Fall", "Winter"];
+export const monthToSeason = (month: number): string => {
+  // Northern hemisphere seasons
+  if (month >= 2 && month <= 4) return "Spring"; // March-May
+  if (month >= 5 && month <= 7) return "Summer"; // June-August
+  if (month >= 8 && month <= 10) return "Fall";  // September-November
+  return "Winter"; // December-February
+};
 
 /**
- * Converts a seasonal rough date to a date range with start and end dates
- * @param season The season (Spring, Summer, Fall, Winter)
+ * Gets the start date of a season in a given year
+ * @param season The season name
  * @param year The year
- * @returns Object with start and end dates
+ * @returns A date object representing the start of the specified season
  */
-export function getSeasonalDateRange(season: string, year: number): { startDate: Date, endDate: Date } {
-  const range = seasonalDateRanges[season];
-  
-  if (!range) {
-    throw new Error(`Invalid season: ${season}`);
+export const getSeasonStartDate = (season: string, year: number): Date => {
+  switch (season.toLowerCase()) {
+    case 'spring':
+      return new Date(year, 2, 20); // March 20th
+    case 'summer':
+      return new Date(year, 5, 21); // June 21st
+    case 'fall':
+    case 'autumn':
+      return new Date(year, 8, 22); // September 22nd
+    case 'winter':
+      return new Date(year, 11, 21); // December 21st
+    default:
+      return new Date(year, 0, 1); // Default to start of year
   }
-  
-  let startYear = year;
-  let endYear = year;
-  
-  // Handle winter special case (spans two years)
-  if (season === "Winter" && range.startMonth > range.endMonth) {
-    endYear = year + 1;
-  }
-  
-  const startDate = new Date(startYear, range.startMonth, 1);
-  
-  // Set end date to last day of the end month
-  const endDate = new Date(endYear, range.endMonth + 1, 0);
-  
-  return { startDate, endDate };
-}
-
-/**
- * Determines if a given event is a seasonal rough date
- * @param event The event to check
- * @returns True if the event is a seasonal rough date
- */
-export function isSeasonalEvent(event: { isRoughDate?: boolean }): boolean {
-  return !!event.isRoughDate;
-}
-
-/**
- * All seasonal events should be treated as process events
- * even if they don't have an explicit end date
- * @param event The event to check
- * @returns True as seasonal events are always process events
- */
-export function isSeasonalProcessEvent(event: { isRoughDate?: boolean }): boolean {
-  return isSeasonalEvent(event);
-}
+};

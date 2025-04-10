@@ -11,6 +11,8 @@ export interface TimeEvent {
   roughDateSeason?: string; // The season (Spring, Summer, Fall, Winter)
   roughDateYear?: number; // The year for the rough date
   eventType: "one-time" | "process"; // Explicit event type to differentiate visualization
+  hour?: number; // Optional hour for weekly view
+  minute?: number; // Optional minute for weekly view
 }
 
 export interface SpiralConfig {
@@ -19,4 +21,5 @@ export interface SpiralConfig {
   zoom: number;
   centerX: number;
   centerY: number;
+  viewType?: "annual" | "quarterly" | "monthly" | "weekly";
 }

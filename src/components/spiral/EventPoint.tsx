@@ -4,11 +4,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
+import { getQuarterlyEventPosition } from "@/utils/quarterlyUtils";
+import { getMonthlyEventPosition } from "@/utils/monthlyUtils";
+import { getWeeklyEventPosition } from "@/utils/weeklyUtils";
+import { getSeasonMiddleDate } from "@/utils/seasonalUtils";
 
 interface EventPointProps {
   event: TimeEvent;
   startYear: number;
   zoom: number;
+  viewType?: "annual" | "quarterly" | "monthly" | "weekly";
+  startDate?: Date;
   onClick?: () => void;
 }
 
@@ -16,10 +22,31 @@ export const EventPoint: React.FC<EventPointProps> = ({
   event, 
   startYear, 
   zoom, 
+  viewType = "annual",
+  startDate,
   onClick 
 }) => {
-  // Get position on the spiral
-  const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+  // Get position on the spiral based on view type
+  const position = useMemo(() => {
+    if (viewType === "quarterly") {
+      return getQuarterlyEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+    } else if (viewType === "monthly") {
+      return getMonthlyEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+    } else if (viewType === "weekly" && startDate) {
+      // Handle seasonal rough dates for weekly view
+      let effectiveEvent = {...event};
+      if (event.isRoughDate && event.roughDateSeason && event.roughDateYear) {
+        effectiveEvent = {
+          ...event,
+          startDate: getSeasonMiddleDate(event.roughDateSeason, event.roughDateYear)
+        };
+      }
+      return getWeeklyEventPosition(effectiveEvent, startDate, 5 * zoom, 0.7 * zoom);
+    } else {
+      // Default to annual view
+      return getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+    }
+  }, [event, startYear, zoom, viewType, startDate]);
   
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);
@@ -59,9 +86,23 @@ export const EventPoint: React.FC<EventPointProps> = ({
     }
   });
   
-  // Calculate size based on event intensity (1-10)
-  // Reduced by 25% for all event points
-  const size = 0.0375 + (event.intensity / 10) * 0.075; // Reduced from 0.05/0.1
+  // Calculate size based on event intensity (1-10) and view type
+  // Adjust size for different view types
+  const getEventSize = () => {
+    const baseSize = 0.0375 + (event.intensity / 10) * 0.075;
+    
+    if (viewType === "weekly") {
+      return baseSize * 0.7; // Smaller for weekly view
+    } else if (viewType === "monthly") {
+      return baseSize * 0.85; // Slightly smaller for monthly view
+    } else if (viewType === "quarterly") {
+      return baseSize * 0.95; // Very slightly smaller for quarterly view
+    }
+    
+    return baseSize; // Default size for annual view
+  };
+  
+  const size = getEventSize();
   
   return (
     <group position={position} onClick={onClick}>
