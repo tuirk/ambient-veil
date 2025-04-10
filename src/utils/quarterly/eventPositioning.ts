@@ -7,7 +7,7 @@ import { TimeEvent } from "@/types/event";
  * @param event The event to position
  * @param startYear First year of the spiral (for reference)
  * @param radius Base radius of the spiral
- * @param heightPerLoop Vertical distance between quarter loops
+ * @param heightPerLoop Vertical height per month loop
  * @returns 3D vector position for the event
  */
 export const getQuarterlyEventPosition = (
@@ -25,40 +25,26 @@ export const getQuarterlyEventPosition = (
   const month = effectiveDate.getMonth();
   const day = effectiveDate.getDate();
   
-  // Calculate which quarter this month belongs to (0-3)
-  const quarter = Math.floor(month / 3);
-  
-  // Calculate which month within the quarter (0-2)
-  const monthInQuarter = month % 3;
-  
-  // Calculate days in the month for more precise positioning
-  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  // Adjust for leap years
-  if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
-    daysInMonth[1] = 29;
-  }
-  
-  // Normalize the day position within the month (0 to 1)
-  const dayProgress = (day - 1) / daysInMonth[month];
-  
-  // Calculate position within the quarter (0 to 1)
-  const quarterProgress = (monthInQuarter + dayProgress) / 3;
-  
-  // Calculate total progress in quarter-loops
+  // Calculate total months from start year (important for vertical positioning)
   const yearOffset = year - startYear;
-  const totalQuarters = yearOffset * 4 + quarter;
-  const totalProgress = totalQuarters + quarterProgress;
+  const totalMonths = yearOffset * 12 + month;
   
-  // Calculate angle based on position within the quarter
-  // One complete circle (2π) represents one quarter
-  const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
+  // Get days in this month for precise positioning
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  // Calculate day progress within the month (0 to 1)
+  const dayProgress = (day - 1) / daysInMonth;
+  
+  // Calculate angle based on position within the month
+  // One complete circle (2π) now represents one month
+  const angleRad = -dayProgress * Math.PI * 2 + Math.PI/2;
   
   // The radius increases as we move down the spiral
-  // Must match the formula used in generateQuarterlySpiralPoints
-  const currentRadius = radius + totalProgress * 0.5;
+  // Must be consistent with the formula used in generateQuarterlySpiralPoints
+  const currentRadius = radius + totalMonths * 0.5;
   
   const x = currentRadius * Math.cos(angleRad);
-  const y = -totalProgress * heightPerLoop;
+  const y = -totalMonths * heightPerLoop;
   const z = currentRadius * Math.sin(angleRad);
   
   return new Vector3(x, y, z);
