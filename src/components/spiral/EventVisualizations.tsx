@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
@@ -9,7 +8,6 @@ interface EventVisualizationsProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
-  viewMode?: "annual" | "quarterly" | "monthly";
 }
 
 // Helper function to determine if an event is actually a one-time event
@@ -53,14 +51,13 @@ const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
   config,
-  onEventClick,
-  viewMode = "annual" // Default to annual view
+  onEventClick
 }) => {
   return (
     <>
       {events.map((event) => {
         // Future events render as scattered objects
-        if (event.startDate && event.startDate.getFullYear() > config.currentYear) {
+        if (event.startDate.getFullYear() > config.currentYear) {
           // Create a more interesting future event visualization as floating debris
           const randomDistance = 15 + Math.random() * 20;
           const randomAngle = Math.random() * Math.PI * 2;
@@ -101,7 +98,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         }
         
         // Check if this event needs to be clipped (starts before the visible period)
-        const needsClipping = event.startDate && event.startDate.getFullYear() < config.startYear;
+        const needsClipping = event.startDate.getFullYear() < config.startYear;
         const visibleEvent = needsClipping ? getClippedEvent(event, config.startYear) : event;
         
         // Determine if this should be visualized as a one-time or process event
@@ -116,46 +113,40 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 startYear={config.startYear}
                 zoom={config.zoom}
                 isProcessEvent={false}
-                viewMode={viewMode}
               />
             )}
             
-            {/* For one-time events: render point at a single position */}
+            {/* For one-time events: render cosmic burst at a single point */}
             {actuallyOneTimeEvent && (
               <EventPoint
                 event={visibleEvent}
                 startYear={config.startYear}
                 zoom={config.zoom}
-                viewMode={viewMode}
                 onClick={() => {
-                  if (visibleEvent.startDate) {
-                    const year = visibleEvent.startDate.getFullYear();
-                    const month = visibleEvent.startDate.getMonth();
-                    onEventClick(year, month, 0, 0);
-                  }
+                  const year = visibleEvent.startDate.getFullYear();
+                  const month = visibleEvent.startDate.getMonth();
+                  onEventClick(year, month, 0, 0);
                 }}
               />
             )}
             
-            {/* For process events with end date: render trail along spiral */}
+            {/* For process events with end date: render nebula dust trail along spiral */}
             {!actuallyOneTimeEvent && visibleEvent.endDate && (
               <EventDuration
                 startEvent={visibleEvent}
                 endEvent={{...visibleEvent, startDate: visibleEvent.endDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
-                viewMode={viewMode}
               />
             )}
             
-            {/* For process events with no end date but aren't one-time: render minimal duration */}
+            {/* For process events with no end date but aren't one-time: render minimal dust */}
             {!actuallyOneTimeEvent && !visibleEvent.endDate && (
               <EventDuration
                 startEvent={visibleEvent}
                 endEvent={visibleEvent} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
-                viewMode={viewMode}
               />
             )}
           </React.Fragment>

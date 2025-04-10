@@ -8,7 +8,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Spiral from "./pages/Spiral";
 import QuarterlySpiral from "./pages/QuarterlySpiral";
-import MonthlySpiral from "./pages/MonthlySpiral";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -30,7 +29,6 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/spiral" element={<Spiral />} />
                 <Route path="/quarterly" element={<QuarterlySpiral />} />
-                <Route path="/monthly" element={<MonthlySpiral />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
