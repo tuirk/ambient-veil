@@ -4,7 +4,7 @@ import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
 import { getQuarterlyEventPosition } from "@/utils/quarterlyUtils";
 import { getMonthlyEventPosition } from "@/utils/monthlyUtils";
-import { Points, Point } from "@react-three/drei";
+import * as THREE from "three";
 
 interface CosmicEventEffectProps {
   event: TimeEvent;
@@ -59,18 +59,32 @@ export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({
     return positions;
   }, [centralPosition, event.intensity, isProcessEvent]);
   
+  // Create the geometry and material manually instead of using Points from drei
+  const geometry = useMemo(() => {
+    const vertices = new Float32Array(particlePositions.length * 3);
+    
+    particlePositions.forEach((position, i) => {
+      vertices[i * 3] = position[0];
+      vertices[i * 3 + 1] = position[1];
+      vertices[i * 3 + 2] = position[2];
+    });
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    return geometry;
+  }, [particlePositions]);
+  
   return (
-    <Points>
+    <points>
+      <bufferGeometry attach="geometry" {...geometry.attributes} />
       <pointsMaterial
+        attach="material"
         size={0.05 + event.intensity * 0.01}
         color={event.color}
         transparent
         opacity={0.7}
         sizeAttenuation
       />
-      {particlePositions.map((position, index) => (
-        <Point key={index} position={position as [number, number, number]} />
-      ))}
-    </Points>
+    </points>
   );
 };

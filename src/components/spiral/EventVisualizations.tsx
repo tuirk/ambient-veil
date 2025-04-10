@@ -4,8 +4,6 @@ import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
-import { getMonthlyEventPosition } from "@/utils/monthlyUtils";
-import { calculateMonthlySpiralSegment } from "@/utils/monthlyUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
@@ -62,7 +60,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
     <>
       {events.map((event) => {
         // Future events render as scattered objects
-        if (event.startDate.getFullYear() > config.currentYear) {
+        if (event.startDate && event.startDate.getFullYear() > config.currentYear) {
           // Create a more interesting future event visualization as floating debris
           const randomDistance = 15 + Math.random() * 20;
           const randomAngle = Math.random() * Math.PI * 2;
@@ -103,7 +101,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         }
         
         // Check if this event needs to be clipped (starts before the visible period)
-        const needsClipping = event.startDate.getFullYear() < config.startYear;
+        const needsClipping = event.startDate && event.startDate.getFullYear() < config.startYear;
         const visibleEvent = needsClipping ? getClippedEvent(event, config.startYear) : event;
         
         // Determine if this should be visualized as a one-time or process event
@@ -122,7 +120,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For one-time events: render cosmic burst at a single point */}
+            {/* For one-time events: render point at a single position */}
             {actuallyOneTimeEvent && (
               <EventPoint
                 event={visibleEvent}
@@ -130,14 +128,16 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 zoom={config.zoom}
                 viewMode={viewMode}
                 onClick={() => {
-                  const year = visibleEvent.startDate.getFullYear();
-                  const month = visibleEvent.startDate.getMonth();
-                  onEventClick(year, month, 0, 0);
+                  if (visibleEvent.startDate) {
+                    const year = visibleEvent.startDate.getFullYear();
+                    const month = visibleEvent.startDate.getMonth();
+                    onEventClick(year, month, 0, 0);
+                  }
                 }}
               />
             )}
             
-            {/* For process events with end date: render nebula dust trail along spiral */}
+            {/* For process events with end date: render trail along spiral */}
             {!actuallyOneTimeEvent && visibleEvent.endDate && (
               <EventDuration
                 startEvent={visibleEvent}
@@ -148,7 +148,7 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
               />
             )}
             
-            {/* For process events with no end date but aren't one-time: render minimal dust */}
+            {/* For process events with no end date but aren't one-time: render minimal duration */}
             {!actuallyOneTimeEvent && !visibleEvent.endDate && (
               <EventDuration
                 startEvent={visibleEvent}

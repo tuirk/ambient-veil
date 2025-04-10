@@ -57,24 +57,33 @@ export const EventDuration: React.FC<EventDurationProps> = ({
   }, [startEvent, endEvent, startYear, zoom, viewMode]);
   
   // Create color array with gradients
-  const colors = [];
-  const color = new THREE.Color(startEvent.color);
-  
-  for (let i = 0; i < points.length; i++) {
-    const intensity = startEvent.intensity / 10; // Normalize to 0-1
-    const adjustedColor = color.clone();
+  const colors = useMemo(() => {
+    const colorsArray = [];
+    const color = new THREE.Color(startEvent.color);
     
-    // Add more brightness for higher intensity events
-    adjustedColor.lerp(new THREE.Color(1, 1, 1), 0.2 + (intensity * 0.3));
-    
-    // For process events, fade out towards the end
-    if (startEvent !== endEvent) {
-      const progress = i / (points.length - 1);
-      const fadeOut = Math.max(0.3, 1 - progress); // Don't fade completely
-      adjustedColor.multiplyScalar(fadeOut);
+    for (let i = 0; i < points.length; i++) {
+      const intensity = startEvent.intensity / 10; // Normalize to 0-1
+      const adjustedColor = color.clone();
+      
+      // Add more brightness for higher intensity events
+      adjustedColor.lerp(new THREE.Color(1, 1, 1), 0.2 + (intensity * 0.3));
+      
+      // For process events, fade out towards the end
+      if (startEvent !== endEvent) {
+        const progress = i / (points.length - 1);
+        const fadeOut = Math.max(0.3, 1 - progress); // Don't fade completely
+        adjustedColor.multiplyScalar(fadeOut);
+      }
+      
+      colorsArray.push(adjustedColor);
     }
     
-    colors.push(adjustedColor);
+    return colorsArray;
+  }, [points, startEvent, endEvent]);
+  
+  // Only render if we have valid points
+  if (points.length < 2) {
+    return null;
   }
   
   return (

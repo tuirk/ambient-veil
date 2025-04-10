@@ -1,10 +1,10 @@
 
 import React, { useMemo } from "react";
-import { Sphere } from "@react-three/drei";
 import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
 import { getQuarterlyEventPosition } from "@/utils/quarterlyUtils";
 import { getMonthlyEventPosition } from "@/utils/monthlyUtils";
+import * as THREE from "three";
 
 interface EventPointProps {
   event: TimeEvent;
@@ -38,7 +38,8 @@ export const EventPoint: React.FC<EventPointProps> = ({
   const size = 0.1 + event.intensity * 0.02;
   
   return (
-    <Sphere position={position} args={[size, 16, 16]} onClick={onClick}>
+    <mesh position={[position.x, position.y, position.z]} onClick={onClick}>
+      <sphereGeometry args={[size, 16, 16]} />
       <meshStandardMaterial 
         color={event.color} 
         emissive={event.color} 
@@ -46,6 +47,6 @@ export const EventPoint: React.FC<EventPointProps> = ({
         transparent 
         opacity={0.9} 
       />
-    </Sphere>
+    </mesh>
   );
 };
