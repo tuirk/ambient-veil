@@ -29,7 +29,6 @@ export const useSpiralEvents = ({
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>();
-  const [selectedDay, setSelectedDay] = useState<number | undefined>();
   const [showMemoryList, setShowMemoryList] = useState(false);
 
   // Load events and config from localStorage
@@ -54,7 +53,7 @@ export const useSpiralEvents = ({
   }, []);
   
   // Function to handle spiral clicks
-  const handleSpiralClick = (year: number, month: number, day?: number, x?: number, y?: number) => {
+  const handleSpiralClick = (year: number, month: number, x: number, y: number) => {
     // Check if year is within allowed range if enforceYearConstraints is true
     if (enforceYearConstraints) {
       const maxYear = currentYear + 1;
@@ -72,7 +71,6 @@ export const useSpiralEvents = ({
     
     setSelectedYear(year);
     setSelectedMonth(month);
-    setSelectedDay(day);
     setShowEventForm(true);
   };
   
@@ -110,7 +108,6 @@ export const useSpiralEvents = ({
     setShowEventForm,
     selectedYear,
     selectedMonth,
-    selectedDay,
     showMemoryList,
     setShowMemoryList,
     handleSpiralClick,

@@ -1,80 +1,59 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { HelpCircle } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Info } from "lucide-react";
 
 interface SpiralHelpProps {
-  viewType: "annual" | "quarterly" | "current";
+  viewType: "annual" | "quarterly";
   currentYear: number;
 }
 
 export const SpiralHelp: React.FC<SpiralHelpProps> = ({ viewType, currentYear }) => {
-  const [open, setOpen] = useState(false);
-
   return (
-    <>
-      <Button 
-        variant="ghost" 
-        size="icon"
-        className="absolute top-4 left-4 bg-gray-800/50 hover:bg-gray-800/70 text-white rounded-full"
-        onClick={() => setOpen(true)}
-      >
-        <HelpCircle />
-      </Button>
-      
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>How to Use the {viewType === 'annual' ? 'Annual' : viewType === 'quarterly' ? 'Quarterly' : 'Current Week'} Spiral</DialogTitle>
-            <DialogDescription>
-              {viewType === 'annual' && (
-                <div className="space-y-4 py-4">
-                  <p>The Annual Spiral visualizes your memories across multiple years:</p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Each complete spiral loop represents one year</li>
-                    <li>The current year is {currentYear}</li>
-                    <li>Vibrant points represent one-time events</li>
-                    <li>Glowing trails represent ongoing processes or periods</li>
-                    <li>Future events appear as floating objects in space</li>
-                    <li>Click anywhere on the spiral to add a memory at that point in time</li>
-                    <li>Use your mouse to rotate, zoom, and explore the spiral</li>
-                  </ul>
-                </div>
-              )}
-              
-              {viewType === 'quarterly' && (
-                <div className="space-y-4 py-4">
-                  <p>The Quarterly Spiral visualizes your memories in more detail:</p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Each complete spiral loop represents one quarter (3 months)</li>
-                    <li>Focusing on the current year ({currentYear})</li>
-                    <li>Different colors represent different quarters/seasons</li>
-                    <li>More detailed time positioning for precise memory placement</li>
-                    <li>Click anywhere on the spiral to add a memory at that point in time</li>
-                    <li>Use your mouse to rotate, zoom, and explore the spiral</li>
-                  </ul>
-                </div>
-              )}
-              
-              {viewType === 'current' && (
-                <div className="space-y-4 py-4">
-                  <p>The Current Week Spiral visualizes your most recent memories:</p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Each complete spiral loop represents one day</li>
-                    <li>Shows the current week, starting from the most recent Monday</li>
-                    <li>Different colors represent different days of the week</li>
-                    <li>The spiral grows in real-time as the week progresses</li>
-                    <li>Click anywhere on the spiral to add a memory at that point in time</li>
-                    <li>Use your mouse to rotate, zoom, and explore the spiral</li>
-                    <li>The view automatically refreshes to show the latest events</li>
-                  </ul>
-                </div>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute bottom-4 right-4 rounded-full bg-background/30 backdrop-blur-sm hover:bg-background/50 border border-white/10"
+        >
+          <Info className="h-5 w-5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 bg-background/80 backdrop-blur-md text-white border-cosmic-nebula-purple/30">
+        <div className="space-y-4">
+          {viewType === "annual" ? (
+            <>
+              <h3 className="font-medium text-lg">About "You Are Here"</h3>
+              <p className="text-sm text-gray-300">
+                This 3D spiral represents your personal timeline. Each loop is a year,
+                divided into 12 months.
+              </p>
+              <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
+                <li>Click anywhere on the spiral to add a memory at that time.</li>
+                <li>Colored trails represent events in your life.</li>
+                <li>You can add memories from {currentYear - 5} to {currentYear + 1}.</li>
+                <li>Drag to rotate the view and scroll to zoom in/out.</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <h3 className="font-medium text-lg">Quarterly Timeline View</h3>
+              <p className="text-sm text-gray-300">
+                This 3D spiral represents the current year, divided into quarters.
+              </p>
+              <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
+                <li>Each coil represents 3 months (one quarter).</li>
+                <li>The visualization starts from January 1st of the current year.</li>
+                <li>Click anywhere on the spiral to add a memory at that time.</li>
+                <li>Colored trails represent events in your life.</li>
+                <li>Drag to rotate the view and scroll to zoom in/out.</li>
+              </ul>
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };

@@ -1,31 +1,24 @@
 import React, { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { TimeEvent, DailyModeConfig } from "@/types/event";
+import { TimeEvent } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
-import { getDailyEventPosition } from "@/utils/dailyUtils";
 
 interface CosmicEventEffectProps {
   event: TimeEvent;
   startYear: number;
   zoom: number;
   isProcessEvent?: boolean;
-  dailyMode?: DailyModeConfig;
 }
 
 export const CosmicEventEffect: React.FC<CosmicEventEffectProps> = ({ 
   event, 
   startYear, 
   zoom,
-  isProcessEvent = false,
-  dailyMode
+  isProcessEvent = false
 }) => {
-  // Get the base position on the spiral - use daily positioning if in daily mode
-  const position = useMemo(() => {
-    return dailyMode?.enabled 
-      ? getDailyEventPosition(event, dailyMode.startDate, 5 * zoom, 1.5 * zoom)
-      : getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
-  }, [event, startYear, zoom, dailyMode]);
+  // Get the base position on the spiral
+  const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
   
   // References for animation
   const particlesRef = useRef<THREE.Points>(null);

@@ -1,6 +1,4 @@
 
-import * as THREE from "three";
-
 export interface TimeEvent {
   id: string;
   title: string;
@@ -21,20 +19,4 @@ export interface SpiralConfig {
   zoom: number;
   centerX: number;
   centerY: number;
-}
-
-export interface SpiralPoint {
-  position: THREE.Vector3;
-  year: number;
-  month: number;
-  day: number;
-  hour?: number;
-  minute?: number;
-}
-
-// Daily mode configuration for events
-export interface DailyModeConfig {
-  enabled: boolean;
-  startDate: Date;
-  endDate: Date;
 }

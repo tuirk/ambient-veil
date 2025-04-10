@@ -1,15 +1,13 @@
 import React from "react";
-import { TimeEvent, SpiralConfig, DailyModeConfig } from "@/types/event";
+import { TimeEvent, SpiralConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
-import { getDailyEventPosition } from "@/utils/dailyUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
-  dailyMode?: DailyModeConfig;
 }
 
 // Helper function to determine if an event is actually a one-time event
@@ -53,8 +51,7 @@ const getClippedEvent = (event: TimeEvent, startYear: number): TimeEvent => {
 export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
   events,
   config,
-  onEventClick,
-  dailyMode
+  onEventClick
 }) => {
   return (
     <>
@@ -107,23 +104,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
         // Determine if this should be visualized as a one-time or process event
         const actuallyOneTimeEvent = isOneTimeEvent(visibleEvent);
         
-        // Handle positioning for daily mode if enabled
-        let position;
-        if (dailyMode?.enabled) {
-          position = getDailyEventPosition(
-            visibleEvent,
-            dailyMode.startDate,
-            5 * config.zoom,
-            1.5 * config.zoom
-          );
-          
-          // Skip events that are not within the visible period for daily view
-          // This prevents events from appearing at the default position when they're outside the date range
-          if (position.x === -100 && position.y === -100 && position.z === -100) {
-            return null;
-          }
-        }
-        
         return (
           <React.Fragment key={event.id}>
             {/* ONLY add cosmic effect for actual one-time events */}
@@ -133,7 +113,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 startYear={config.startYear}
                 zoom={config.zoom}
                 isProcessEvent={false}
-                dailyMode={dailyMode}
               />
             )}
             
@@ -148,7 +127,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                   const month = visibleEvent.startDate.getMonth();
                   onEventClick(year, month, 0, 0);
                 }}
-                dailyMode={dailyMode}
               />
             )}
             
@@ -159,7 +137,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={{...visibleEvent, startDate: visibleEvent.endDate}}
                 startYear={config.startYear}
                 zoom={config.zoom}
-                dailyMode={dailyMode}
               />
             )}
             
@@ -170,7 +147,6 @@ export const EventVisualizations: React.FC<EventVisualizationsProps> = ({
                 endEvent={visibleEvent} // Same start and end point for minimal duration
                 startYear={config.startYear}
                 zoom={config.zoom}
-                dailyMode={dailyMode}
               />
             )}
           </React.Fragment>
