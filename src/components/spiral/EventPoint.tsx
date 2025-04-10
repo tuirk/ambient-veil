@@ -2,24 +2,29 @@
 import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { TimeEvent } from "@/types/event";
+import { TimeEvent, DailyModeConfig } from "@/types/event";
 import { getEventPosition } from "@/utils/spiralUtils";
+import { getDailyEventPosition } from "@/utils/dailyUtils";
 
 interface EventPointProps {
   event: TimeEvent;
   startYear: number;
   zoom: number;
   onClick?: () => void;
+  dailyMode?: DailyModeConfig;
 }
 
 export const EventPoint: React.FC<EventPointProps> = ({ 
   event, 
   startYear, 
   zoom, 
-  onClick 
+  onClick,
+  dailyMode
 }) => {
-  // Get position on the spiral
-  const position = getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
+  // Get position on the spiral - use daily positioning if in daily mode
+  const position = dailyMode?.enabled
+    ? getDailyEventPosition(event, dailyMode.startDate, 5 * zoom, 1.5 * zoom)
+    : getEventPosition(event, startYear, 5 * zoom, 1.5 * zoom);
   
   // Reference for animation
   const meshRef = useRef<THREE.Mesh>(null);

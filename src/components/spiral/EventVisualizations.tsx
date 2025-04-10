@@ -1,20 +1,15 @@
-
 import React from "react";
-import { TimeEvent, SpiralConfig } from "@/types/event";
+import { TimeEvent, SpiralConfig, DailyModeConfig } from "@/types/event";
 import { EventPoint } from "./EventPoint";
 import { EventDuration } from "./EventDuration";
 import { CosmicEventEffect } from "./CosmicEventEffect";
-import { getDailyEventPosition } from "@/utils/daily/eventPositioning";
+import { getDailyEventPosition } from "@/utils/dailyUtils";
 
 interface EventVisualizationsProps {
   events: TimeEvent[];
   config: SpiralConfig;
   onEventClick: (year: number, month: number, x: number, y: number) => void;
-  dailyMode?: {
-    enabled: boolean;
-    startDate: Date;
-    endDate: Date;
-  };
+  dailyMode?: DailyModeConfig;
 }
 
 // Helper function to determine if an event is actually a one-time event

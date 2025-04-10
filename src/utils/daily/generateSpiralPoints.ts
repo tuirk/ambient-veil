@@ -1,6 +1,6 @@
 
 import { Vector3 } from "three";
-import { SpiralPoint } from "../spiralUtils";
+import { SpiralPoint } from "@/types/event";
 
 /**
  * Generates points for the daily spiral visualization
@@ -40,11 +40,11 @@ export const generateDailySpiralPoints = (
       
       // Calculate the hour within the day
       const hourProgress = progress * 24; // 0-24 progress within the day
-      const hour = Math.floor(hourProgress);
+      const currentHour = Math.floor(hourProgress);
       
       // Calculate the minute within the hour
       const minuteFraction = hourProgress - Math.floor(hourProgress);
-      const minute = Math.floor(minuteFraction * 60);
+      const currentMinute = Math.floor(minuteFraction * 60);
       
       // If this point is after current time on the current day, don't render it
       const isCurrentDay = currentDate.getFullYear() === today.getFullYear() &&
@@ -52,10 +52,10 @@ export const generateDailySpiralPoints = (
                           currentDate.getDate() === today.getDate();
       
       if (isCurrentDay) {
-        const currentHour = new Date().getHours();
-        const currentMinute = new Date().getMinutes();
+        const nowHour = new Date().getHours();
+        const nowMinute = new Date().getMinutes();
         
-        if (hour > currentHour || (hour === currentHour && minute > currentMinute)) {
+        if (currentHour > nowHour || (currentHour === nowHour && currentMinute > nowMinute)) {
           continue;
         }
       }
@@ -82,8 +82,8 @@ export const generateDailySpiralPoints = (
         year,
         month,
         day,
-        hour,
-        minute
+        hour: currentHour,
+        minute: currentMinute
       });
     }
     

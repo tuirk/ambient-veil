@@ -4,40 +4,47 @@ import { TimeEvent } from "@/types/event";
 import { getDailyEventPosition } from "./eventPositioning";
 
 /**
- * Calculate points along the spiral between two events for daily view
+ * Calculate a segment of the daily spiral between two events
  * @param startEvent The starting event
  * @param endEvent The ending event
- * @param startDate The start date of the spiral
- * @param steps Number of points to generate between start and end
+ * @param startDate The starting date of the daily spiral
+ * @param segmentPoints Number of points to use for the segment
  * @param baseRadius Base radius of the spiral
- * @param heightPerLoop Height between loops
- * @returns Array of Vector3 points forming the segment
+ * @param heightPerLoop Vertical distance between each day loop
+ * @returns Array of Vector3 points representing the segment
  */
 export const calculateDailySpiralSegment = (
   startEvent: TimeEvent,
   endEvent: TimeEvent,
   startDate: Date,
-  steps: number = 30,
+  segmentPoints: number = 30,
   baseRadius: number = 5,
   heightPerLoop: number = 1.5
 ): Vector3[] => {
   const points: Vector3[] = [];
-  const startPosition = getDailyEventPosition(startEvent, startDate, baseRadius, heightPerLoop);
-  const endPosition = getDailyEventPosition(endEvent, startDate, baseRadius, heightPerLoop);
   
-  // Skip if either position is outside the visible area
+  // Get start and end positions
+  const startPos = getDailyEventPosition(startEvent, startDate, baseRadius, heightPerLoop);
+  const endPos = getDailyEventPosition(endEvent, startDate, baseRadius, heightPerLoop);
+  
+  // If either position is outside the visible area, return an empty array
   if (
-    (startPosition.x === -100 && startPosition.y === -100 && startPosition.z === -100) ||
-    (endPosition.x === -100 && endPosition.y === -100 && endPosition.z === -100)
+    (startPos.x === -100 && startPos.y === -100 && startPos.z === -100) ||
+    (endPos.x === -100 && endPos.y === -100 && endPos.z === -100)
   ) {
-    return [startPosition];
+    return [];
   }
   
-  // Generate interpolated points between start and end
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const point = new Vector3().lerpVectors(startPosition, endPosition, t);
-    points.push(point);
+  // Create points along the segment
+  for (let i = 0; i <= segmentPoints; i++) {
+    const t = i / segmentPoints;
+    
+    // Linear interpolation between start and end
+    const x = startPos.x + (endPos.x - startPos.x) * t;
+    const y = startPos.y + (endPos.y - startPos.y) * t;
+    const z = startPos.z + (endPos.z - startPos.z) * t;
+    
+    points.push(new Vector3(x, y, z));
   }
   
   return points;
