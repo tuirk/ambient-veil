@@ -24,10 +24,24 @@ export const WeeklySpiralScene: React.FC<WeeklySpiralSceneProps> = ({
   // Update camera position based on zoom
   useEffect(() => {
     if (camera) {
-      // Adjust camera position for weekly view
+      // Calculate days since start of week to determine optimal camera position
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Set to Monday
+      const daysSinceStart = Math.floor((now.getTime() - startOfWeek.getTime()) / (24 * 60 * 60 * 1000));
+      
+      // Adjust camera position for weekly view based on how many days have passed
       const distance = 12 / config.zoom;
-      camera.position.set(distance, distance * 0.7, distance);
-      camera.lookAt(0, -3, 0); 
+      // Look at the middle of the visible spiral
+      const targetY = -(daysSinceStart / 2) * 1.5 * config.zoom;
+      
+      camera.position.set(distance, distance * 0.5 - targetY/2, distance);
+      camera.lookAt(0, targetY, 0);
+      
+      // Update orbit controls target
+      if (controlsRef.current) {
+        controlsRef.current.target.set(0, targetY, 0);
+      }
     }
   }, [config.zoom, camera]);
   
@@ -39,7 +53,8 @@ export const WeeklySpiralScene: React.FC<WeeklySpiralSceneProps> = ({
         enableZoom={true}
         minDistance={5}
         maxDistance={30}
-        target={[0, -3, 0]} 
+        enableDamping={true}
+        dampingFactor={0.05}
       />
       
       {/* Enhanced space background */}

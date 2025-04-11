@@ -56,9 +56,9 @@ export const WeeklyDayMarkers: React.FC<WeeklyDayMarkersProps> = ({
       const z = baseRadius * Math.sin(angleRad);
       
       const hourLabel = hour === 0 ? "12am" : 
-                        hour < 12 ? `${hour}am` : 
-                        hour === 12 ? "12pm" : 
-                        `${hour - 12}pm`;
+                      hour < 12 ? `${hour}am` : 
+                      hour === 12 ? "12pm" : 
+                      `${hour - 12}pm`;
       
       markers.push(
         <Text

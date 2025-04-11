@@ -41,14 +41,16 @@ export const useWeeklySpiralEvents = ({
   useEffect(() => {
     const savedEvents = getEvents();
     
-    // Filter events to show only current week events
+    // Filter events to show only current week events up to current time
     const currentWeekEvents = savedEvents.filter(event => {
       const eventDate = new Date(event.startDate);
       const eventTime = eventDate.getTime();
       const weekEndTime = new Date(startOfWeek);
       weekEndTime.setDate(startOfWeek.getDate() + 7); // 7 days from start of week
       
-      return eventTime >= startOfWeek.getTime() && eventTime < weekEndTime.getTime();
+      return eventTime >= startOfWeek.getTime() && 
+             eventTime < weekEndTime.getTime() && 
+             eventTime <= now.getTime(); // Only show events up to the current time
     });
     
     setEvents(currentWeekEvents);
@@ -108,12 +110,14 @@ export const useWeeklySpiralEvents = ({
     const updatedAllEvents = [...allEvents, newEvent]; // Add the new event to all events
     saveEvents(updatedAllEvents); // Save all events
     
-    // Only update state with events from current week
+    // Only update state with events from current week up to current time
     const eventDate = new Date(newEvent.startDate);
     const weekEndTime = new Date(startOfWeek);
     weekEndTime.setDate(startOfWeek.getDate() + 7);
     
-    if (eventDate >= startOfWeek && eventDate < weekEndTime) {
+    if (eventDate >= startOfWeek && 
+        eventDate < weekEndTime && 
+        eventDate <= now) {
       setEvents([...events, newEvent]); // Only update UI with current week events
     }
     

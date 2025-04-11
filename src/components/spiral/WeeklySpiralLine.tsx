@@ -11,7 +11,7 @@ interface WeeklySpiralLineProps {
 export const WeeklySpiralLine: React.FC<WeeklySpiralLineProps> = ({
   zoom
 }) => {
-  // Generate points for the weekly spiral
+  // Generate points for the weekly spiral with increased density for smoother curve
   const spiralPoints = generateWeeklySpiralPoints(zoom, 1.5 * zoom);
   
   // Extract positions for the spiral line
@@ -29,7 +29,6 @@ export const WeeklySpiralLine: React.FC<WeeklySpiralLineProps> = ({
     const dayOfWeek = Math.floor((date.getTime() - startOfWeek.getTime()) / (24 * 60 * 60 * 1000));
     
     // Color variations by day of the week with smoother transitions
-    let baseColor;
     const dayColors = [
       new THREE.Color(0x6495ED), // Monday - Blue
       new THREE.Color(0x98FB98), // Tuesday - Green
@@ -41,7 +40,7 @@ export const WeeklySpiralLine: React.FC<WeeklySpiralLineProps> = ({
     ];
     
     // Get the base color for this day
-    baseColor = dayColors[dayOfWeek];
+    let baseColor = dayColors[dayOfWeek];
     
     // If this is a new day, implement a gradual transition
     if (dayOfWeek !== previousDay && previousDay !== -1) {
@@ -63,9 +62,9 @@ export const WeeklySpiralLine: React.FC<WeeklySpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={2} // Thicker line for better visibility
+      lineWidth={2.5} // Slightly thicker line for better visibility
       transparent
-      opacity={0.6}
+      opacity={0.7}
     />
   );
 };

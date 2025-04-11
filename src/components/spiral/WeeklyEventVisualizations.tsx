@@ -25,7 +25,7 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
   // Filter events to only show those in the current week and up to the current time
   const weeklyEvents = events.filter(event => {
     const eventStart = new Date(event.startDate);
-    return eventStart >= startOfWeek && eventStart < endOfWeek && eventStart <= now;
+    return eventStart >= startOfWeek && eventStart <= now && eventStart < endOfWeek;
   });
   
   return (
@@ -83,6 +83,12 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
           
           // Only render if we have points to show
           if (points.length > 0) {
+            const position = getWeeklyEventPosition(
+              event.startDate,
+              config.zoom,
+              1.5 * config.zoom
+            );
+            
             return (
               <EventDuration
                 key={event.id}
@@ -90,6 +96,12 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
                 endEvent={{...event, startDate: weekEndClamped}}
                 startYear={config.startYear}
                 zoom={config.zoom}
+                onClick={() => {
+                  const year = event.startDate.getFullYear();
+                  const month = event.startDate.getMonth();
+                  const day = event.startDate.getDate();
+                  onEventClick(year, month, day, position.x, position.z);
+                }}
               />
             );
           }
