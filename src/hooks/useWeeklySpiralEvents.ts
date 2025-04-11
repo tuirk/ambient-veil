@@ -19,6 +19,7 @@ export const useWeeklySpiralEvents = ({
 
   // Get start of the current week (Monday)
   const startOfWeek = getStartOfWeek(new Date());
+  const now = new Date();
 
   const [events, setEvents] = useState<TimeEvent[]>([]);
   const [config, setConfig] = useState<SpiralConfig>({
@@ -75,6 +76,17 @@ export const useWeeklySpiralEvents = ({
     const weekEndTime = new Date(startOfWeek);
     weekEndTime.setDate(startOfWeek.getDate() + 7);
     
+    // Check if clicked date is in the future
+    if (clickedDate > now) {
+      toast({
+        title: "Cannot Add Future Events",
+        description: "You can only add memories up to the current time",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if clicked date is outside the current week
     if (clickedDate < startOfWeek || clickedDate >= weekEndTime) {
       toast({
         title: "Outside Current Week",

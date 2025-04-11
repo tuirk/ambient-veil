@@ -28,32 +28,27 @@ export const WeeklySpiralLine: React.FC<WeeklySpiralLineProps> = ({
     startOfWeek.setDate(date.getDate() - ((date.getDay() + 6) % 7)); // Set to Monday
     const dayOfWeek = Math.floor((date.getTime() - startOfWeek.getTime()) / (24 * 60 * 60 * 1000));
     
-    // Color variations by day of the week
+    // Color variations by day of the week with smoother transitions
     let baseColor;
-    switch(dayOfWeek) {
-      case 0: // Monday
-        baseColor = new THREE.Color(0x6495ED); // Blue
-        break;
-      case 1: // Tuesday
-        baseColor = new THREE.Color(0x98FB98); // Green
-        break;
-      case 2: // Wednesday
-        baseColor = new THREE.Color(0xFFD700); // Yellow
-        break;
-      case 3: // Thursday
-        baseColor = new THREE.Color(0xFFA07A); // Light salmon
-        break;
-      case 4: // Friday
-        baseColor = new THREE.Color(0xDA70D6); // Orchid
-        break;
-      case 5: // Saturday
-        baseColor = new THREE.Color(0xFF6347); // Tomato
-        break;
-      case 6: // Sunday
-        baseColor = new THREE.Color(0xF0F8FF); // Alice blue
-        break;
-      default:
-        baseColor = new THREE.Color(0xFFFFFF); // White
+    const dayColors = [
+      new THREE.Color(0x6495ED), // Monday - Blue
+      new THREE.Color(0x98FB98), // Tuesday - Green
+      new THREE.Color(0xFFD700), // Wednesday - Yellow
+      new THREE.Color(0xFFA07A), // Thursday - Light salmon
+      new THREE.Color(0xDA70D6), // Friday - Orchid
+      new THREE.Color(0xFF6347), // Saturday - Tomato
+      new THREE.Color(0xF0F8FF)  // Sunday - Alice blue
+    ];
+    
+    // Get the base color for this day
+    baseColor = dayColors[dayOfWeek];
+    
+    // If this is a new day, implement a gradual transition
+    if (dayOfWeek !== previousDay && previousDay !== -1) {
+      // Create a transition by blending between colors
+      const prevColor = dayColors[previousDay];
+      const fraction = (point.position.y % (1.5 * zoom)) / (1.5 * zoom);
+      baseColor = prevColor.clone().lerp(baseColor, fraction);
     }
     
     // Make colors more visible

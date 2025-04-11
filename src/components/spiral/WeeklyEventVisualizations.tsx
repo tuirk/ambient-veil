@@ -17,14 +17,15 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
   config,
   onEventClick
 }) => {
+  const now = new Date();
   const startOfWeek = getStartOfWeek(new Date());
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 7);
   
-  // Filter events to only show those in the current week
+  // Filter events to only show those in the current week and up to the current time
   const weeklyEvents = events.filter(event => {
     const eventStart = new Date(event.startDate);
-    return eventStart >= startOfWeek && eventStart < endOfWeek;
+    return eventStart >= startOfWeek && eventStart < endOfWeek && eventStart <= now;
   });
   
   return (
@@ -67,12 +68,14 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
         } 
         // For process events with end date: render duration along spiral
         else if (event.endDate) {
-          // Make sure the end date is within the current week
-          const clampedEndDate = new Date(Math.min(event.endDate.getTime(), endOfWeek.getTime()));
+          // Make sure the end date is not in the future
+          const clampedEndDate = new Date(Math.min(event.endDate.getTime(), now.getTime()));
+          // Also make sure it's within the current week
+          const weekEndClamped = new Date(Math.min(clampedEndDate.getTime(), endOfWeek.getTime()));
           
           const points = calculateWeeklySpiralSegment(
             event.startDate, 
-            clampedEndDate,
+            weekEndClamped,
             50,
             config.zoom,
             1.5 * config.zoom
@@ -84,7 +87,7 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
               <EventDuration
                 key={event.id}
                 startEvent={event}
-                endEvent={{...event, startDate: clampedEndDate}}
+                endEvent={{...event, startDate: weekEndClamped}}
                 startYear={config.startYear}
                 zoom={config.zoom}
               />

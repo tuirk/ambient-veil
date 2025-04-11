@@ -10,13 +10,19 @@ interface WeeklyDayMarkersProps {
 export const WeeklyDayMarkers: React.FC<WeeklyDayMarkersProps> = ({ 
   zoom 
 }) => {
+  const now = new Date();
   const startOfWeek = getStartOfWeek(new Date());
   const markers = [];
   const baseRadius = 5 * zoom;
   const heightPerLoop = 1.5 * zoom;
   
-  // Add markers for each day of the week
-  for (let day = 0; day < 7; day++) {
+  // Calculate how many days have passed in the current week
+  const daysSinceStart = Math.floor((now.getTime() - startOfWeek.getTime()) / (24 * 60 * 60 * 1000));
+  // Include the current day
+  const daysToRender = Math.min(daysSinceStart + 1, 7);
+  
+  // Add markers for each day of the week (only up to current day)
+  for (let day = 0; day < daysToRender; day++) {
     // Calculate date for this day
     const currentDate = new Date(startOfWeek);
     currentDate.setDate(startOfWeek.getDate() + day);
@@ -38,8 +44,11 @@ export const WeeklyDayMarkers: React.FC<WeeklyDayMarkersProps> = ({
       </Text>
     );
     
+    // For the current day, only show hours up to the current hour
+    const maxHour = day === daysSinceStart ? now.getHours() : 23;
+    
     // Add time markers for each day (at 6-hour intervals)
-    for (let hour = 0; hour < 24; hour += 6) {
+    for (let hour = 0; hour <= maxHour; hour += 6) {
       const hourProgress = hour / 24;
       const angleRad = hourProgress * Math.PI * 2;
       

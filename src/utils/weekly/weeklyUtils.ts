@@ -20,6 +20,7 @@ export function generateWeeklySpiralPoints(
   zoom: number = 1,
   heightPerLoop: number = 1.5
 ): SpiralPoint[] {
+  const now = new Date();
   const startOfWeek = getStartOfWeek(new Date());
   const startYear = startOfWeek.getFullYear();
   const startMonth = startOfWeek.getMonth();
@@ -27,27 +28,37 @@ export function generateWeeklySpiralPoints(
   
   const points: SpiralPoint[] = [];
   const pointsPerDay = 24; // Hours in a day
-  const daysInWeek = 7;
-  const totalPoints = pointsPerDay * daysInWeek;
+  
+  // Calculate how many days have passed in the current week
+  const daysSinceStart = Math.floor((now.getTime() - startOfWeek.getTime()) / (24 * 60 * 60 * 1000));
+  // Include the current day
+  const daysToRender = Math.min(daysSinceStart + 1, 7);
+  
+  // Calculate total hours to render (full days + hours in current day)
+  const fullDaysHours = Math.max(0, daysSinceStart) * 24;
+  const currentDayHours = now.getHours() + 1; // +1 to include the current hour
+  const totalHours = Math.min(fullDaysHours + currentDayHours, 7 * 24); // Cap at a full week
+  
+  const totalPoints = totalHours;
   const baseRadius = 5 * zoom;
   
   for (let i = 0; i <= totalPoints; i++) {
-    const progress = i / totalPoints;
-    const dayProgress = progress * daysInWeek;
-    const currentDayIndex = Math.floor(dayProgress);
-    const dayFraction = dayProgress - currentDayIndex;
+    const hourOfWeek = i;
+    const currentDayIndex = Math.floor(hourOfWeek / 24);
+    const hourOfDay = hourOfWeek % 24;
     
     // Calculate date for this point
     const pointDate = new Date(startOfWeek);
     pointDate.setDate(startDay + currentDayIndex);
+    pointDate.setHours(hourOfDay, 0, 0, 0);
     
-    // Calculate angle based on time within the day (0 to 2π)
-    const angleRad = dayFraction * Math.PI * 2; 
+    // Calculate angle based on hour within the day (0 to 2π)
+    const angleRad = (hourOfDay / 24) * Math.PI * 2; 
     
-    // The radius should be consistent for the whole week
+    // Use a consistent radius for all days
     const currentRadius = baseRadius;
     
-    // Calculate height based on day of week
+    // Calculate height based on day of week (smooth transition)
     const y = -currentDayIndex * heightPerLoop * zoom;
     
     // Calculate x and z based on the angle and radius
@@ -76,13 +87,16 @@ export function getWeeklyEventPosition(
   const dateTimestamp = date.getTime();
   
   // Calculate days since start of week
-  const daysSinceStart = Math.floor((dateTimestamp - startTimestamp) / (24 * 60 * 60 * 1000));
+  const daysSinceStart = (dateTimestamp - startTimestamp) / (24 * 60 * 60 * 1000);
   
   if (daysSinceStart < 0 || daysSinceStart >= 7) {
     console.warn("Date is outside of current week");
     // Return a fallback position if the date is outside the week
     return new Vector3(0, 0, 0);
   }
+  
+  // Calculate day index and time of day
+  const dayIndex = Math.floor(daysSinceStart);
   
   // Calculate time of day as a fraction (0 to 1)
   const hours = date.getHours();
@@ -95,7 +109,7 @@ export function getWeeklyEventPosition(
   // Calculate position
   const baseRadius = 5 * zoom;
   const x = baseRadius * Math.cos(angleRad);
-  const y = -daysSinceStart * heightPerLoop * zoom;
+  const y = -dayIndex * heightPerLoop * zoom;
   const z = baseRadius * Math.sin(angleRad);
   
   return new Vector3(x, y, z);
