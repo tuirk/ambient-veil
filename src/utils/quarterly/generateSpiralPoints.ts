@@ -4,18 +4,18 @@ import { SpiralPoint } from "../spiralUtils";
 
 /**
  * Generates points for the quarterly spiral visualization
- * Each coil represents 1 month for better detail in the current year
+ * Each coil represents 3 months (one quarter of a year)
  * @param startYear The first year to display in the spiral
  * @param currentYear The latest year to display in the spiral
- * @param stepsPerLoop Number of points to use for each month loop
+ * @param stepsPerLoop Number of points to use for each quarter loop
  * @param radius Base radius of the spiral
- * @param heightPerLoop Vertical distance between each month loop
+ * @param heightPerLoop Vertical distance between each quarter loop
  * @returns Array of spiral points with position and date information
  */
 export const generateQuarterlySpiralPoints = (
   startYear: number,
   currentYear: number,
-  stepsPerLoop: number = 180,
+  stepsPerLoop: number = 360,
   radius: number = 5,
   heightPerLoop: number = 1.5
 ): SpiralPoint[] => {
@@ -36,44 +36,53 @@ export const generateQuarterlySpiralPoints = (
   for (let yearOffset = 0; yearOffset < yearSpan; yearOffset++) {
     const year = startYear + yearOffset;
     
-    // For current year, determine how many months to show based on today's date
-    const monthsToShow = (year === todayYear) 
-      ? todayMonth + 1 // Only render months up to the current one
-      : 12; // All months for past years
+    // For current year, determine how many quarters to show based on today's date
+    const numberOfQuarters = (year === todayYear) 
+      ? Math.floor(todayMonth / 3) + 1 // Only render quarters up to the current one
+      : 4; // All quarters for past years
     
-    // Create monthly coils (12 coils per year)
-    for (let month = 0; month < monthsToShow; month++) {
-      // Calculate the days in this month
-      const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
-      // Adjust for leap years
-      const daysThisMonth = (month === 1 && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)) 
-        ? 29 // February in leap year
-        : daysInMonth;
+    // Create quarterly coils (4 coils per year, 3 months per coil)
+    for (let quarter = 0; quarter < numberOfQuarters; quarter++) {
+      // For the current quarter of the current year, only show days up to today
+      const isCurrentQuarter = (year === todayYear && quarter === Math.floor(todayMonth / 3));
       
-      // For the current month of the current year, only show days up to today
-      const isCurrentMonth = (year === todayYear && month === todayMonth);
-      const daysToShow = isCurrentMonth ? todayDay : daysThisMonth;
+      // Steps for this quarter
+      const stepsThisQuarter = stepsPerLoop;
       
-      // Steps for this month - proportional to days in month
-      const stepsThisMonth = Math.max(60, Math.floor(stepsPerLoop * (daysToShow / 31)));
-      
-      // Create points around the loop for this month
-      for (let step = 0; step < stepsThisMonth; step++) {
-        const dayProgress = step / stepsThisMonth;
+      // Create points around the loop for this quarter
+      for (let step = 0; step < stepsThisQuarter; step++) {
+        const progress = step / stepsPerLoop;
         
-        // Calculate the day within the month (1-based)
-        const day = Math.floor(dayProgress * daysToShow) + 1;
+        // Calculate the month within the year
+        const monthOffset = quarter * 3; // 0, 3, 6, or 9
+        const monthProgress = progress * 3; // 0-3 progress within the quarter
+        const month = monthOffset + Math.floor(monthProgress);
         
-        // Calculate angle for this point in the spiral (one full circle per month)
+        // Calculate the day within the month (approximate)
+        const monthIndex = month % 12;
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][monthIndex];
+        const dayFraction = monthProgress - Math.floor(monthProgress);
+        const day = Math.floor(dayFraction * daysInMonth) + 1;
+        
+        // Skip points after today's date in the current quarter
+        if (isCurrentQuarter) {
+          // If we're in a future month of the current quarter
+          if (month > todayMonth) continue;
+          
+          // If we're in the current month but a future day
+          if (month === todayMonth && day > todayDay) continue;
+        }
+        
+        // Calculate angle for this point in the spiral
         // The negative angle creates clockwise rotation
-        const angleRad = -dayProgress * Math.PI * 2 + Math.PI/2;
+        const angleRad = -progress * Math.PI * 2 + Math.PI/2;
         
-        // Calculate the total progress through all months
-        const totalMonths = yearOffset * 12 + month;
-        const totalProgress = totalMonths + dayProgress;
+        // Calculate the total progress through all quarters
+        const totalQuarters = yearOffset * 4 + quarter;
+        const totalProgress = totalQuarters + progress;
         
-        // Apply gradual radius expansion for visual clarity - match event positioning
-        const currentRadius = baseRadius + totalProgress * 0.15;
+        // Apply consistent radius expansion formula - must match event positioning
+        const currentRadius = baseRadius + totalProgress * 0.5;
         
         // Position calculation with gradual height change
         const x = currentRadius * Math.cos(angleRad);

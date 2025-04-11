@@ -19,7 +19,7 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   const spiralPoints = generateQuarterlySpiralPoints(
     startYear, 
     currentYear, 
-    180, // Points per monthly coil
+    540, // More points for smoother spiral 
     5 * zoom, 
     1.5 * zoom
   );
@@ -27,36 +27,30 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
   // Extract positions for the spiral line
   const positions = spiralPoints.map(point => point.position);
   
-  // Create colors for the spiral line with enhanced month transitions
+  // Create colors for the spiral line with enhanced quarter transitions
   const colors = [];
-  let previousMonth = -1;
+  let previousQuarter = -1;
   
   spiralPoints.forEach((point) => {
-    const month = point.month;
+    const quarter = Math.floor(point.month / 3);
     
-    // Enhanced color variations by month with improved visibility
+    // Enhanced color variations by quarter with improved visibility
     let baseColor;
-    
-    // Seasonal coloring
-    if (month === 0 || month === 1 || month === 2) {
-      // Winter (blue-white)
-      baseColor = new THREE.Color(0xF0F8FF);
-    } else if (month === 3 || month === 4 || month === 5) {
-      // Spring (green)
-      baseColor = new THREE.Color(0x98FB98);
-    } else if (month === 6 || month === 7 || month === 8) {
-      // Summer (gold)
-      baseColor = new THREE.Color(0xFFD700);
+    if (quarter === 0) {
+      baseColor = new THREE.Color(0x6495ED); // Spring blue
+    } else if (quarter === 1) {
+      baseColor = new THREE.Color(0x98FB98); // Summer green
+    } else if (quarter === 2) {
+      baseColor = new THREE.Color(0xDAA520); // Fall gold
     } else {
-      // Fall (orange-gold)
-      baseColor = new THREE.Color(0xDAA520);
+      baseColor = new THREE.Color(0xF0F8FF); // Winter white-blue
     }
     
-    // Make colors more visible in quarterly view
-    baseColor.lerp(new THREE.Color(0xffffff), 0.6);
+    // Make colors more visible in quarterly view - less white blending
+    baseColor.lerp(new THREE.Color(0xffffff), 0.6); // Reduced from 0.8 to 0.6 for more vibrance
     colors.push(baseColor);
     
-    previousMonth = month;
+    previousQuarter = quarter;
   });
   
   return (
@@ -64,9 +58,9 @@ export const QuarterlySpiralLine: React.FC<QuarterlySpiralLineProps> = ({
       points={positions}
       color="white"
       vertexColors={colors}
-      lineWidth={2}
+      lineWidth={2} // Increased from 1.5 for better visibility
       transparent
-      opacity={0.6}
+      opacity={0.6} // Increased from 0.4 for better visibility
     />
   );
 };
