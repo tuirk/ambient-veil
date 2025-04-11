@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Info } from "lucide-react";
 
 interface SpiralHelpProps {
-  viewType: "annual" | "quarterly";
+  viewType: "annual" | "quarterly" | "weekly";
   currentYear: number;
 }
 
@@ -37,7 +37,7 @@ export const SpiralHelp: React.FC<SpiralHelpProps> = ({ viewType, currentYear })
                 <li>Drag to rotate the view and scroll to zoom in/out.</li>
               </ul>
             </>
-          ) : (
+          ) : viewType === "quarterly" ? (
             <>
               <h3 className="font-medium text-lg">Quarterly Timeline View</h3>
               <p className="text-sm text-gray-300">
@@ -46,6 +46,20 @@ export const SpiralHelp: React.FC<SpiralHelpProps> = ({ viewType, currentYear })
               <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
                 <li>Each coil represents 3 months (one quarter).</li>
                 <li>The visualization starts from January 1st of the current year.</li>
+                <li>Click anywhere on the spiral to add a memory at that time.</li>
+                <li>Colored trails represent events in your life.</li>
+                <li>Drag to rotate the view and scroll to zoom in/out.</li>
+              </ul>
+            </>
+          ) : (
+            <>
+              <h3 className="font-medium text-lg">Weekly View</h3>
+              <p className="text-sm text-gray-300">
+                This 3D spiral represents the current week, day by day.
+              </p>
+              <ul className="text-sm text-gray-300 space-y-2 list-disc pl-5">
+                <li>Each coil represents one day of the week.</li>
+                <li>The visualization starts from Monday of the current week.</li>
                 <li>Click anywhere on the spiral to add a memory at that time.</li>
                 <li>Colored trails represent events in your life.</li>
                 <li>Drag to rotate the view and scroll to zoom in/out.</li>
