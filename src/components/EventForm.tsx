@@ -42,6 +42,7 @@ const EventForm: React.FC<EventFormProps> = ({
   onSave,
   preselectedYear,
   preselectedMonth,
+  preselectedDay,
   startYear: minStartYear,
   currentYear,
 }) => {
@@ -109,7 +110,7 @@ const EventForm: React.FC<EventFormProps> = ({
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
       setSingleYear(constrainedYear);
-      setSpanStartYear(constrainedYear); // Updated to use spanStartYear
+      setSpanStartYear(constrainedYear);
       setEndYear(constrainedYear);
       setSeasonYear(constrainedYear);
     }
@@ -455,9 +456,7 @@ const EventForm: React.FC<EventFormProps> = ({
                       className="rounded-md border border-input bg-background/50 px-3 py-2"
                     >
                       {years.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
+                        <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
                   </div>
