@@ -18,6 +18,7 @@ interface EventFormProps {
   onSave: (event: TimeEvent) => void;
   preselectedYear?: number;
   preselectedMonth?: number;
+  preselectedDay?: number;
   startYear: number;
   currentYear: number;
 }
@@ -41,7 +42,7 @@ const EventForm: React.FC<EventFormProps> = ({
   onSave,
   preselectedYear,
   preselectedMonth,
-  startYear: minStartYear, // Renamed to minStartYear to avoid conflict
+  startYear: minStartYear,
   currentYear,
 }) => {
   const { toast } = useToast();
@@ -118,7 +119,13 @@ const EventForm: React.FC<EventFormProps> = ({
       setStartMonth(preselectedMonth);
       setEndMonth(preselectedMonth);
     }
-  }, [preselectedYear, preselectedMonth, minYear, maxYear]);
+
+    if (preselectedDay !== undefined) {
+      setSingleDay(preselectedDay);
+      setStartDay(preselectedDay);
+      setEndDay(preselectedDay);
+    }
+  }, [preselectedYear, preselectedMonth, preselectedDay, minYear, maxYear]);
 
   // Update available days when months/years change
   useEffect(() => {
