@@ -12,7 +12,7 @@ import { TimeEvent } from "@/types/event";
  * @param startYear First year of the spiral (for reference)
  * @param segmentPoints Requested number of points
  * @param radius Base radius of the spiral
- * @param heightPerLoop Vertical distance between quarter loops
+ * @param heightPerLoop Vertical distance between month loops
  * @returns Array of 3D points forming a smooth line between events
  */
 export const calculateQuarterlySpiralSegment = (
@@ -46,12 +46,8 @@ export const calculateQuarterlySpiralSegment = (
     const currentDate = new Date(effectiveStartDate.getTime() + progress * totalDays * 24 * 60 * 60 * 1000);
     
     const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const day = currentDate.getDate();
-    
-    // Calculate quarter and progress - improved accuracy
-    const quarter = Math.floor(month / 3);
-    const monthInQuarter = month % 3;
+    const month = currentDate.getMonth(); // 0-11
+    const day = currentDate.getDate(); // 1-31
     
     // More accurate day progress calculation
     const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -60,16 +56,17 @@ export const calculateQuarterlySpiralSegment = (
       daysInMonth[1] = 29;
     }
     
+    // Day progress within the month (0 to 1)
     const dayProgress = (day - 1) / daysInMonth[month];
-    const quarterProgress = (monthInQuarter + dayProgress) / 3;
     
     // Calculate total progress
     const yearOffset = year - startYear;
-    const totalProgress = yearOffset * 4 + quarter + quarterProgress;
+    const totalMonths = yearOffset * 12 + month; // Total months since start year
+    const totalProgress = totalMonths + dayProgress; // Progress including day position
     
     // Calculate position
-    const angleRad = -quarterProgress * Math.PI * 2 + Math.PI/2;
-    const currentRadius = radius + totalProgress * 0.5;
+    const angleRad = -dayProgress * Math.PI * 2 + Math.PI/2;
+    const currentRadius = radius + totalProgress * 0.15;
     
     const x = currentRadius * Math.cos(angleRad);
     const y = -totalProgress * heightPerLoop;
