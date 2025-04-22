@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { TimeEvent } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 import { SEASONS } from "@/utils/seasonalUtils";
 import { MOOD_COLORS, MONTHS, daysInMonth } from "./event-form/constants";
-import { validateDateRanges, createEventObject } from "./event-form/EventFormUtils";
 import ColorSelector from "./event-form/ColorSelector";
 import IntensitySlider from "./event-form/IntensitySlider";
 import DateTypeSelector from "./event-form/DateTypeSelector";
@@ -47,16 +46,13 @@ const EventForm: React.FC<EventFormProps> = ({
     (_, i) => minYear + i
   );
 
-  // Basic event details
   const [title, setTitle] = useState("");
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
   
-  // Date selection logic
   const [dateLength, setDateLength] = useState<"ONE_DAY" | "SPAN">("ONE_DAY");
   const [spanType, setSpanType] = useState<"SEASONAL" | "EXACT">("EXACT");
   
-  // One-day event
   const [singleDay, setSingleDay] = useState(preselectedDay || 1);
   const [singleMonth, setSingleMonth] = useState(preselectedMonth || 0);
   const [singleYear, setSingleYear] = useState(
@@ -65,7 +61,6 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
   
-  // Span - Exact dates
   const [startDay, setStartDay] = useState(preselectedDay || 1);
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
   const [spanStartYear, setSpanStartYear] = useState(
@@ -78,7 +73,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const [endMonth, setEndMonth] = useState(startMonth);
   const [endYear, setEndYear] = useState(spanStartYear);
   
-  // Span - Seasonal
   const [season, setSeason] = useState<string>("Spring");
   const [seasonYear, setSeasonYear] = useState(
     preselectedYear ? 
@@ -86,12 +80,13 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
 
-  // Available days for each month
   const [availableDays, setAvailableDays] = useState<number[]>([]);
   const [availableEndDays, setAvailableEndDays] = useState<number[]>([]);
   const [availableSingleDays, setAvailableSingleDays] = useState<number[]>([]);
 
-  // Initialize with preselected values if available
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+
   useEffect(() => {
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
@@ -114,7 +109,6 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [preselectedYear, preselectedMonth, preselectedDay, minYear, maxYear]);
 
-  // Update available days when months/years change
   useEffect(() => {
     const days = daysInMonth(startMonth, spanStartYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
@@ -145,7 +139,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const handleSave = () => {
     if (!title) return;
 
-    // Validate date ranges
     const validation = validateDateRanges(
       dateLength, 
       spanType, 
@@ -173,25 +166,29 @@ const EventForm: React.FC<EventFormProps> = ({
       return;
     }
 
-    const newEvent = createEventObject(
-      dateLength,
-      spanType,
-      title,
-      selectedColor,
-      intensity,
-      singleYear,
-      singleMonth,
-      singleDay,
-      seasonYear,
-      season,
-      spanStartYear,
-      startMonth,
-      startDay,
-      endYear,
-      endMonth,
-      endDay,
-      specifyDays
-    );
+    const newEvent = {
+      ...createEventObject(
+        dateLength,
+        spanType,
+        title,
+        selectedColor,
+        intensity,
+        singleYear,
+        singleMonth,
+        singleDay,
+        seasonYear,
+        season,
+        spanStartYear,
+        startMonth,
+        startDay,
+        endYear,
+        endMonth,
+        endDay,
+        specifyDays
+      ),
+      description: description || undefined,
+      tags: tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '') : undefined
+    };
 
     onSave(newEvent);
     resetForm();
@@ -200,6 +197,8 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const resetForm = () => {
     setTitle("");
+    setDescription("");
+    setTags("");
     setSelectedColor(MOOD_COLORS[0]);
     setIntensity(5);
     setDateLength("ONE_DAY");
@@ -218,7 +217,6 @@ const EventForm: React.FC<EventFormProps> = ({
         </DialogHeader>
 
         <div className="grid gap-5 py-4">
-          {/* Title field */}
           <div className="grid gap-2">
             <label htmlFor="title" className="text-sm font-medium leading-none">
               Title
@@ -232,26 +230,48 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          {/* Color selection */}
+          <div className="grid gap-2">
+            <label htmlFor="description" className="text-sm font-medium leading-none">
+              Description
+            </label>
+            <Textarea
+              id="description"
+              placeholder="Tell me more about this memory..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-background/50 min-h-[100px]"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <label htmlFor="tags" className="text-sm font-medium leading-none">
+              Tags (comma separated)
+            </label>
+            <Input
+              id="tags"
+              placeholder="family, vacation, milestone..."
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="bg-background/50"
+            />
+          </div>
+
           <ColorSelector 
             selectedColor={selectedColor} 
             setSelectedColor={setSelectedColor}
             colors={MOOD_COLORS}
           />
 
-          {/* Intensity slider */}
           <IntensitySlider 
             intensity={intensity} 
             setIntensity={setIntensity} 
           />
 
-          {/* Date Length Selection */}
           <DateTypeSelector 
             dateLength={dateLength} 
             setDateLength={setDateLength} 
           />
 
-          {/* Date Fields - One Day Event */}
           {dateLength === "ONE_DAY" && (
             <SingleDayPicker
               singleDay={singleDay}
@@ -266,16 +286,13 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           )}
 
-          {/* Date Fields - Span Event */}
           {dateLength === "SPAN" && (
             <>
-              {/* Span Type Selection */}
               <SpanTypeSelector 
                 spanType={spanType} 
                 setSpanType={setSpanType} 
               />
 
-              {/* Seasonal */}
               {spanType === "SEASONAL" && (
                 <SeasonPicker
                   season={season}
@@ -287,7 +304,6 @@ const EventForm: React.FC<EventFormProps> = ({
                 />
               )}
 
-              {/* Exact Dates */}
               {spanType === "EXACT" && (
                 <DateRangePicker
                   specifyDays={specifyDays}

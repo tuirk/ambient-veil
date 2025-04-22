@@ -1,11 +1,10 @@
-
 export const MOOD_COLORS = [
-  "#9b87f5", // Purple
-  "#D946EF", // Magenta
-  "#F97316", // Orange
-  "#0EA5E9", // Blue
-  "#ea384c", // Red
-  "#16a34a", // Green
+  "#8B5CF6", // Vivid Purple
+  "#D946EF", // Bright Magenta
+  "#F97316", // Bright Orange
+  "#0EA5E9", // Ocean Blue
+  "#ea384c", // Bright Red
+  "#16a34a", // Forest Green
 ];
 
 export const MONTHS = [
