@@ -1,8 +1,7 @@
+
 export interface TimeEvent {
   id: string;
   title: string;
-  description?: string;
-  tags?: string[];
   color: string;
   intensity: number; // 1-10
   startDate: Date;
