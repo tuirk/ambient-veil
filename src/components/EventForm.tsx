@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { TimeEvent } from "@/types/event";
 import { v4 as uuidv4 } from "uuid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,10 +24,10 @@ interface EventFormProps {
 }
 
 const MOOD_COLORS = [
-  "#9b87f5", // Purple
+  "#9b87f5", // Primary Purple
   "#D946EF", // Magenta
   "#F97316", // Orange
-  "#0EA5E9", // Blue
+  "#0EA5E9", // Ocean Blue
   "#ea384c", // Red
   "#16a34a", // Green
 ];
@@ -41,7 +42,7 @@ const EventForm: React.FC<EventFormProps> = ({
   onSave,
   preselectedYear,
   preselectedMonth,
-  startYear: minStartYear, // Renamed to minStartYear to avoid conflict
+  startYear: minStartYear,
   currentYear,
 }) => {
   const { toast } = useToast();
@@ -59,16 +60,13 @@ const EventForm: React.FC<EventFormProps> = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // Basic event details
   const [title, setTitle] = useState("");
   const [selectedColor, setSelectedColor] = useState(MOOD_COLORS[0]);
   const [intensity, setIntensity] = useState(5);
   
-  // Date selection logic
   const [dateLength, setDateLength] = useState<"ONE_DAY" | "SPAN">("ONE_DAY");
   const [spanType, setSpanType] = useState<"SEASONAL" | "EXACT">("EXACT");
   
-  // One-day event
   const [singleDay, setSingleDay] = useState(1);
   const [singleMonth, setSingleMonth] = useState(preselectedMonth || 0);
   const [singleYear, setSingleYear] = useState(
@@ -77,10 +75,9 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
   
-  // Span - Exact dates
   const [startDay, setStartDay] = useState(1);
   const [startMonth, setStartMonth] = useState(preselectedMonth || 0);
-  const [spanStartYear, setSpanStartYear] = useState( // Renamed from startYear to spanStartYear
+  const [spanStartYear, setSpanStartYear] = useState(
     preselectedYear ? 
       Math.max(minYear, Math.min(maxYear, preselectedYear)) : 
       currentYear
@@ -88,9 +85,8 @@ const EventForm: React.FC<EventFormProps> = ({
   const [specifyDays, setSpecifyDays] = useState(false);
   const [endDay, setEndDay] = useState(1);
   const [endMonth, setEndMonth] = useState(startMonth);
-  const [endYear, setEndYear] = useState(spanStartYear); // Updated to use spanStartYear
+  const [endYear, setEndYear] = useState(spanStartYear);
   
-  // Span - Seasonal
   const [season, setSeason] = useState<string>("Spring");
   const [seasonYear, setSeasonYear] = useState(
     preselectedYear ? 
@@ -98,17 +94,18 @@ const EventForm: React.FC<EventFormProps> = ({
       currentYear
   );
 
-  // Available days for each month
   const [availableDays, setAvailableDays] = useState<number[]>([]);
   const [availableEndDays, setAvailableEndDays] = useState<number[]>([]);
   const [availableSingleDays, setAvailableSingleDays] = useState<number[]>([]);
 
-  // Initialize with preselected values if available
+  const [description, setDescription] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+
   useEffect(() => {
     if (preselectedYear) {
       const constrainedYear = Math.max(minYear, Math.min(maxYear, preselectedYear));
       setSingleYear(constrainedYear);
-      setSpanStartYear(constrainedYear); // Updated to use spanStartYear
+      setSpanStartYear(constrainedYear);
       setEndYear(constrainedYear);
       setSeasonYear(constrainedYear);
     }
@@ -120,15 +117,14 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [preselectedYear, preselectedMonth, minYear, maxYear]);
 
-  // Update available days when months/years change
   useEffect(() => {
-    const days = daysInMonth(startMonth, spanStartYear); // Updated to use spanStartYear
+    const days = daysInMonth(startMonth, spanStartYear);
     setAvailableDays(Array.from({ length: days }, (_, i) => i + 1));
     
     if (startDay > days) {
       setStartDay(1);
     }
-  }, [startMonth, spanStartYear]); // Updated to use spanStartYear
+  }, [startMonth, spanStartYear]);
 
   useEffect(() => {
     const days = daysInMonth(endMonth, endYear);
@@ -151,7 +147,6 @@ const EventForm: React.FC<EventFormProps> = ({
   const handleSave = () => {
     if (!title) return;
 
-    // Validate date ranges
     if (dateLength === "ONE_DAY") {
       const eventDate = new Date(singleYear, singleMonth, singleDay);
       const minDate = new Date(minYear, 0, 1);
@@ -176,8 +171,7 @@ const EventForm: React.FC<EventFormProps> = ({
           return;
         }
       } else {
-        // Validate exact span dates
-        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1);
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         const minDate = new Date(minYear, 0, 1);
         const maxDate = new Date(maxYear, 11, 31);
@@ -202,13 +196,19 @@ const EventForm: React.FC<EventFormProps> = ({
       }
     }
 
+    const tags = tagsInput
+      .split(",")
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+
     let newEvent: TimeEvent;
 
     if (dateLength === "ONE_DAY") {
-      // Create a one-time event with a specific day
       newEvent = {
         id: uuidv4(),
         title,
+        description: description || undefined,
+        tags: tags.length > 0 ? tags : undefined,
         color: selectedColor,
         intensity,
         startDate: new Date(singleYear, singleMonth, singleDay),
@@ -216,12 +216,13 @@ const EventForm: React.FC<EventFormProps> = ({
       };
     } else if (dateLength === "SPAN") {
       if (spanType === "SEASONAL") {
-        // Create a seasonal event
         const { startDate, endDate } = getSeasonalDateRange(season, seasonYear);
         
         newEvent = {
           id: uuidv4(),
           title,
+          description: description || undefined,
+          tags: tags.length > 0 ? tags : undefined,
           color: selectedColor,
           intensity,
           startDate,
@@ -232,13 +233,14 @@ const EventForm: React.FC<EventFormProps> = ({
           eventType: "process"
         };
       } else {
-        // Create an exact process event
-        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1); // Updated to use spanStartYear
+        const startDate = new Date(spanStartYear, startMonth, specifyDays ? startDay : 1);
         const endDate = new Date(endYear, endMonth, specifyDays ? endDay : daysInMonth(endMonth, endYear));
         
         newEvent = {
           id: uuidv4(),
           title,
+          description: description || undefined,
+          tags: tags.length > 0 ? tags : undefined,
           color: selectedColor,
           intensity,
           startDate,
@@ -255,6 +257,8 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const resetForm = () => {
     setTitle("");
+    setDescription("");
+    setTagsInput("");
     setSelectedColor(MOOD_COLORS[0]);
     setIntensity(5);
     setDateLength("ONE_DAY");
@@ -264,20 +268,19 @@ const EventForm: React.FC<EventFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-background/90 backdrop-blur-sm border-cosmic-nebula-purple/20 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-md border-cosmic-nebula-purple/20 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-light tracking-wider">New Memory</DialogTitle>
-          <DialogDescription className="text-muted-foreground opacity-70">
+          <DialogDescription className="text-muted-foreground">
             Capture a moment in your spiral
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-5 py-4">
-          {/* Title field */}
           <div className="grid gap-2">
-            <label htmlFor="title" className="text-sm font-medium leading-none">
+            <Label htmlFor="title" className="text-sm font-medium">
               Title
-            </label>
+            </Label>
             <Input
               id="title"
               placeholder="What would you call this moment?"
@@ -287,9 +290,34 @@ const EventForm: React.FC<EventFormProps> = ({
             />
           </div>
 
-          {/* Color selection */}
           <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none">Emotional Tone</label>
+            <Label htmlFor="description" className="text-sm font-medium">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Tell us more about this memory..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-background/50 min-h-[100px]"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="tags" className="text-sm font-medium">
+              Tags <span className="text-muted-foreground text-xs">(comma-separated)</span>
+            </Label>
+            <Input
+              id="tags"
+              placeholder="happiness, achievement, family..."
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              className="bg-background/50"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">Emotional Tone</label>
             <div className="flex flex-wrap gap-2 mt-1">
               {MOOD_COLORS.map((color) => (
                 <button
@@ -297,7 +325,7 @@ const EventForm: React.FC<EventFormProps> = ({
                   className={`w-8 h-8 rounded-full transition-all ${
                     selectedColor === color
                       ? "ring-2 ring-white scale-110"
-                      : "opacity-70 hover:opacity-100"
+                      : "opacity-80 hover:opacity-100 hover:scale-105"
                   }`}
                   style={{ backgroundColor: color }}
                   onClick={() => setSelectedColor(color)}
@@ -306,22 +334,6 @@ const EventForm: React.FC<EventFormProps> = ({
             </div>
           </div>
 
-          {/* Intensity slider */}
-          <div className="grid gap-2">
-            <label className="text-sm font-medium leading-none">
-              Intensity: {intensity}
-            </label>
-            <Slider
-              value={[intensity]}
-              min={1}
-              max={10}
-              step={1}
-              onValueChange={(value) => setIntensity(value[0])}
-              className="mt-1"
-            />
-          </div>
-
-          {/* Date Length Selection */}
           <div className="grid gap-3 pt-2">
             <label className="text-sm font-medium leading-none">How long did this event last?</label>
             
@@ -352,7 +364,6 @@ const EventForm: React.FC<EventFormProps> = ({
             </RadioGroup>
           </div>
 
-          {/* Date Fields - One Day Event */}
           {dateLength === "ONE_DAY" && (
             <div className="grid gap-3">
               <label className="text-sm font-medium leading-none">Date</label>
@@ -388,10 +399,8 @@ const EventForm: React.FC<EventFormProps> = ({
             </div>
           )}
 
-          {/* Date Fields - Span Event */}
           {dateLength === "SPAN" && (
             <>
-              {/* Span Type Selection */}
               <div className="grid gap-3">
                 <label className="text-sm font-medium leading-none">How would you define this period?</label>
                 
@@ -422,7 +431,6 @@ const EventForm: React.FC<EventFormProps> = ({
                 </RadioGroup>
               </div>
 
-              {/* Seasonal */}
               {spanType === "SEASONAL" && (
                 <div className="grid gap-3">
                   <label className="text-sm font-medium leading-none">Season & Year</label>
@@ -457,7 +465,6 @@ const EventForm: React.FC<EventFormProps> = ({
                 </div>
               )}
 
-              {/* Exact Dates */}
               {spanType === "EXACT" && (
                 <>
                   <div className="flex items-center gap-2">
@@ -472,7 +479,6 @@ const EventForm: React.FC<EventFormProps> = ({
                     </Label>
                   </div>
 
-                  {/* Start Date */}
                   <div className="grid gap-3">
                     <label className="text-sm font-medium leading-none">Start Date</label>
                     <div className={`grid ${specifyDays ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
@@ -497,8 +503,8 @@ const EventForm: React.FC<EventFormProps> = ({
                         ))}
                       </select>
                       <select
-                        value={spanStartYear} // Updated to use spanStartYear
-                        onChange={(e) => setSpanStartYear(Number(e.target.value))} // Updated to use spanStartYear
+                        value={spanStartYear}
+                        onChange={(e) => setSpanStartYear(Number(e.target.value))}
                         className="rounded-md border border-input bg-background/50 px-3 py-2"
                       >
                         {years.map((year) => (
@@ -508,7 +514,6 @@ const EventForm: React.FC<EventFormProps> = ({
                     </div>
                   </div>
 
-                  {/* End Date */}
                   <div className="grid gap-3">
                     <label className="text-sm font-medium leading-none">End Date</label>
                     <div className={`grid ${specifyDays ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
@@ -551,7 +556,11 @@ const EventForm: React.FC<EventFormProps> = ({
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!title}>
+          <Button 
+            onClick={handleSave} 
+            disabled={!title}
+            className="bg-cosmic-nebula-purple hover:bg-cosmic-nebula-purple/90"
+          >
             Add to Spiral
           </Button>
         </DialogFooter>
