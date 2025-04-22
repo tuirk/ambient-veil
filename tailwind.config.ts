@@ -1,50 +1,33 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: ["class"],
-  content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-  ],
-  prefix: "",
-  theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-      colors: {
-        // Enhance cosmic color palette
-        cosmic: {
-          'deep-blue': '#0B0E2D',
-          'navy': '#0D1333',
-          'nebula-pink': '#FF4C8E',
-          'nebula-purple': '#7A3EF8', // Brighten the purple
-          'nebula-teal': '#12EAEA',
-          // Add more contrasting colors
-          'light-purple': '#9b87f5', // Primary Purple
-          'text-primary': '#F1F1F1', // Light gray for primary text
-          'text-secondary': '#8E9196', // Neutral gray for secondary text
-        },
-        // Modify existing color variables for better contrast
-        background: {
-          DEFAULT: 'hsl(222.2 84% 4.9%)', // Dark background
-          foreground: 'hsl(210 40% 98%)', // Light foreground text
-        },
-        primary: {
-          DEFAULT: '#7A3EF8', // Bright purple
-          foreground: '#FFFFFF', // White text on primary
-        },
+	darkMode: ["class"],
+	content: [
+		"./pages/**/*.{ts,tsx}",
+		"./components/**/*.{ts,tsx}",
+		"./app/**/*.{ts,tsx}",
+		"./src/**/*.{ts,tsx}",
+	],
+	prefix: "",
+	theme: {
+		container: {
+			center: true,
+			padding: '2rem',
+			screens: {
+				'2xl': '1400px'
+			}
+		},
+		extend: {
+			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				// background: 'hsl(var(--background))',
-				// foreground: 'hsl(var(--foreground))',
+				background: 'hsl(var(--background))',
+				foreground: 'hsl(var(--foreground))',
+				primary: {
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
+				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
@@ -79,6 +62,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				cosmic: {
+					'deep-blue': '#0B0E2D',
+					'navy': '#0D1333',
+					'nebula-pink': '#FF4C8E',
+					'nebula-purple': '#7A3EF8',
+					'nebula-teal': '#12EAEA'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
