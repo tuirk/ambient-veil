@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TimeEvent, SpiralConfig } from "@/types/event";
 import { getWeeklyEventPosition, calculateWeeklySpiralSegment, getStartOfWeek } from "@/utils/weekly/weeklyUtils";
@@ -44,7 +43,6 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
           
           return (
             <React.Fragment key={event.id}>
-              {/* Add cosmic effect for one-time events */}
               <CosmicEventEffect
                 event={event}
                 startYear={config.startYear}
@@ -96,12 +94,6 @@ export const WeeklyEventVisualizations: React.FC<WeeklyEventVisualizationsProps>
                 endEvent={{...event, startDate: weekEndClamped}}
                 startYear={config.startYear}
                 zoom={config.zoom}
-                onClick={() => {
-                  const year = event.startDate.getFullYear();
-                  const month = event.startDate.getMonth();
-                  const day = event.startDate.getDate();
-                  onEventClick(year, month, day, position.x, position.z);
-                }}
               />
             );
           }
