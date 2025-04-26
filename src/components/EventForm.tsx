@@ -334,6 +334,28 @@ const EventForm: React.FC<EventFormProps> = ({
             </div>
           </div>
 
+          <div className="grid gap-3">
+            <div className="flex justify-between">
+              <Label htmlFor="intensity" className="text-sm font-medium">
+                Intensity
+              </Label>
+              <span className="text-sm text-muted-foreground">{intensity}/10</span>
+            </div>
+            <Slider
+              id="intensity"
+              min={1}
+              max={10}
+              step={1}
+              value={[intensity]}
+              onValueChange={(values) => setIntensity(values[0])}
+              className="py-4"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Subtle</span>
+              <span>Significant</span>
+            </div>
+          </div>
+
           <div className="grid gap-3 pt-2">
             <label className="text-sm font-medium leading-none">How long did this event last?</label>
             
