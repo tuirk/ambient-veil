@@ -1,20 +1,69 @@
+# Welcome to your Lovable project
 
-🌌 You’re Here — A 3D mood-focused memory map built on spiral time and particle emotion
+## Project info
 
-Read more here: https://medium.com/@tuirkey/list/youre-here-a-moodfocused-memory-map-5463cdce1fbf 
-I am building You’re Here as a personal experiment; part cosmic mood tracker, part spatial diary. It’s a 3D spiral that floats through space, where each loop represents a year and each dot or dust trail marks a memory. Mood becomes motion, time becomes shape.
+**URL**: https://lovable.dev/projects/1d45a376-c9ec-455b-97fd-1acd3ec777d6
 
-The idea came from a reflection prompt in Feeling Good by David D. Burns, where you try to re-inhabit the emotional tone of a past moment. You usually can’t. That gap between then and now, between the version of you that felt something and the version remembering it is where this map lives.
+## How can I edit this code?
 
-I overengineered the particle logic and visual events. The animations have multiple layers and mechanics that shift depending on intensity:
+There are several ways of editing your application.
 
-- You can place single-day bursts or long emotional seasons. You can name the feeling, set the intensity, and decide whether time was crisp or fuzzy.
-- Events are mapped onto a 3D spiral by date, with radial growth and vertical descent over time creating a sense of motion through memory.
-- Each event renders with three particle layers to create a nebula-like depth effect: a dense core (primary), ambient glow (secondary), and soft filler (tertiary)
-- Higher intensity increases particle count, spread radius, animation speed, and opacity, making strong emotions feel more vivid and alive.
-- Shorter events look brighter and more concentrated; longer events stretch across the spiral and appear softer and more diffuse; same intensity, different impact.
-- Particles gently breathe and drift, with slight randomness in speed and movement to keep the scene feeling organic and emotionally responsive.
+**Use Lovable**
 
-No GitHub link for this (yet) but you can read on the design process and choices and core logic, see initial hand drawing, gifs, photos and more videos on the attached Medium link.
+Simply visit the [Lovable Project](https://lovable.dev/projects/1d45a376-c9ec-455b-97fd-1acd3ec777d6) and start prompting.
 
-You’re not stuck. You’re here.
+Changes made via Lovable will be committed automatically to this repo.
+
+**Use your preferred IDE**
+
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+Follow these steps:
+
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
+
+**Edit a file directly in GitHub**
+
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
+
+**Use GitHub Codespaces**
+
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
+
+## What technologies are used for this project?
+
+This project is built with .
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/1d45a376-c9ec-455b-97fd-1acd3ec777d6) and click on Share -> Publish.
+
+## I want to use a custom domain - is that possible?
+
+We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)

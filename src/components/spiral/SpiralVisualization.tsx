@@ -2,7 +2,7 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { TimeEvent, SpiralConfig } from "@/types/event";
-import { SpiralSceneContent } from "./SpiralSceneContent";
+import { SpiralScene } from "./SpiralScene";
 
 interface SpiralVisualizationProps {
   events: TimeEvent[];
@@ -47,7 +47,7 @@ const SpiralVisualization: React.FC<SpiralVisualizationProps> = ({
         }}
       >
         <fog attach="fog" args={['#000', 15, 50]} />
-        <SpiralSceneContent 
+        <SpiralScene 
           events={events} 
           config={config} 
           onEventClick={onSpiralClick} 
