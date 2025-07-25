@@ -40,6 +40,13 @@ const Index = () => {
           >
             Begin Mapping
           </Button>
+          <Button 
+            onClick={() => window.open('https://medium.com/@tuirkey/youre-here-a-mood-focused-memory-map-0c7bde098c88', '_blank')}
+            variant="outline"
+            className="mt-4 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-6 py-2"
+          >
+            What's You're Here?
+          </Button>
         </div>
       </div>
     </div>
